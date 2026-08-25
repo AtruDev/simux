@@ -1,0 +1,8 @@
+# LF no repositório para o CI (Linux) e o checkout local (Windows) verem o
+# mesmo conteúdo — o painel de código-fonte do frontend importa os .c crus.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.wasm binary

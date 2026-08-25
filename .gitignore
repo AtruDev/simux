@@ -1,0 +1,23 @@
+# --- builds nativos (CMake + Ninja) ---------------------------------
+build/
+build-*/
+
+# --- saída do emcc: gerada por `cmake --build build-wasm` -----------
+web/src/wasm/
+
+# --- gerado por tools/gen_enums.py a partir de core/include/ds/ids.h
+# nunca editar à mão; o build o reescreve
+web/src/core/ops.ts
+
+# --- frontend -------------------------------------------------------
+node_modules/
+dist/
+.vite/
+*.local
+
+# --- editores e sistema operacional ---------------------------------
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
