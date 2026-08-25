@@ -1,54 +1,129 @@
-/* A fatia mínima de ponta a ponta: um clique chama uma função em C compilada
- * para WebAssembly, e os eventos que ela emitiu aparecem na tela — com o
- * arquivo e a linha do .c que os produziu.
+/* A tela da Fase 1: a pilha encadeada de ponta a ponta.
  *
- * Nada aqui é a arquitetura final. O Player e o canvas ficam fora do React;
- * esta tela existe para provar o caminho. */
+ * O React cuida do chrome — barra lateral, painéis, controles. Ele não sabe
+ * que existe um canvas além de uma ref: o modelo e o desenho vivem no Player e
+ * no GrafoView, fora do ciclo de renderização, e o React só recebe uma foto
+ * com throttle. */
 
-import { useEffect, useState } from "react";
-
-import { ErroDs, exec, iniciar, type Ev } from "./core/bridge";
-import { ERR_CHAVES, EVKIND_NOMES, Op, SRC_NOMES, STR_CHAVES } from "./core/ops";
 import {
-  definirIdioma,
-  idiomaAtual,
-  t,
-  type Chave,
-  type Idioma,
-} from "./i18n";
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
-/* O C manda o id da mensagem; a frase vive no i18n. */
-function mensagemDe(ev: Ev): string {
-  const chave = STR_CHAVES[ev.a];
-  return chave ? t(chave as Chave) : "";
-}
+import { ErroDs, exec, iniciar, sessaoNova } from "./core/bridge";
+import { Op, Tipo } from "./core/ops";
+import { Player } from "./core/player";
+import { ERR_CHAVES } from "./core/ops";
+import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
+import { GrafoView } from "./render/grafoView";
+import { PainelCodigo } from "./ui/PainelCodigo";
+import { PainelLog, PainelMetricas } from "./ui/PainelLateral";
+import { Transporte } from "./ui/Transporte";
 
 export function App() {
+  const player = useMemo(() => new Player(), []);
+  const foto = useSyncExternalStore(player.assinar, player.ler);
+
   const [idioma, setIdioma] = useState<Idioma>(idiomaAtual());
   const [carregado, setCarregado] = useState(false);
-  const [eventos, setEventos] = useState<Ev[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [valor, setValor] = useState("42");
+
+  const refCanvas = useRef<HTMLCanvasElement>(null);
+
+  /* ---- núcleo --------------------------------------------------------- */
 
   useEffect(() => {
+    let vivo = true;
     iniciar()
-      .then(() => setCarregado(true))
-      .catch((e: unknown) => setErro(String(e)));
-  }, []);
+      .then(() => {
+        if (!vivo) return;
+        player.carregar(sessaoNova(Tipo.TIPO_PILHA_ENC));
+        setCarregado(true);
+      })
+      .catch((e: unknown) => vivo && setErro(String(e)));
+    return () => {
+      vivo = false;
+    };
+  }, [player]);
 
-  function chamarPing() {
-    try {
-      setEventos(exec(Op.OP_PING));
-      setErro(null);
-    } catch (e) {
-      if (e instanceof ErroDs) {
-        /* O C devolve o código; o nome e a frase moram deste lado. */
-        const chave = ERR_CHAVES[e.codigo];
-        setErro(chave ? t(chave as Chave) : String(e.codigo));
-      } else {
-        setErro(String(e));
+  /* ---- laço de animação ----------------------------------------------- */
+
+  useEffect(() => player.iniciarLaco(), [player]);
+
+  useEffect(() => {
+    const canvas = refCanvas.current;
+    if (!canvas || !carregado) return;
+
+    const view = new GrafoView(canvas);
+    const solta = player.aoQuadro(() => view.desenhar(player));
+    return () => {
+      solta();
+      view.destruir();
+    };
+  }, [player, carregado]);
+
+  /* ---- operações ------------------------------------------------------ */
+
+  const rodar = useCallback(
+    (op: Op, a = 0) => {
+      try {
+        player.anexar(exec(op, a));
+        setErro(null);
+      } catch (e) {
+        if (e instanceof ErroDs) {
+          const chave = ERR_CHAVES[e.codigo];
+          setErro(chave ? t(chave as Chave) : String(e.codigo));
+        } else {
+          setErro(String(e));
+        }
+      }
+    },
+    [player],
+  );
+
+  const reiniciar = useCallback(() => {
+    player.carregar(sessaoNova(Tipo.TIPO_PILHA_ENC));
+    setErro(null);
+  }, [player]);
+
+  /* ---- atalhos de teclado --------------------------------------------- */
+
+  useEffect(() => {
+    function aoTeclar(e: KeyboardEvent) {
+      const alvo = e.target as HTMLElement | null;
+      if (alvo && /^(INPUT|SELECT|TEXTAREA)$/.test(alvo.tagName)) return;
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          player.alternar();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          player.passo(e.shiftKey ? -10 : -1);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          player.passo(e.shiftKey ? 10 : 1);
+          break;
+        case "r":
+        case "R":
+          player.irPara(0);
+          break;
+        default:
+          break;
       }
     }
-  }
+    window.addEventListener("keydown", aoTeclar);
+    return () => window.removeEventListener("keydown", aoTeclar);
+  }, [player]);
+
+  /* ---- render --------------------------------------------------------- */
 
   function alternarIdioma() {
     const novo: Idioma = idioma === "pt" ? "en" : "pt";
@@ -56,51 +131,120 @@ export function App() {
     setIdioma(novo);
   }
 
+  const modelo = player.estado;
+  const fonte = modelo.fonte;
+
   return (
-    <main className="pagina">
+    <div className="app">
       <header className="cabecalho">
         <h1>{t("app.titulo")}</h1>
+        <p className="descricao">{t("app.descricao")}</p>
         <button type="button" onClick={alternarIdioma} className="secundario">
           {t("app.trocarIdioma")}
         </button>
       </header>
 
-      <p className="descricao">{t("app.descricao")}</p>
+      <div className="grade">
+        <aside className="coluna esquerda">
+          <section className="painel">
+            <h2>{t("estrutura.titulo")}</h2>
+            <p className="estrutura-atual">{t("estrutura.pilhaEnc")}</p>
+          </section>
 
-      <button type="button" onClick={chamarPing} disabled={!carregado}>
-        {carregado ? t("app.botaoPing") : t("app.carregando")}
-      </button>
+          <section className="painel">
+            <h2>{t("painel.operacoes")}</h2>
 
-      {erro !== null && (
-        <p className="erro">
-          {t("app.erro")}: {erro}
-        </p>
-      )}
+            <div className="campo">
+              <label htmlFor="valor">{t("op.valor")}</label>
+              <input
+                id="valor"
+                className="mono"
+                value={valor}
+                inputMode="numeric"
+                onChange={(e) => setValor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") rodar(Op.OP_PUSH, Number(valor) | 0);
+                }}
+              />
+              <button
+                type="button"
+                className="secundario"
+                title={t("op.aleatorio")}
+                onClick={() => setValor(String(Math.floor(Math.random() * 100)))}
+              >
+                ⚄
+              </button>
+            </div>
 
-      {eventos.length === 0 ? (
-        <p className="vazio">{t("app.semEventos")}</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>{t("app.tabelaEvento")}</th>
-              <th>{t("app.tabelaOrigem")}</th>
-              <th>{t("app.tabelaLinha")}</th>
-              <th>{t("app.tabelaMensagem")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {eventos.map((ev, i) => (
-              <tr key={i}>
-                <td className="mono">{EVKIND_NOMES[ev.kind]}</td>
-                <td className="mono">{SRC_NOMES[ev.src]}</td>
-                <td className="mono numero">{ev.line}</td>
-                <td>{mensagemDe(ev)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </main>
+            <div className="operacoes">
+              <button
+                type="button"
+                disabled={!carregado}
+                onClick={() => rodar(Op.OP_PUSH, Number(valor) | 0)}
+              >
+                {t("op.push")}
+              </button>
+              <button
+                type="button"
+                className="secundario"
+                disabled={!carregado}
+                onClick={() => rodar(Op.OP_POP)}
+              >
+                {t("op.pop")}
+              </button>
+              <button
+                type="button"
+                className="secundario"
+                disabled={!carregado}
+                onClick={() => rodar(Op.OP_TOPO)}
+              >
+                {t("op.topo")}
+              </button>
+              <button
+                type="button"
+                className="secundario"
+                disabled={!carregado}
+                onClick={() => rodar(Op.OP_LIMPAR)}
+              >
+                {t("op.limpar")}
+              </button>
+              <button
+                type="button"
+                className="secundario"
+                disabled={!carregado}
+                onClick={reiniciar}
+              >
+                ⟲
+              </button>
+            </div>
+
+            {erro !== null && (
+              <p className="erro">
+                {t("app.erro")}: {erro}
+              </p>
+            )}
+            {!carregado && <p className="vazio">{t("app.carregando")}</p>}
+          </section>
+
+          <PainelMetricas modelo={modelo} i={foto.i} total={foto.total} />
+        </aside>
+
+        <main className="coluna centro">
+          <canvas ref={refCanvas} className="canvas" />
+          <Transporte
+            player={player}
+            i={foto.i}
+            total={foto.total}
+            tocando={foto.tocando}
+            velocidade={foto.velocidade}
+          />
+        </main>
+
+        <aside className="coluna direita">
+          <PainelCodigo src={fonte?.src ?? 0} linha={fonte?.linha ?? 0} />
+          <PainelLog eventos={player.historico(12)} />
+        </aside>
+      </div>
+    </div>
   );
 }

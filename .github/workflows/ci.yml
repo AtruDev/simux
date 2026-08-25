@@ -63,11 +63,11 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
   # ---------------------------------------------------------------------------
-  # Tradução. Não depende do emsdk: ops.ts sai só do Python, então este job dá
-  # o retorno mais rápido de todos.
+  # Modelo visual e tradução. Não depende do emsdk: ops.ts sai só do Python,
+  # então este job dá o retorno mais rápido de todos.
   # ---------------------------------------------------------------------------
-  i18n:
-    name: chaves de tradução
+  frontend:
+    name: modelo e chaves de tradução
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -96,9 +96,9 @@ jobs:
         working-directory: web
         run: pnpm install --frozen-lockfile
 
-      - name: pt.ts e en.ts precisam ter as mesmas chaves
+      - name: aplicar.ts e as chaves de tradução
         working-directory: web
-        run: pnpm exec tsx scripts/checar-i18n.ts
+        run: pnpm testar
 
   # ---------------------------------------------------------------------------
   # Build wasm e frontend. O frontend vem junto por precisar do simux.js para

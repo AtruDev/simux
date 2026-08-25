@@ -4,7 +4,7 @@
  * eventos. Nada de estado da estrutura atravessa a fronteira: só o trace. */
 
 import criarSimux, { type ModuloSimux } from "../wasm/simux.js";
-import { EV_CAMPOS, type Op } from "./ops";
+import { EV_CAMPOS, type Op, type Tipo } from "./ops";
 
 /** Um evento do trace, já em forma de objeto. */
 export interface Ev {
@@ -35,22 +35,42 @@ export function pronto(): boolean {
   return modulo !== null;
 }
 
+/** Abre uma sessão sobre uma estrutura, descartando a anterior. */
+export function sessaoNova(tipo: Tipo): Ev[] {
+  const m = exigirModulo();
+  if (m._ds_sessao_nova(tipo) < 0) {
+    throw new ErroDs(m._ds_erro());
+  }
+  return lerTrace(m);
+}
+
+export function sessaoFim(): void {
+  modulo?._ds_sessao_fim();
+}
+
 /**
  * Executa uma operação e devolve os eventos que ela emitiu.
  *
  * O trace é zerado a cada chamada, do lado do C.
  */
 export function exec(op: Op, a = 0, b = 0, c = 0): Ev[] {
-  const m = modulo;
-  if (!m) {
-    throw new Error("bridge: chame iniciar() antes de exec()");
-  }
+  const m = exigirModulo();
 
   const rc = m._ds_call(op, a, b, c);
   if (rc < 0) {
     throw new ErroDs(m._ds_erro());
   }
+  return lerTrace(m);
+}
 
+function exigirModulo(): ModuloSimux {
+  if (!modulo) {
+    throw new Error("bridge: chame iniciar() antes de usar o core");
+  }
+  return modulo;
+}
+
+function lerTrace(m: ModuloSimux): Ev[] {
   const ptr = m._ds_trace_ptr();
   const total = m._ds_trace_len();
 
