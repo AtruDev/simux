@@ -68,6 +68,43 @@ if(DS_SANITIZE)
 endif()
 
 # ---------------------------------------------------------------------------
+# web/src/core/ops.ts — gerado a partir dos headers de enums.
+#
+# Os mesmos enums existem nos dois lados da fronteira; mantidos na mão, eles
+# dessincronizam, e o sintoma é mudo. O .h é a fonte, o .ts é derivado, e o
+# .ts está no .gitignore para ninguém ser tentado a editá-lo.
+# ---------------------------------------------------------------------------
+find_package(Python3 COMPONENTS Interpreter)
+
+if(Python3_FOUND)
+    set(DS_OPS_TS  ${CMAKE_CURRENT_SOURCE_DIR}/web/src/core/ops.ts)
+    set(DS_GERADOR ${CMAKE_CURRENT_SOURCE_DIR}/tools/gen_enums.py)
+    set(DS_HEADERS_ENUM
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/include/ds/ids.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/core/include/ds/erros.h)
+
+    # O gerador não reescreve o arquivo quando o conteúdo não muda, para não
+    # disparar rebuild do Vite à toa — daí o carimbo servir de OUTPUT.
+    add_custom_command(
+        OUTPUT     ${CMAKE_CURRENT_BINARY_DIR}/ops_ts.stamp
+        BYPRODUCTS ${DS_OPS_TS}
+        COMMAND    ${Python3_EXECUTABLE} ${DS_GERADOR} ${DS_HEADERS_ENUM}
+                   --saida ${DS_OPS_TS}
+        COMMAND    ${CMAKE_COMMAND} -E touch
+                   ${CMAKE_CURRENT_BINARY_DIR}/ops_ts.stamp
+        DEPENDS    ${DS_HEADERS_ENUM} ${DS_GERADOR}
+        COMMENT    "gen_enums -> web/src/core/ops.ts"
+        VERBATIM)
+
+    add_custom_target(ops_ts ALL
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ops_ts.stamp)
+else()
+    message(WARNING
+        "Python não encontrado: web/src/core/ops.ts não será regerado. "
+        "O build em C continua, mas o frontend pode ficar com enums velhos.")
+endif()
+
+# ---------------------------------------------------------------------------
 # core — C99, zero dependências. Compila igual nativo e para wasm.
 #
 # api.c fica de fora de propósito: é o único arquivo que conhece o Emscripten,
