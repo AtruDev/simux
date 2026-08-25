@@ -1,0 +1,61 @@
+/* Tokens de design. O renderizador lê estes mesmos valores com
+ * getComputedStyle, para não existir uma segunda paleta no código. */
+
+:root {
+  /* superfícies */
+  --bg-0: #0b0c10;
+  --bg-1: #111317;
+  --bg-2: #191c21;
+  --bg-3: #21252b;
+  --canvas: #07080b;
+
+  /* traço e tinta */
+  --line: #272a30;
+  --line-2: #3e4148;
+  --fg: #f2f3f6;
+  --fg-2: #a6a9b0;
+  --fg-3: #71747c;
+
+  /* acento — interface apenas: foco, seleção, transporte.
+   * Nunca preenche célula nem nó; a exceção é o cursor. */
+  --accent: #6a99ff;
+  --accent-hi: #95bcff;
+  --accent-dim: #314c8c;
+
+  /* estados do algoritmo */
+  --st-compare: #b98a00;
+  --st-swap: #ae4440;
+  --st-done: #39ac6d;
+  --st-pivot: #885cb5;
+  --st-aux: #0085ca;
+
+  /* identidade de algoritmo — só linhas e rótulos, nunca preenchimento */
+  --alg-1: #5889e6;
+  --alg-2: #c97500;
+  --alg-3: #00a890;
+
+  --fonte-display: "Space Grotesk", system-ui, sans-serif;
+  --fonte-ui: "Instrument Sans", system-ui, sans-serif;
+  --fonte-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-0);
+  color: var(--fg);
+  font-family: var(--fonte-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

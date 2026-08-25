@@ -1,0 +1,108 @@
+/* Layout da fatia mínima. Cresce e é substituído quando a tela de verdade
+ * (barra lateral, canvas, painéis) chegar na Fase 1. */
+
+.pagina {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+}
+
+.cabecalho h1 {
+  font-family: var(--fonte-display);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.descricao {
+  color: var(--fg-2);
+  max-width: 46ch;
+}
+
+button {
+  font: inherit;
+  color: var(--bg-0);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: var(--bg-2);
+  border-color: var(--line-2);
+  color: var(--fg-3);
+  cursor: default;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-hi);
+  outline-offset: 2px;
+}
+
+button.secundario {
+  background: var(--bg-2);
+  border-color: var(--line-2);
+  color: var(--fg-2);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.vazio {
+  color: var(--fg-3);
+}
+
+.erro {
+  color: var(--st-swap);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+th {
+  color: var(--fg-3);
+  font-weight: 500;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--bg-2);
+}
+
+.mono {
+  font-family: var(--fonte-mono);
+  font-size: 0.9rem;
+}
+
+.numero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
