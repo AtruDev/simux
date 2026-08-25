@@ -132,6 +132,7 @@ if(NOT EMSCRIPTEN)
         tests/runner.c
         tests/test_trace.c
         tests/test_idmap.c)
+    target_include_directories(testes PRIVATE tests)
     target_link_libraries(testes PRIVATE core)
 
     add_test(NAME nucleo COMMAND testes)
