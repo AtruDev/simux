@@ -13,6 +13,15 @@
 
 #include "ds/trace.h"
 
+/* Abre uma sessão sobre uma estrutura (TIPO_* em ids.h), descartando a
+ * anterior. Devolve OK, ou -1 e o motivo em ds_erro().
+ *
+ * O plano declarava isto como void; devolver status segue a regra de que toda
+ * função pública do projeto devolve status, e a criação pode faltar memória. */
+int32_t     ds_sessao_nova(int32_t tipo);
+void        ds_sessao_fim(void);
+int32_t     ds_tipo_sessao(void);
+
 /* Executa uma operação. Devolve OK, ou -1 e o motivo em ds_erro().
  * O trace é zerado no início de cada chamada. */
 int32_t     ds_call(int32_t op, int32_t a, int32_t b, int32_t c);

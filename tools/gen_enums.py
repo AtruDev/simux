@@ -40,6 +40,7 @@ RENOMES = {
     "ds_cnt": "Cnt",
     "ds_tag": "Tag",
     "ds_op": "Op",
+    "ds_tipo": "Tipo",
     "ds_status": "Status",
 }
 

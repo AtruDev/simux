@@ -22,5 +22,6 @@ void verificar_true(const char *arquivo, int linha, const char *expr, int ok);
 /* suítes */
 void suite_trace(void);
 void suite_idmap(void);
+void suite_pilha(void);
 
 #endif /* RUNNER_H */

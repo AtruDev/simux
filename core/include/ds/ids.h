@@ -59,6 +59,7 @@ typedef enum {
 typedef enum {
     SRC_NENHUM,
     SRC_API,
+    SRC_PILHA_ENC,
     SRC_COUNT
 } ds_src;
 
@@ -69,6 +70,7 @@ typedef enum {
 typedef enum {
     STR_NENHUMA,
     STR_PING,
+    STR_PILHA_VAZIA,
     STR_COUNT
 } ds_str;
 
@@ -79,6 +81,7 @@ typedef enum {
  * ------------------------------------------------------------------------- */
 typedef enum {
     PTR_NENHUM,
+    PTR_TOPO,
     PTR_COUNT
 } ds_ptr;
 
@@ -108,7 +111,22 @@ typedef enum {
  * ------------------------------------------------------------------------- */
 typedef enum {
     OP_PING,            /* só emite EV_MSG — prova o caminho C -> wasm -> JS */
+    OP_PUSH,            /* a = valor                                         */
+    OP_POP,
+    OP_TOPO,
+    OP_LIMPAR,
     OP_COUNT
 } ds_op;
+
+/* ---------------------------------------------------------------------------
+ * Que estrutura a sessão está simulando. O frontend usa isto para escolher o
+ * renderizador: o mesmo EV_PTR_SET aponta para um nó na versão encadeada e
+ * para um índice na versão com vetor.
+ * ------------------------------------------------------------------------- */
+typedef enum {
+    TIPO_NENHUM,
+    TIPO_PILHA_ENC,
+    TIPO_COUNT
+} ds_tipo;
 
 #endif /* DS_IDS_H */
