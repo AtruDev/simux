@@ -93,26 +93,46 @@ export class Player {
     this.irPara(0);
   }
 
-  /** Acrescenta o trace de uma operação nova e toca a partir daqui. */
+  /** Acrescenta o trace de uma operação nova e a mostra acontecendo.
+   *
+   * A linha do tempo nunca é truncada. A estrutura que o C tem reflete todas
+   * as operações já executadas, esteja o cursor onde estiver — onde a
+   * animação parou é assunto da vista. Descartar eventos aqui apagaria
+   * operações que de fato aconteceram, e foi exatamente o que acontecia ao
+   * operar antes de a animação anterior terminar. */
   anexar(evs: Ev[]): void {
-    /* Se o usuário tinha voltado no tempo, a operação nova continua de onde
-     * ele está: o que estava à frente nunca aconteceu, do ponto de vista
-     * da estrutura que o C tem agora. */
-    this.eventos.length = this.i;
+    const inicioDosNovos = this.eventos.length;
     this.eventos.push(...evs);
-    this.acumulado = 0;
+
+    /* Volta ao instante anterior aos eventos novos, para eles serem vistos
+     * acontecendo em vez de aparecerem prontos. */
+    this.irPara(inicioDosNovos);
     this.tocando = evs.length > 0;
     this.avisar();
   }
 
-  /** Vai ao passo k reexecutando de 0 — nunca desfazendo evento. */
+  /** Vai ao passo k. Voltar reexecuta de 0 — nunca desfaz evento.
+   *
+   * Ir para a frente é só continuar aplicando, porque o modelo já é
+   * exatamente o estado do passo atual. Voltar não tem esse atalho: é aí
+   * que a reexecução paga o seu preço, e é o que dispensa escrever o
+   * inverso de cada evento. */
   irPara(k: number): void {
     const destino = Math.max(0, Math.min(k, this.eventos.length));
-    this.modelo = modeloNovo();
-    for (let j = 0; j < destino; j++) {
-      const ev = this.eventos[j];
-      if (ev) aplicar(this.modelo, ev);
+
+    if (destino < this.i) {
+      this.modelo = modeloNovo();
+      for (let j = 0; j < destino; j++) {
+        const ev = this.eventos[j];
+        if (ev) aplicar(this.modelo, ev);
+      }
+    } else {
+      for (let j = this.i; j < destino; j++) {
+        const ev = this.eventos[j];
+        if (ev) aplicar(this.modelo, ev);
+      }
     }
+
     this.i = destino;
     this.acumulado = 0;
     this.avisar();
@@ -120,19 +140,7 @@ export class Player {
 
   passo(delta: number): void {
     this.pause();
-    const destino = this.i + delta;
-    if (delta > 0 && destino <= this.eventos.length) {
-      /* Andar para a frente é só aplicar: não precisa reexecutar tudo. */
-      for (let j = this.i; j < destino; j++) {
-        const ev = this.eventos[j];
-        if (ev) aplicar(this.modelo, ev);
-      }
-      this.i = destino;
-      this.acumulado = 0;
-      this.avisar();
-    } else {
-      this.irPara(destino);
-    }
+    this.irPara(this.i + delta);
   }
 
   play(): void {
@@ -188,26 +196,32 @@ export class Player {
   }
 
   private avisar(): void {
-    const agora = performance.now();
-    const mudouAlgoQueOReactPrecisa =
+    const mudou =
       this.foto.i !== this.i ||
       this.foto.total !== this.eventos.length ||
       this.foto.tocando !== this.tocando ||
       this.foto.velocidade !== this.vel;
 
-    if (!mudouAlgoQueOReactPrecisa) return;
+    if (!mudou) return;
 
-    /* Throttle: durante o play, o índice muda várias vezes por segundo, mas o
-     * painel não precisa acompanhar quadro a quadro. */
-    if (agora - this.avisoPendente < 1000 / HZ_REACT && this.tocando) return;
-    this.avisoPendente = agora;
-
+    /* A foto é sempre atualizada. Antes ela ficava presa junto com o aviso, e
+     * quem lesse logo depois de uma operação via dados velhos — o throttle é
+     * sobre com que frequência o React redesenha, não sobre a verdade. */
     this.foto = {
       i: this.i,
       total: this.eventos.length,
       tocando: this.tocando,
       velocidade: this.vel,
     };
+
+    /* Durante o play o índice muda várias vezes por segundo, e o painel não
+     * precisa acompanhar quadro a quadro. Nenhum aviso se perde: o laço chama
+     * isto a cada quadro, e o fim da reprodução zera `tocando`, que passa
+     * direto pelo throttle. */
+    const agora = performance.now();
+    if (this.tocando && agora - this.avisoPendente < 1000 / HZ_REACT) return;
+    this.avisoPendente = agora;
+
     for (const fn of this.assinantes) fn();
   }
 }

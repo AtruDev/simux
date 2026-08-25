@@ -1,7 +1,11 @@
 /* Layout da Fase 1: barra lateral, canvas ao centro, código e log à direita. */
 
+/* Altura travada na janela, e cada coluna rola por dentro. Com min-height a
+ * grade crescia junto com o painel de código e empurrava a barra de
+ * transporte para fora da tela — e ela é o controle principal. */
 .app {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -54,6 +58,11 @@
 .coluna.centro {
   background: var(--canvas);
   overflow: hidden;
+}
+
+/* A barra de transporte não rola com o resto: ela fica sempre visível. */
+.coluna.centro .transporte {
+  flex: 0 0 auto;
 }
 
 .canvas {
@@ -305,7 +314,6 @@ button.icone.principal {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 0.5rem 0;
-  max-height: 22rem;
 }
 
 .codigo .linha {
@@ -339,6 +347,10 @@ button.icone.principal {
 
 /* ---- log --------------------------------------------------------------- */
 
+.painel-log {
+  flex: 0 0 auto;
+}
+
 .painel-log .log {
   margin: 0;
   padding: 0;
@@ -346,7 +358,7 @@ button.icone.principal {
   display: grid;
   gap: 0.15rem;
   font-size: 0.82rem;
-  max-height: 14rem;
+  max-height: 11rem;
   overflow: auto;
 }
 

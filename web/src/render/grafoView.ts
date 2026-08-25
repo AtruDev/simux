@@ -78,12 +78,15 @@ export class GrafoView {
       id = m.nos.get(id)?.arestas.get(0) ?? 0;
     }
 
-    /* Um nó fora da cadeia é sinal de bug no trace. Desenhá-lo mesmo assim é
-     * melhor que escondê-lo: sumir sem explicação seria pior de depurar. */
-    for (const orfao of m.ordem) {
-      if (!visto.has(orfao)) fila.push(orfao);
-    }
-    return fila;
+    /* Um nó ainda não ligado à cadeia entra ACIMA dela, não no fim.
+     *
+     * É o estado transitório entre EV_NODE_NEW e EV_EDGE_SET: o nó existe mas
+     * ninguém aponta para ele ainda. Pô-lo no fim faria o recém-criado nascer
+     * embaixo e atravessar a pilha inteira para chegar ao topo, o que conta
+     * uma história errada. Desenhá-lo é obrigatório de qualquer forma —
+     * escondê-lo tornaria um bug de trace invisível. */
+    const orfaos = m.ordem.filter((id) => !visto.has(id));
+    return [...orfaos, ...fila];
   }
 
   /* ---- quadro --------------------------------------------------------- */
@@ -214,7 +217,12 @@ export class GrafoView {
     const y = pose ? pose.y : MARGEM_TOPO;
     const xNo = pose ? pose.x : this.larguraCss / 2;
     const larguraCaixa = 58;
-    const xCaixa = xNo - LARGURA_NO / 2 - 92;
+
+    /* Quando o ponteiro é nulo, a seta e o rótulo NULL ocupam espaço à
+     * direita da caixa. Sem recuar, eles invadem a coluna dos nós — o que
+     * acontece no meio do push, entre criar o nó e mover o topo. */
+    const recuoNulo = pose ? 0 : 58;
+    const xCaixa = xNo - LARGURA_NO / 2 - 92 - recuoNulo;
 
     ctx.globalAlpha = 1;
     this.retangulo(xCaixa, y - 14, larguraCaixa, 28, 6);

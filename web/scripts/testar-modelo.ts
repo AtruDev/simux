@@ -8,6 +8,7 @@
 
 import type { Ev } from "../src/core/bridge";
 import { Cnt, EvKind, Ptr, Src } from "../src/core/ops";
+import { Player } from "../src/core/player";
 import { aplicar } from "../src/model/aplicar";
 import { alvoDe, contador, modeloNovo, type Modelo } from "../src/model/modelo";
 
@@ -133,6 +134,101 @@ CASO("todo evento com origem move o destaque do código");
   const m = reproduzir([ev(EvKind.EV_NODE_NEW, 1, 10, 0, 48)]);
   igual(m.fonte?.src, Src.SRC_PILHA_ENC, "origem");
   igual(m.fonte?.linha, 48, "linha");
+}
+
+
+/* ---- Player ------------------------------------------------------------- *
+ * O Player não precisa de navegador enquanto o laço não é iniciado: só
+ * iniciarLaco() toca em requestAnimationFrame. Dá para testar a linha do
+ * tempo inteira aqui, e é onde mora o critério de pronto da fase.           */
+
+CASO("operar não descarta o que já aconteceu");
+{
+  /* Foi o bug: anexar() truncava a linha do tempo no cursor, para descartar
+   * "o futuro" de um scrub. Mas operar antes de a animação anterior terminar
+   * deixa o cursor atrás sem que nada tenha sido desfeito — e os pushes
+   * anteriores sumiam. A estrutura que o C tem reflete todas as operações,
+   * esteja o cursor onde estiver. */
+  const player = new Player();
+  player.carregar([ev(EvKind.EV_PTR_SET, Ptr.PTR_TOPO, 0)]);
+
+  player.anexar(push(1, 10, 0));
+  player.anexar(push(2, 20, 1)); /* cursor ainda lá atrás, animação rodando */
+  player.anexar(push(3, 30, 2));
+
+  igual(player.ler().total, 16, "1 da sessão + 3 x 5 do push");
+
+  player.irPara(player.ler().total);
+  igual(player.estado.nos.size, 3, "os três nós existem");
+  igual(contador(player.estado, Cnt.CNT_TAMANHO), 3, "tamanho 3");
+  igual(alvoDe(player.estado, Ptr.PTR_TOPO), 3, "topo é o último");
+}
+
+CASO("anexar volta ao instante anterior aos eventos novos");
+{
+  const player = new Player();
+  player.carregar([]);
+  player.anexar(push(1, 10, 0));
+  igual(player.ler().i, 0, "cursor no começo dos eventos novos");
+  player.anexar(push(2, 20, 1));
+  igual(player.ler().i, 5, "cursor logo antes do segundo push");
+  igual(player.estado.nos.size, 1, "e o estado é o de antes dele");
+}
+
+CASO("ir e voltar dá o mesmo estado — o critério da fase");
+{
+  const player = new Player();
+  player.carregar([
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_TOPO, 0),
+    ...push(1, 10, 0),
+    ...push(2, 20, 1),
+    ...push(3, 30, 2),
+    ...push(4, 40, 3),
+    ...push(5, 50, 4),
+  ]);
+  const total = player.ler().total;
+
+  player.irPara(total);
+  const noFim = {
+    nos: player.estado.nos.size,
+    topo: alvoDe(player.estado, Ptr.PTR_TOPO),
+    tamanho: contador(player.estado, Cnt.CNT_TAMANHO),
+  };
+  igual(noFim.nos, 5, "cinco nós no fim");
+  igual(noFim.tamanho, 5, "tamanho 5 no fim");
+
+  /* volta passo a passo até o começo */
+  for (let k = total; k > 0; k--) player.irPara(k - 1);
+  igual(player.ler().i, 0, "voltou ao início");
+  igual(player.estado.nos.size, 0, "nenhum nó no início");
+  igual(contador(player.estado, Cnt.CNT_TAMANHO), 0, "tamanho zerado");
+
+  /* e avança de novo até o fim */
+  for (let k = 0; k < total; k++) player.irPara(k + 1);
+  igual(player.estado.nos.size, noFim.nos, "mesmos nós na volta");
+  igual(alvoDe(player.estado, Ptr.PTR_TOPO), noFim.topo, "mesmo topo");
+  igual(
+    contador(player.estado, Cnt.CNT_TAMANHO),
+    noFim.tamanho,
+    "mesmo tamanho",
+  );
+
+  /* e um salto direto para o meio bate com a reprodução de um prefixo */
+  player.irPara(8);
+  const pulando = player.estado.nos.size;
+  player.irPara(0);
+  player.irPara(8);
+  igual(player.estado.nos.size, pulando, "saltar bate com avançar");
+}
+
+CASO("passo não passa dos limites");
+{
+  const player = new Player();
+  player.carregar(push(1, 10, 0));
+  player.passo(-5);
+  igual(player.ler().i, 0, "não vai abaixo de zero");
+  player.passo(99);
+  igual(player.ler().i, 5, "não passa do total");
 }
 
 /* ------------------------------------------------------------------------ */
