@@ -16,11 +16,16 @@
 /* Abre uma sessão sobre uma estrutura (TIPO_* em ids.h), descartando a
  * anterior. Devolve OK, ou -1 e o motivo em ds_erro().
  *
- * O plano declarava isto como void; devolver status segue a regra de que toda
- * função pública do projeto devolve status, e a criação pode faltar memória. */
-int32_t     ds_sessao_nova(int32_t tipo);
+ * O plano declarava isto como void e sem capacidade. Devolver status segue a
+ * regra de que toda função pública do projeto devolve status, e a criação pode
+ * faltar memória; a capacidade é necessária desde que existem implementações
+ * com vetor, e é ignorada pelas encadeadas. */
+int32_t     ds_sessao_nova(int32_t tipo, int32_t capacidade);
 void        ds_sessao_fim(void);
 int32_t     ds_tipo_sessao(void);
+
+/* Capacidade da estrutura da sessão, ou -1 quando não há limite. */
+int32_t     ds_capacidade(void);
 
 /* Executa uma operação. Devolve OK, ou -1 e o motivo em ds_erro().
  * O trace é zerado no início de cada chamada. */

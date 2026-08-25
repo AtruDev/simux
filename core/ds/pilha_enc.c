@@ -14,6 +14,8 @@
 #include "ds/idmap.h"
 #include "ds/trace.h"
 
+#include "linear.h"
+
 typedef struct No {
     elem_t      valor;
     struct No  *prox;
@@ -129,3 +131,56 @@ void pilha_enc_destruir(PilhaEnc *p)
     pilha_enc_limpar(p);
     free(p);
 }
+
+/* ---- adaptação para o vtable ------------------------------------------- *
+ * As assinaturas do TAD_Linear são sobre void*, então cada implementação
+ * expõe uma casca fina. Fica no fim do arquivo para não atrapalhar a leitura
+ * do algoritmo, que é o que aparece no painel de código.                    */
+
+static void *vt_criar(int capacidade)
+{
+    (void) capacidade;      /* a encadeada não tem limite */
+    return pilha_enc_criar();
+}
+
+static void vt_destruir(void *s)
+{
+    pilha_enc_destruir(s);
+}
+
+static int vt_inserir(void *s, elem_t valor)
+{
+    return pilha_enc_push(s, valor);
+}
+
+static int vt_remover(void *s, elem_t *saida)
+{
+    return pilha_enc_pop(s, saida);
+}
+
+static int vt_consultar(const void *s, elem_t *saida)
+{
+    return pilha_enc_topo(s, saida);
+}
+
+static void vt_limpar(void *s)
+{
+    pilha_enc_limpar(s);
+}
+
+static int vt_tamanho(const void *s)
+{
+    return pilha_enc_tamanho(s);
+}
+
+static int vt_capacidade(const void *s)
+{
+    (void) s;
+    return -1;
+}
+
+const TAD_Linear PILHA_ENC = {
+    vt_criar, vt_destruir,
+    vt_inserir, vt_remover, vt_consultar, vt_limpar,
+    vt_tamanho, vt_capacidade,
+};

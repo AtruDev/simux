@@ -45,6 +45,8 @@ int main(void)
     suite_trace();
     suite_idmap();
     suite_pilha();
+    suite_fila();
+    suite_fuzz();
 
     printf("\n%d checagens, %d falha(s)\n", g_checagens, g_falhas);
     return g_falhas != 0;

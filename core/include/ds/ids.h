@@ -60,6 +60,9 @@ typedef enum {
     SRC_NENHUM,
     SRC_API,
     SRC_PILHA_ENC,
+    SRC_PILHA_VET,
+    SRC_FILA_ENC,
+    SRC_FILA_VET,
     SRC_COUNT
 } ds_src;
 
@@ -71,17 +74,29 @@ typedef enum {
     STR_NENHUMA,
     STR_PING,
     STR_PILHA_VAZIA,
+    STR_PILHA_CHEIA,
+    STR_FILA_VAZIA,
+    STR_FILA_CHEIA,
+    STR_DEU_VOLTA,
     STR_COUNT
 } ds_str;
 
 /* ---------------------------------------------------------------------------
- * Ponteiros nomeados desenhados na tela (o rótulo "topo", "início", "fim").
- * Em estrutura encadeada o alvo é um id de nó; em estrutura com vetor é um
- * índice. Mesmo evento, mesmo enum.
+ * Ponteiros nomeados desenhados na tela (o rótulo "topo", "frente", "fim").
+ *
+ * O alvo de EV_PTR_SET muda de significado conforme o mundo, e o renderizador
+ * decide pelo tipo da sessão:
+ *
+ *   encadeada   b = id de nó, e 0 é NULL
+ *   com vetor   b = índice, e -1 é "nenhum" (0 é um índice válido)
+ *
+ * É essa dupla leitura que dispensa criar um evento por implementação.
  * ------------------------------------------------------------------------- */
 typedef enum {
     PTR_NENHUM,
     PTR_TOPO,
+    PTR_FRENTE,
+    PTR_FIM,
     PTR_COUNT
 } ds_ptr;
 
@@ -103,6 +118,7 @@ typedef enum {
     TAG_NENHUMA,
     TAG_ORDENADO,
     TAG_PIVO,
+    TAG_LIVRE,          /* célula que já foi ocupada e não é mais           */
     TAG_COUNT
 } ds_tag;
 
@@ -126,6 +142,9 @@ typedef enum {
 typedef enum {
     TIPO_NENHUM,
     TIPO_PILHA_ENC,
+    TIPO_PILHA_VET,
+    TIPO_FILA_ENC,
+    TIPO_FILA_VET,      /* a com vetor é a circular                         */
     TIPO_COUNT
 } ds_tipo;
 

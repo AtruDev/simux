@@ -23,5 +23,7 @@ void verificar_true(const char *arquivo, int linha, const char *expr, int ok);
 void suite_trace(void);
 void suite_idmap(void);
 void suite_pilha(void);
+void suite_fila(void);
+void suite_fuzz(void);
 
 #endif /* RUNNER_H */
