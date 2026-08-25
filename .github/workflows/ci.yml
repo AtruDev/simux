@@ -1,0 +1,157 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Núcleo em C. No Linux com ASAN e UBSAN; no Windows sem, porque o alvo
+  # MinGW não distribui libasan/libubsan — o CMake trava se pedirem.
+  # O Windows usa MSYS2/UCRT64 e não MSVC, para o CI compilar com o mesmo
+  # compilador do ambiente de desenvolvimento.
+  # ---------------------------------------------------------------------------
+  nativo-linux:
+    name: nativo (linux, asan+ubsan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Configurar
+        run: >
+          cmake -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DDS_SANITIZE=ON
+
+      - name: Compilar
+        run: cmake --build build
+
+      - name: Testar
+        run: ctest --test-dir build --output-on-failure
+
+  nativo-windows:
+    name: nativo (windows, mingw)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-python
+
+      - name: Configurar
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Compilar
+        run: cmake --build build
+
+      - name: Testar
+        run: ctest --test-dir build --output-on-failure
+
+  # ---------------------------------------------------------------------------
+  # Tradução. Não depende do emsdk: ops.ts sai só do Python, então este job dá
+  # o retorno mais rápido de todos.
+  # ---------------------------------------------------------------------------
+  i18n:
+    name: chaves de tradução
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Gerar ops.ts
+        run: >
+          python tools/gen_enums.py
+          core/include/ds/ids.h core/include/ds/erros.h
+          --saida web/src/core/ops.ts
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Instalar
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: pt.ts e en.ts precisam ter as mesmas chaves
+        working-directory: web
+        run: pnpm exec tsx scripts/checar-i18n.ts
+
+  # ---------------------------------------------------------------------------
+  # Build wasm e frontend. O frontend vem junto por precisar do simux.js para
+  # checar os tipos do bridge.
+  # ---------------------------------------------------------------------------
+  wasm:
+    name: wasm e frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 6.0.8
+          actions-cache-folder: emsdk-cache
+
+      - name: Configurar
+        run: emcmake cmake -B build-wasm -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compilar
+        run: cmake --build build-wasm
+
+      # A lista de EXPORTED_FUNCTIONS e o wasm.d.ts do frontend precisam contar
+      # a mesma história. Um símbolo que some daqui vira erro em tempo de
+      # execução no navegador, não erro de compilação — daí a verificação.
+      - name: Conferir os símbolos exportados
+        run: |
+          faltando=0
+          for s in _ds_call _ds_erro _ds_trace_ptr _ds_trace_len _ds_trace_truncado; do
+            if ! grep -q "$s" web/src/wasm/simux.js; then
+              echo "::error::símbolo exportado ausente em simux.js: $s"
+              faltando=1
+            fi
+          done
+          exit $faltando
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Instalar
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Checar tipos e empacotar
+        working-directory: web
+        run: pnpm build
