@@ -5,7 +5,7 @@
  * scripts/testar-modelo.ts. */
 
 import type { Ev } from "../core/bridge";
-import { EvKind } from "../core/ops";
+import { EvKind, Tag } from "../core/ops";
 import type { Modelo } from "./modelo";
 
 function garantirNo(m: Modelo, id: number) {
@@ -61,6 +61,51 @@ export function aplicar(m: Modelo, ev: Ev): void {
 
     case EvKind.EV_EDGE_SET:
       garantirNo(m, ev.a).arestas.set(ev.b, ev.c);
+      break;
+
+    case EvKind.EV_ARR_INIT:
+      m.vetor = {
+        capacidade: ev.a,
+        valores: new Array<number | null>(ev.a).fill(null),
+        marcas: new Array<number>(ev.a).fill(Tag.TAG_NENHUMA),
+        ultimoLido: -1,
+        ultimoEscrito: -1,
+      };
+      break;
+
+    case EvKind.EV_ARR_WRITE:
+      if (m.vetor && ev.a >= 0 && ev.a < m.vetor.capacidade) {
+        m.vetor.valores[ev.a] = ev.b;
+        /* Escrever numa célula liberada a devolve ao uso. */
+        m.vetor.marcas[ev.a] = Tag.TAG_NENHUMA;
+        m.vetor.ultimoEscrito = ev.a;
+        m.vetor.ultimoLido = -1;
+      }
+      break;
+
+    case EvKind.EV_ARR_READ:
+      if (m.vetor) {
+        m.vetor.ultimoLido = ev.a;
+        m.vetor.ultimoEscrito = -1;
+      }
+      break;
+
+    case EvKind.EV_ARR_MARK:
+      if (m.vetor && ev.a >= 0 && ev.a < m.vetor.capacidade) {
+        m.vetor.marcas[ev.a] = ev.b;
+      }
+      break;
+
+    case EvKind.EV_ARR_SWAP:
+      if (m.vetor) {
+        const i = ev.a;
+        const j = ev.b;
+        const t = m.vetor.valores[i] ?? null;
+        m.vetor.valores[i] = m.vetor.valores[j] ?? null;
+        m.vetor.valores[j] = t;
+        m.vetor.ultimoEscrito = i;
+        m.vetor.ultimoLido = -1;
+      }
       break;
 
     case EvKind.EV_PTR_SET:

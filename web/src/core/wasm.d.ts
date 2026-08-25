@@ -7,9 +7,10 @@
 
 declare module "*/wasm/simux.js" {
   export interface ModuloSimux {
-    _ds_sessao_nova(tipo: number): number;
+    _ds_sessao_nova(tipo: number, capacidade: number): number;
     _ds_sessao_fim(): void;
     _ds_tipo_sessao(): number;
+    _ds_capacidade(): number;
     _ds_call(op: number, a: number, b: number, c: number): number;
     _ds_erro(): number;
     _ds_trace_ptr(): number;

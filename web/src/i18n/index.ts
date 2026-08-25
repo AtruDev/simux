@@ -54,7 +54,25 @@ export type ChaveUI =
   | "log.visita"
   | "log.saiVisita"
   | "log.contador"
-  | "log.nulo";
+  | "log.nulo"
+  | "estrutura.pilhaVet"
+  | "estrutura.filaEnc"
+  | "estrutura.filaVet"
+  | "estrutura.encadeada"
+  | "estrutura.vetor"
+  | "op.enfileirar"
+  | "op.desenfileirar"
+  | "op.frente"
+  | "op.capacidade"
+  | "metrica.escritas"
+  | "metrica.capacidade"
+  | "metrica.ocupacao"
+  | "log.escreve"
+  | "log.le"
+  | "log.marcaLivre"
+  | "log.vetorInicia"
+  | "log.frente"
+  | "log.fim";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

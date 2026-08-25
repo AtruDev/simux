@@ -1,4 +1,5 @@
-/* A tela da Fase 1: a pilha encadeada de ponta a ponta.
+/* A tela das estruturas lineares: pilha e fila, cada uma nas duas
+ * implementações.
  *
  * O React cuida do chrome — barra lateral, painéis, controles. Ele não sabe
  * que existe um canvas além de uma ref: o modelo e o desenho vivem no Player e
@@ -15,11 +16,13 @@ import {
 } from "react";
 
 import { ErroDs, exec, iniciar, sessaoNova } from "./core/bridge";
-import { Op, Tipo } from "./core/ops";
+import { Op } from "./core/ops";
 import { Player } from "./core/player";
 import { ERR_CHAVES } from "./core/ops";
 import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
 import { GrafoView } from "./render/grafoView";
+import { VetorView } from "./render/vetorView";
+import { ESTRUTURAS, estruturaDe } from "./ui/Estruturas";
 import { PainelCodigo } from "./ui/PainelCodigo";
 import { PainelLog, PainelMetricas } from "./ui/PainelLateral";
 import { Transporte } from "./ui/Transporte";
@@ -32,6 +35,10 @@ export function App() {
   const [carregado, setCarregado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [valor, setValor] = useState("42");
+  const [tipo, setTipo] = useState<number>(ESTRUTURAS[0]!.tipo);
+  const [capacidade, setCapacidade] = useState(8);
+
+  const estrutura = estruturaDe(tipo);
 
   const refCanvas = useRef<HTMLCanvasElement>(null);
 
@@ -42,14 +49,30 @@ export function App() {
     iniciar()
       .then(() => {
         if (!vivo) return;
-        player.carregar(sessaoNova(Tipo.TIPO_PILHA_ENC));
+        player.carregar(sessaoNova(tipo, capacidade));
         setCarregado(true);
       })
       .catch((e: unknown) => vivo && setErro(String(e)));
     return () => {
       vivo = false;
     };
+    /* Trocar de estrutura reabre a sessão: é o efeito abaixo que cuida disso,
+     * e repetir a dependência aqui abriria duas. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player]);
+
+  /* Trocar estrutura ou capacidade descarta a sessão e começa outra. O C não
+   * guarda histórico, e a linha do tempo do Player também não faria sentido
+   * atravessando duas estruturas diferentes. */
+  useEffect(() => {
+    if (!carregado) return;
+    try {
+      player.carregar(sessaoNova(tipo, capacidade));
+      setErro(null);
+    } catch (e) {
+      setErro(String(e));
+    }
+  }, [player, carregado, tipo, capacidade]);
 
   /* ---- laço de animação ----------------------------------------------- */
 
@@ -59,13 +82,20 @@ export function App() {
     const canvas = refCanvas.current;
     if (!canvas || !carregado) return;
 
-    const view = new GrafoView(canvas);
+    /* O renderizador é escolhido pelo mundo da estrutura, não pela estrutura:
+     * pilha e fila com vetor desenham no mesmo VetorView, e é o rótulo do
+     * ponteiro que muda. */
+    const view =
+      estrutura.mundo === "vetor"
+        ? new VetorView(canvas, tipo)
+        : new GrafoView(canvas);
+
     const solta = player.aoQuadro(() => view.desenhar(player));
     return () => {
       solta();
       view.destruir();
     };
-  }, [player, carregado]);
+  }, [player, carregado, tipo, estrutura.mundo]);
 
   /* ---- operações ------------------------------------------------------ */
 
@@ -87,9 +117,9 @@ export function App() {
   );
 
   const reiniciar = useCallback(() => {
-    player.carregar(sessaoNova(Tipo.TIPO_PILHA_ENC));
+    player.carregar(sessaoNova(tipo, capacidade));
     setErro(null);
-  }, [player]);
+  }, [player, tipo, capacidade]);
 
   /* ---- atalhos de teclado --------------------------------------------- */
 
@@ -148,7 +178,37 @@ export function App() {
         <aside className="coluna esquerda">
           <section className="painel">
             <h2>{t("estrutura.titulo")}</h2>
-            <p className="estrutura-atual">{t("estrutura.pilhaEnc")}</p>
+            <div className="lista-estruturas">
+              {ESTRUTURAS.map((e) => (
+                <label key={e.tipo} className="opcao">
+                  <input
+                    type="radio"
+                    name="estrutura"
+                    checked={tipo === e.tipo}
+                    onChange={() => setTipo(e.tipo)}
+                  />
+                  <span>{t(e.nome)}</span>
+                </label>
+              ))}
+            </div>
+
+            {estrutura.mundo === "vetor" && (
+              <div className="campo campo-capacidade">
+                <label htmlFor="cap">{t("op.capacidade")}</label>
+                <input
+                  id="cap"
+                  className="mono"
+                  type="number"
+                  min={1}
+                  max={32}
+                  value={capacidade}
+                  onChange={(ev) => {
+                    const n = Number(ev.target.value);
+                    if (n >= 1 && n <= 32) setCapacidade(n);
+                  }}
+                />
+              </div>
+            )}
           </section>
 
           <section className="painel">
@@ -182,7 +242,7 @@ export function App() {
                 disabled={!carregado}
                 onClick={() => rodar(Op.OP_PUSH, Number(valor) | 0)}
               >
-                {t("op.push")}
+                {t(estrutura.rotuloInserir)}
               </button>
               <button
                 type="button"
@@ -190,7 +250,7 @@ export function App() {
                 disabled={!carregado}
                 onClick={() => rodar(Op.OP_POP)}
               >
-                {t("op.pop")}
+                {t(estrutura.rotuloRemover)}
               </button>
               <button
                 type="button"
@@ -198,7 +258,7 @@ export function App() {
                 disabled={!carregado}
                 onClick={() => rodar(Op.OP_TOPO)}
               >
-                {t("op.topo")}
+                {t(estrutura.rotuloConsultar)}
               </button>
               <button
                 type="button"
@@ -242,7 +302,7 @@ export function App() {
 
         <aside className="coluna direita">
           <PainelCodigo src={fonte?.src ?? 0} linha={fonte?.linha ?? 0} />
-          <PainelLog eventos={player.historico(12)} />
+          <PainelLog eventos={player.historico(12)} mundo={estrutura.mundo} />
         </aside>
       </div>
     </div>

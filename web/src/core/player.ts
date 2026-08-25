@@ -22,6 +22,14 @@ export interface FotoPlayer {
   readonly total: number;
   readonly tocando: boolean;
   readonly velocidade: number;
+  /* Muda a cada linha do tempo nova.
+   *
+   * Sem isto, trocar de estrutura podia não avisar o React: duas sessões
+   * diferentes emitem o mesmo número de eventos, então i e total ficavam
+   * iguais e a foto era considerada inalterada — enquanto o canvas, que
+   * desenha por quadro, já mostrava a estrutura nova. Os painéis ficavam
+   * mostrando os números da anterior. */
+  readonly geracao: number;
 }
 
 export class Player {
@@ -38,7 +46,14 @@ export class Player {
   private assinantes = new Set<() => void>();
   private porQuadro = new Set<() => void>();
   private avisoPendente = 0;
-  private foto: FotoPlayer = { i: 0, total: 0, tocando: false, velocidade: 1 };
+  private geracao = 0;
+  private foto: FotoPlayer = {
+    i: 0,
+    total: 0,
+    tocando: false,
+    velocidade: 1,
+    geracao: 0,
+  };
 
   constructor() {
     this.laco = this.laco.bind(this);
@@ -86,11 +101,19 @@ export class Player {
 
   /* ---- linha do tempo ------------------------------------------------- */
 
-  /** Troca a linha do tempo inteira e volta ao começo. */
+  /** Troca a linha do tempo inteira.
+   *
+   * Para no FIM, não no começo. Os eventos que uma sessão nova emite são a
+   * existência da estrutura — o vetor com a sua capacidade, os ponteiros
+   * apontando para lugar nenhum. Isso é estado inicial, não operação para
+   * assistir: parar antes deles deixaria a tela vazia sem explicação. */
   carregar(evs: Ev[]): void {
     this.eventos = evs.slice();
-    this.pause();
-    this.irPara(0);
+    this.geracao++;
+    this.i = 0;
+    this.modelo = modeloNovo();
+    this.tocando = false;
+    this.irPara(this.eventos.length);
   }
 
   /** Acrescenta o trace de uma operação nova e a mostra acontecendo.
@@ -200,7 +223,8 @@ export class Player {
       this.foto.i !== this.i ||
       this.foto.total !== this.eventos.length ||
       this.foto.tocando !== this.tocando ||
-      this.foto.velocidade !== this.vel;
+      this.foto.velocidade !== this.vel ||
+      this.foto.geracao !== this.geracao;
 
     if (!mudou) return;
 
@@ -212,6 +236,7 @@ export class Player {
       total: this.eventos.length,
       tocando: this.tocando,
       velocidade: this.vel,
+      geracao: this.geracao,
     };
 
     /* Durante o play o índice muda várias vezes por segundo, e o painel não

@@ -231,6 +231,27 @@ CASO("passo não passa dos limites");
   igual(player.ler().i, 5, "não passa do total");
 }
 
+
+CASO("trocar de linha do tempo avisa mesmo com o mesmo tamanho");
+{
+  /* Duas sessões diferentes podem emitir o mesmo número de eventos — é o que
+   * acontece ao trocar só a capacidade. Sem a geração, i e total ficavam
+   * iguais, a foto era considerada inalterada, e os painéis continuavam
+   * mostrando os números da estrutura anterior enquanto o canvas já mostrava
+   * a nova. */
+  const player = new Player();
+  player.carregar([ev(EvKind.EV_ARR_INIT, 8)]);
+  const antes = player.ler();
+
+  player.carregar([ev(EvKind.EV_ARR_INIT, 4)]);
+  const depois = player.ler();
+
+  igual(antes.i, depois.i, "mesmo indice");
+  igual(antes.total, depois.total, "mesmo total");
+  ok(antes.geracao !== depois.geracao, "mas a geracao muda");
+  igual(player.estado.vetor?.capacidade, 4, "e o modelo é o novo");
+}
+
 /* ------------------------------------------------------------------------ */
 
 if (falhas.length > 0) {

@@ -35,13 +35,21 @@ export function pronto(): boolean {
   return modulo !== null;
 }
 
-/** Abre uma sessão sobre uma estrutura, descartando a anterior. */
-export function sessaoNova(tipo: Tipo): Ev[] {
+/** Abre uma sessão sobre uma estrutura, descartando a anterior.
+ *
+ * A capacidade é ignorada pelas implementações encadeadas, que não têm
+ * limite — mas passá-la sempre mantém uma chamada só. */
+export function sessaoNova(tipo: Tipo, capacidade = 8): Ev[] {
   const m = exigirModulo();
-  if (m._ds_sessao_nova(tipo) < 0) {
+  if (m._ds_sessao_nova(tipo, capacidade) < 0) {
     throw new ErroDs(m._ds_erro());
   }
   return lerTrace(m);
+}
+
+/** Capacidade da sessão, ou -1 quando não há limite. */
+export function capacidade(): number {
+  return modulo ? modulo._ds_capacidade() : -1;
 }
 
 export function sessaoFim(): void {

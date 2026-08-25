@@ -5,7 +5,10 @@
  * confiada — ela vem do __LINE__ que a macro TR gravou. */
 
 import fonteApi from "../../../core/api/api.c?raw";
+import fonteFilaEnc from "../../../core/ds/fila_enc.c?raw";
+import fonteFilaVet from "../../../core/ds/fila_vet.c?raw";
 import fontePilhaEnc from "../../../core/ds/pilha_enc.c?raw";
+import fontePilhaVet from "../../../core/ds/pilha_vet.c?raw";
 import { Src } from "../core/ops";
 
 export interface Fonte {
@@ -16,6 +19,9 @@ export interface Fonte {
 const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_API]: { arquivo: "core/api/api.c", texto: fonteApi },
   [Src.SRC_PILHA_ENC]: { arquivo: "core/ds/pilha_enc.c", texto: fontePilhaEnc },
+  [Src.SRC_PILHA_VET]: { arquivo: "core/ds/pilha_vet.c", texto: fontePilhaVet },
+  [Src.SRC_FILA_ENC]: { arquivo: "core/ds/fila_enc.c", texto: fonteFilaEnc },
+  [Src.SRC_FILA_VET]: { arquivo: "core/ds/fila_vet.c", texto: fonteFilaVet },
 };
 
 const cache = new Map<number, Fonte>();

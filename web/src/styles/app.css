@@ -204,6 +204,48 @@ select:focus-visible {
   gap: 0.4rem;
 }
 
+/* ---- seletor de estrutura ---------------------------------------------- */
+
+.lista-estruturas {
+  display: grid;
+  gap: 0.1rem;
+  margin-bottom: 0.6rem;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--fg-2);
+  font-size: 0.9rem;
+}
+
+.opcao:hover {
+  background: var(--bg-2);
+  color: var(--fg);
+}
+
+.opcao input {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+.opcao:has(input:checked) {
+  background: var(--bg-3);
+  color: var(--fg);
+}
+
+.campo-capacidade {
+  margin: 0.6rem 0 0;
+}
+
+.campo-capacidade input {
+  max-width: 5rem;
+}
+
 /* ---- transporte -------------------------------------------------------- */
 
 .transporte {
