@@ -19,6 +19,6 @@ typedef enum {
     ERR_OP_DESCONHECIDA,    /* ds_call com op que não existe               */
     ERR_SEM_SESSAO,         /* ds_call antes de ds_sessao_nova             */
     ERR_COUNT
-} ds_erro;
+} ds_status;
 
 #endif /* DS_ERROS_H */

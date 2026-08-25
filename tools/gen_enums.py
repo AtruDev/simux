@@ -40,7 +40,7 @@ RENOMES = {
     "ds_cnt": "Cnt",
     "ds_tag": "Tag",
     "ds_op": "Op",
-    "ds_erro": "Erro",
+    "ds_status": "Status",
 }
 
 
@@ -146,9 +146,9 @@ def gerar(entradas: list[tuple[str, list[str]]], origens: list[Path]) -> str:
             "em pt.ts e en.ts — é isto que faz o build reclamar quando falta.",
         ) + "\n")
 
-    if "ds_erro" in por_nome:
+    if "ds_status" in por_nome:
         partes.append(bloco_chaves(
-            "ERR_CHAVES", por_nome["ds_erro"],
+            "ERR_CHAVES", por_nome["ds_status"],
             "Todo código de erro que o core devolve, para o mesmo fim.",
         ) + "\n")
 

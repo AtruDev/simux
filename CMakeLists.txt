@@ -122,7 +122,7 @@ target_link_libraries(core PUBLIC ds_opcoes)
 # Alvos nativos: CLI e testes. O build wasm não os constrói.
 # ---------------------------------------------------------------------------
 if(NOT EMSCRIPTEN)
-    add_executable(cli cli/main.c)
+    add_executable(cli cli/main.c core/api/api.c)
     target_link_libraries(cli PRIVATE core)
     target_compile_definitions(cli PRIVATE SIMUX_VERSAO="${PROJECT_VERSION}")
 
