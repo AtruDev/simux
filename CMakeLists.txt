@@ -119,6 +119,48 @@ target_include_directories(core PUBLIC core/include)
 target_link_libraries(core PUBLIC ds_opcoes)
 
 # ---------------------------------------------------------------------------
+# Build wasm: um módulo ES em web/src/wasm/, consumido pelo Vite.
+#
+# api.c entra direto no executável, e não via libcore.a, para os símbolos
+# marcados com EMSCRIPTEN_KEEPALIVE não dependerem de já estarem referenciados
+# para serem puxados do arquivo.
+# ---------------------------------------------------------------------------
+if(EMSCRIPTEN)
+    add_executable(simux core/api/api.c)
+    target_link_libraries(simux PRIVATE core)
+
+    set_target_properties(simux PROPERTIES
+        SUFFIX                   ".js"
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/web/src/wasm)
+
+    target_link_options(simux PRIVATE
+        -sMODULARIZE=1
+        -sEXPORT_ES6=1
+        -sEXPORT_NAME=criarSimux
+        -sENVIRONMENT=web
+
+        # Crescer a heap desanexa as views antigas; o bridge recria a view
+        # depois de toda chamada, o que torna isto seguro.
+        -sALLOW_MEMORY_GROWTH=1
+        -sINITIAL_MEMORY=16MB
+
+        # Quicksort e mergesort recursivos precisam de pilha.
+        -sSTACK_SIZE=1MB
+
+        # UTF8ToString ficou de fora de propósito: nenhuma string atravessa a
+        # fronteira, e exportá-la só convidaria alguém a mandar texto do C.
+        -sEXPORTED_RUNTIME_METHODS=HEAP32,HEAPU8
+        -sEXPORTED_FUNCTIONS=_ds_call,_ds_erro,_ds_trace_ptr,_ds_trace_len,_ds_trace_truncado,_malloc,_free)
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(simux PRIVATE -flto)
+        target_link_options(simux PRIVATE -flto --closure 1)
+    else()
+        target_link_options(simux PRIVATE -sASSERTIONS=2 -sSAFE_HEAP=1)
+    endif()
+endif()
+
+# ---------------------------------------------------------------------------
 # Alvos nativos: CLI e testes. O build wasm não os constrói.
 # ---------------------------------------------------------------------------
 if(NOT EMSCRIPTEN)
