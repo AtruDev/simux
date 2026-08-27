@@ -69,6 +69,13 @@ const pt: Dicionario = {
   "log.fim": "fim passa a ser",
   "log.nulo": "NULO",
 
+  "painel.script": "Script de operações",
+  "script.exemplo": "empilhar 10\nempilhar 20\ndesempilhar\n# ou: i 1 2 3",
+  "script.ajuda":
+    "Uma operação por linha, ou separadas por vírgula. Ctrl+Enter roda.",
+  "script.rodar": "rodar script",
+  "script.linha": "linha",
+
   /* mensagens emitidas pelo C (EV_MSG carrega o id, nunca a frase) */
   STR_NENHUMA: "",
   STR_PING: "o núcleo respondeu",

@@ -4,7 +4,7 @@
  * eventos. Nada de estado da estrutura atravessa a fronteira: só o trace. */
 
 import criarSimux, { type ModuloSimux } from "../wasm/simux.js";
-import { EV_CAMPOS, type Op, type Tipo } from "./ops";
+import { EV_CAMPOS, Status, type Op, type Tipo } from "./ops";
 
 /** Um evento do trace, já em forma de objeto. */
 export interface Ev {
@@ -56,19 +56,29 @@ export function sessaoFim(): void {
   modulo?._ds_sessao_fim();
 }
 
+/** O que uma operação produziu: os eventos, e como ela terminou. */
+export interface Saida {
+  eventos: Ev[];
+  /** OK, ou o ERR_* de erros.h que a operação devolveu. */
+  erro: number;
+}
+
 /**
  * Executa uma operação e devolve os eventos que ela emitiu.
  *
  * O trace é zerado a cada chamada, do lado do C.
+ *
+ * O erro vem ao lado dos eventos em vez de virar exceção porque uma operação
+ * recusada também é uma coisa para assistir: desempilhar uma pilha vazia emite
+ * o EV_MSG que explica a recusa, e carrega a linha de pilha_enc.c que a
+ * detectou. Lançar aqui jogava esse trace fora, e o painel de código ficava
+ * mostrando a operação anterior enquanto a mensagem de erro aparecia.
  */
-export function exec(op: Op, a = 0, b = 0, c = 0): Ev[] {
+export function chamar(op: Op, a = 0, b = 0, c = 0): Saida {
   const m = exigirModulo();
 
   const rc = m._ds_call(op, a, b, c);
-  if (rc < 0) {
-    throw new ErroDs(m._ds_erro());
-  }
-  return lerTrace(m);
+  return { eventos: lerTrace(m), erro: rc < 0 ? m._ds_erro() : Status.OK };
 }
 
 function exigirModulo(): ModuloSimux {

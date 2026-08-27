@@ -246,6 +246,68 @@ select:focus-visible {
   max-width: 5rem;
 }
 
+/* ---- script de operações ----------------------------------------------- */
+
+/* O <summary> carrega o mesmo <h2> dos outros painéis, então o cabeçalho fica
+ * idêntico aberto ou fechado — só o triângulo denuncia que dá para abrir. */
+.painel-script > summary {
+  cursor: pointer;
+  list-style-position: outside;
+  color: var(--fg-3);
+}
+
+.painel-script > summary h2 {
+  display: inline-flex;
+  margin: 0;
+}
+
+.painel-script[open] > summary h2 {
+  margin-bottom: 0.7rem;
+}
+
+.painel-script textarea {
+  font: inherit;
+  font-family: var(--fonte-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  width: 100%;
+  resize: vertical;
+  background: var(--bg-2);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  color: var(--fg);
+  padding: 0.45rem 0.55rem;
+}
+
+.painel-script textarea::placeholder {
+  color: var(--fg-3);
+}
+
+.painel-script textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.painel-script .ajuda {
+  color: var(--fg-3);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  margin: 0.45rem 0 0.6rem;
+}
+
+.erros-script {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.erros-script code {
+  font-family: var(--fonte-mono);
+  color: var(--fg-2);
+}
+
 /* ---- transporte -------------------------------------------------------- */
 
 .transporte {

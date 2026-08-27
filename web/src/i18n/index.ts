@@ -72,7 +72,12 @@ export type ChaveUI =
   | "log.marcaLivre"
   | "log.vetorInicia"
   | "log.frente"
-  | "log.fim";
+  | "log.fim"
+  | "painel.script"
+  | "script.exemplo"
+  | "script.ajuda"
+  | "script.rodar"
+  | "script.linha";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "checar-i18n": "tsx scripts/checar-i18n.ts",
-    "testar": "tsx scripts/testar-modelo.ts && tsx scripts/checar-i18n.ts"
+    "testar": "tsx scripts/testar-modelo.ts && tsx scripts/testar-script.ts && tsx scripts/checar-i18n.ts"
   },
   "dependencies": {
     "react": "^19.2.8",

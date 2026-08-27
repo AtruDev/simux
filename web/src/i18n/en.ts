@@ -67,6 +67,13 @@ const en: Dicionario = {
   "log.fim": "rear becomes",
   "log.nulo": "NULL",
 
+  "painel.script": "Operation script",
+  "script.exemplo": "push 10\npush 20\npop\n# or: i 1 2 3",
+  "script.ajuda":
+    "One operation per line, or comma-separated. Ctrl+Enter runs it.",
+  "script.rodar": "run script",
+  "script.linha": "line",
+
   STR_NENHUMA: "",
   STR_PING: "the core answered",
   STR_PILHA_VAZIA: "the stack is empty",

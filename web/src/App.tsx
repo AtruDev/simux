@@ -15,8 +15,8 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { ErroDs, exec, iniciar, sessaoNova } from "./core/bridge";
-import { Op } from "./core/ops";
+import { chamar, iniciar, sessaoNova, type Ev } from "./core/bridge";
+import { Op, Status } from "./core/ops";
 import { Player } from "./core/player";
 import { ERR_CHAVES } from "./core/ops";
 import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
@@ -24,7 +24,9 @@ import { GrafoView } from "./render/grafoView";
 import { VetorView } from "./render/vetorView";
 import { ESTRUTURAS, estruturaDe } from "./ui/Estruturas";
 import { PainelCodigo } from "./ui/PainelCodigo";
+import { PainelScript } from "./ui/PainelScript";
 import { PainelLog, PainelMetricas } from "./ui/PainelLateral";
+import type { Passo } from "./ui/Script";
 import { Transporte } from "./ui/Transporte";
 
 export function App() {
@@ -101,17 +103,39 @@ export function App() {
 
   const rodar = useCallback(
     (op: Op, a = 0) => {
-      try {
-        player.anexar(exec(op, a));
-        setErro(null);
-      } catch (e) {
-        if (e instanceof ErroDs) {
-          const chave = ERR_CHAVES[e.codigo];
-          setErro(chave ? t(chave as Chave) : String(e.codigo));
-        } else {
-          setErro(String(e));
-        }
+      const { eventos, erro: codigo } = chamar(op, a);
+      player.anexar(eventos);
+      setErro(textoDoErro(codigo));
+    },
+    [player],
+  );
+
+  /* Um script é uma anexação só, não uma por passo.
+   *
+   * Anexar por passo faria cada chamada saltar o cursor para o começo dos seus
+   * próprios eventos, e o que se veria seria o último passo tocando sozinho.
+   * Juntando tudo, o script inteiro toca do começo, e o transporte arrasta por
+   * cima dele como se fosse uma operação longa. */
+  const rodarScript = useCallback(
+    (passos: Passo[]) => {
+      const eventos: Ev[] = [];
+
+      for (const passo of passos) {
+        /* Uma operação recusada no meio do script não interrompe o resto: a
+         * estrutura fica intacta, e a recusa é justamente o que o exercício
+         * costuma querer mostrar. */
+        eventos.push(...chamar(passo.op, passo.valor).eventos);
       }
+
+      /* E ela não vai para o aviso de erro no alto.
+       *
+       * O C executa o script inteiro na hora; a animação só começa depois. Pôr
+       * a recusa no aviso faria "estrutura vazia" aparecer enquanto a tela
+       * ainda mostra a pilha cheia — um erro sobre um instante que ainda não
+       * chegou. Ela chega sozinha, no seu momento: o EV_MSG está no trace, sai
+       * no log e ilumina a linha do .c que recusou. */
+      player.anexar(eventos);
+      setErro(null);
     },
     [player],
   );
@@ -286,6 +310,8 @@ export function App() {
             {!carregado && <p className="vazio">{t("app.carregando")}</p>}
           </section>
 
+          <PainelScript desativado={!carregado} aoRodar={rodarScript} />
+
           <PainelMetricas modelo={modelo} i={foto.i} total={foto.total} />
         </aside>
 
@@ -307,4 +333,11 @@ export function App() {
       </div>
     </div>
   );
+}
+
+/** O ERR_* vira frase pelo i18n; OK vira ausência de erro. */
+function textoDoErro(codigo: number): string | null {
+  if (codigo === Status.OK) return null;
+  const chave = ERR_CHAVES[codigo];
+  return chave ? t(chave as Chave) : String(codigo);
 }
