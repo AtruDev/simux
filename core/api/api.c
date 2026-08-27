@@ -18,6 +18,7 @@
 #include "ds/api.h"
 
 #include "ds/arvore.h"
+#include "ds/arvore_b.h"
 #include "ds/busca.h"
 #include "ds/hash.h"
 
@@ -127,6 +128,7 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_HASH_LINEAR: return &HASH_LINEAR;
     case TIPO_HASH_QUAD:   return &HASH_QUAD;
     case TIPO_HASH_DUPLO:  return &HASH_DUPLO;
+    case TIPO_ARVORE_B:    return &ARVORE_B;
     default:             return NULL;
     }
 }

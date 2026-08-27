@@ -268,6 +268,22 @@ const pt: Dicionario = {
   STR_TUMULO: "túmulo — célula removida, que a sondagem atravessa",
   STR_TABELA_CHEIA: "a tabela está cheia: a sondagem deu a volta sem achar lugar",
 
+  "estrutura.arvoreB": "Árvore B",
+  "metrica.grau": "grau t",
+  "metrica.paginas": "páginas",
+  "metrica.discoLe": "leituras de disco",
+  "metrica.discoEscreve": "escritas em disco",
+  "log.leuPagina": "leu a página",
+  "log.escreveuPagina": "escreveu a página",
+
+  STR_PAGINA_CHEIA: "a página está cheia: 2t-1 chaves",
+  STR_DIVIDE: "divide a página em duas",
+  STR_SOBE_CHAVE: "a chave do meio sobe para o pai",
+  STR_EMPRESTA_ESQ: "o irmão da esquerda tem chave sobrando: empresta uma",
+  STR_EMPRESTA_DIR: "o irmão da direita tem chave sobrando: empresta uma",
+  STR_FUNDE: "nenhum irmão tem folga: as duas páginas viram uma",
+  STR_DESCE_CHAVE: "a chave do pai desce para o meio da página nova",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

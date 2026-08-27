@@ -19,6 +19,13 @@ export interface NoModelo {
    * alturas —, mas é o número que a aula da AVL gira em torno: sem ele na
    * tela, a rotação parece acontecer sem motivo. */
   fb: number | null;
+  /** As chaves de um nó de árvore B, em ordem.
+   *
+   * Vazio em toda estrutura de uma chave por nó — nelas o valor mora em
+   * `valor`, e duplicá-lo aqui daria duas verdades sobre a mesma coisa. */
+  chaves: number[];
+  /** A página de disco em que o nó mora, ou null em quem vive na memória. */
+  pagina: number | null;
 }
 
 /* O mundo "vetor": ordenação, busca e as implementações com arranjo.
@@ -106,6 +113,28 @@ export function contador(m: Modelo, cnt: number): number {
   return m.contadores.get(cnt) ?? 0;
 }
 
+/** Os filhos de um nó, na ordem dos slots.
+ *
+ * Numa árvore binária são dois — os slots 0 e 1 —, e numa árvore B são
+ * `chaves.length + 1`. É a única diferença de forma entre as duas, e isolá-la
+ * aqui é o que deixa o layout de Reingold–Tilford servir às duas sem saber
+ * qual está desenhando.
+ *
+ * O 0 é NULL, como em toda aresta do projeto.
+ */
+export function filhosDe(m: Modelo, id: number): number[] {
+  const no = m.nos.get(id);
+  if (!no) return [];
+
+  const quantos = no.chaves.length > 0 ? no.chaves.length + 1 : 2;
+  const saida: number[] = [];
+
+  for (let slot = 0; slot < quantos; slot++) {
+    saida.push(no.arestas.get(slot) ?? 0);
+  }
+  return saida;
+}
+
 /**
  * A altura da árvore, medida no desenho.
  *
@@ -124,10 +153,11 @@ export function alturaDaArvore(m: Modelo, raiz: number): number {
     if (id === 0 || !m.nos.has(id) || visto.has(id)) return 0;
     visto.add(id);
 
-    const no = m.nos.get(id)!;
-    const esq = medir(no.arestas.get(0) ?? 0);
-    const dir = medir(no.arestas.get(1) ?? 0);
-    return 1 + Math.max(esq, dir);
+    let abaixo = 0;
+    for (const filho of filhosDe(m, id)) {
+      abaixo = Math.max(abaixo, medir(filho));
+    }
+    return 1 + abaixo;
   }
 
   return medir(raiz);

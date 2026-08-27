@@ -865,11 +865,13 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 
 ### Fase 5 — Memória secundária · ~2 semanas
 
-- [ ] `paginador.c`: simula páginas de disco e conta acessos
-- [ ] Árvore B: inserir com split, remover com merge/redistribuição
+- [x] `paginador.c`: simula páginas de disco e conta acessos — sem cache, de
+      propósito: um buffer pool deixaria a raiz sempre em memória e os números
+      ficariam mais realistas e menos ensináveis
+- [x] Árvore B: inserir com split, remover com merge/redistribuição
 - [ ] Árvore B+: folhas encadeadas, varredura sequencial
 - [ ] Intercalação externa na aba de ordenação
-- [ ] Contador de acessos a disco em destaque
+- [x] Contador de acessos a disco em destaque
 - **Pronto quando:** buscar o mesmo conjunto em ABB e em árvore B mostra a diferença de acessos a disco em números.
 
 ### Fase 6 — Polimento e portfólio · ~1–2 semanas

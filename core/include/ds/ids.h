@@ -83,6 +83,7 @@ typedef enum {
     SRC_AVL,
     SRC_HASH_ENC,
     SRC_HASH_ABE,
+    SRC_ARVORE_B,
     SRC_COUNT
 } ds_src;
 
@@ -146,6 +147,15 @@ typedef enum {
     STR_SONDANDO,
     STR_TUMULO,         /* célula removida, que a sondagem tem que atravessar */
     STR_TABELA_CHEIA,
+
+    /* memória secundária */
+    STR_PAGINA_CHEIA,   /* o nó tem 2t-1 chaves: precisa ser dividido        */
+    STR_DIVIDE,
+    STR_SOBE_CHAVE,     /* a chave do meio sobe para o pai                   */
+    STR_EMPRESTA_ESQ,   /* o irmão da esquerda tem chave sobrando            */
+    STR_EMPRESTA_DIR,
+    STR_FUNDE,          /* os dois irmãos e a chave do pai viram um nó só    */
+    STR_DESCE_CHAVE,
     STR_COUNT
 } ds_str;
 
@@ -190,6 +200,8 @@ typedef enum {
     CNT_ROTACOES,
     CNT_COLISOES,
     CNT_SONDAGENS,
+    CNT_DISCO_LE,
+    CNT_DISCO_ESCREVE,
     CNT_COUNT
 } ds_cnt;
 
@@ -251,6 +263,7 @@ typedef enum {
     TIPO_HASH_LINEAR,
     TIPO_HASH_QUAD,
     TIPO_HASH_DUPLO,
+    TIPO_ARVORE_B,
     TIPO_COUNT
 } ds_tipo;
 
@@ -302,6 +315,19 @@ typedef enum {
 typedef enum {
     CAMPO_VALOR,
     CAMPO_FB,
+    /* Quantas chaves o nó tem agora. Só a árvore B usa: nela um nó guarda
+     * várias chaves, e quantas ele guarda muda a cada divisão e a cada fusão. */
+    CAMPO_N,
+    /* A página de disco em que o nó mora. É o número que os eventos
+     * EV_DISK_READ e EV_DISK_WRITE carregam. */
+    CAMPO_PAGINA,
+    /* BASE, e não um campo: a chave `i` do nó vai em CAMPO_CHAVE + i.
+     *
+     * Um nó de árvore B guarda até 2t-1 chaves, e o vocabulário tem um evento
+     * para escrever UM campo. Numerar os campos a partir daqui é o que deixa
+     * o mesmo EV_NODE_SET escrever a chave 0 e a chave 5 sem inventar evento
+     * novo — e é o que o frontend usa para remontar o nó inteiro. */
+    CAMPO_CHAVE,
     CAMPO_COUNT
 } ds_campo;
 

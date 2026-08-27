@@ -21,11 +21,8 @@
  * aparecer ao lado para desentortar. */
 
 import { Ptr } from "../core/ops";
-import { alvoDe, type Modelo } from "../model/modelo";
+import { alvoDe, filhosDe, type Modelo } from "../model/modelo";
 import { Tela } from "./tela";
-
-const SLOT_ESQ = 0;
-const SLOT_DIR = 1;
 
 const RAIO_MAX = 19;
 /* Abaixo disto o número dentro do nó deixa de ser legível, e é melhor a
@@ -57,8 +54,8 @@ export class ArvoreView extends Tela {
    * altura log n; com um passo fixo, a primeira sairia pela borda de baixo — e
    * é justamente ela que precisa ser vista inteira, porque a degeneração é o
    * argumento. */
-  private raio = RAIO_MAX;
-  private passoY = NIVEL_MAX;
+  protected raio = RAIO_MAX;
+  protected passoY = NIVEL_MAX;
 
   desenhar(m: Modelo): void {
     const raiz = alvoDe(m, Ptr.PTR_RAIZ);
@@ -124,53 +121,90 @@ export class ArvoreView extends Tela {
 
   /* ---- Reingold–Tilford ------------------------------------------------ */
 
+  /** Quantas unidades de layout o nó ocupa.
+   *
+   * Uma por chave: um nó de árvore binária vale 1, e um nó de árvore B com
+   * cinco chaves vale 5. É o único lugar em que a largura entra no algoritmo,
+   * e é por isso que Reingold–Tilford serve às duas sem saber qual está
+   * desenhando. */
+  protected largura(m: Modelo, id: number): number {
+    const no = m.nos.get(id);
+    return Math.max(1, no?.chaves.length ?? 1);
+  }
+
   /** Dispõe a subárvore de `id`, em coordenadas relativas à própria raiz. */
   private dispor(m: Modelo, id: number, visto: Set<number>): Disposto | null {
-    /* `visto` protege contra um ciclo vindo de um trace defeituoso. Uma ABB
+    /* `visto` protege contra um ciclo vindo de um trace defeituoso. Uma árvore
      * não tem ciclos; um bug de EV_EDGE_SET, sim, e travar a aba inteira num
      * laço infinito seria o pior jeito de descobrir isso. */
     if (id === 0 || !m.nos.has(id) || visto.has(id)) return null;
     visto.add(id);
 
-    const no = m.nos.get(id)!;
-    const esq = this.dispor(m, no.arestas.get(SLOT_ESQ) ?? 0, visto);
-    const dir = this.dispor(m, no.arestas.get(SLOT_DIR) ?? 0, visto);
+    const meia = this.largura(m, id) / 2;
+    const dispostos = filhosDe(m, id)
+      .map((filho) => this.dispor(m, filho, visto))
+      .filter((d): d is Disposto => d !== null);
 
     const filhos: Disposto["filhos"] = [];
 
-    if (esq && dir) {
-      /* O aperto: para cada nível em que os dois existem, quanto o de baixo
-       * teria que andar para não encostar no de cima. O maior deles manda. */
-      let afastamento = SEPARACAO;
-      const comuns = Math.min(esq.contornoDir.length, dir.contornoEsq.length);
+    if (dispostos.length === 1) {
+      /* Meio passo para o lado do filho: é o desvio deliberado do algoritmo
+       * original, e é o que faz a árvore degenerada parecer degenerada. O
+       * lado é o do slot que o filho ocupa — à esquerda, se for o primeiro. */
+      const ehPrimeiro = filhosDe(m, id)[0] === dispostos[0]!.id;
+      filhos.push({
+        no: dispostos[0]!,
+        dx: ehPrimeiro ? -SEPARACAO / 2 : +SEPARACAO / 2,
+      });
+    } else if (dispostos.length > 1) {
+      /* Empurra cada irmão para a direita do anterior, pelo APERTO: para cada
+       * nível em que os dois existem, quanto o de baixo teria que andar para
+       * não encostar no de cima. O maior deles manda. */
+      const posicoes: number[] = [0];
 
-      for (let k = 0; k < comuns; k++) {
-        const aperto =
-          esq.contornoDir[k]! - dir.contornoEsq[k]! + SEPARACAO;
-        if (aperto > afastamento) afastamento = aperto;
+      for (let k = 1; k < dispostos.length; k++) {
+        const anterior = dispostos[k - 1]!;
+        const atual = dispostos[k]!;
+        let afastamento = SEPARACAO;
+        const comuns = Math.min(
+          anterior.contornoDir.length,
+          atual.contornoEsq.length,
+        );
+
+        for (let n = 0; n < comuns; n++) {
+          const aperto =
+            anterior.contornoDir[n]! +
+            posicoes[k - 1]! -
+            atual.contornoEsq[n]! +
+            SEPARACAO;
+          if (aperto > afastamento) afastamento = aperto;
+        }
+        posicoes.push(afastamento);
       }
 
-      filhos.push({ no: esq, dx: -afastamento / 2 });
-      filhos.push({ no: dir, dx: +afastamento / 2 });
-    } else if (esq) {
-      /* Meio passo para a direita do filho: é o desvio deliberado do
-       * algoritmo original, e é o que faz a árvore degenerada parecer
-       * degenerada. */
-      filhos.push({ no: esq, dx: -SEPARACAO / 2 });
-    } else if (dir) {
-      filhos.push({ no: dir, dx: +SEPARACAO / 2 });
+      /* Centra o conjunto sob o pai. */
+      const centro = (posicoes[0]! + posicoes[posicoes.length - 1]!) / 2;
+      dispostos.forEach((no, k) => {
+        filhos.push({ no, dx: posicoes[k]! - centro });
+      });
     }
 
-    return { id, filhos, ...this.contornos(filhos) };
+    return { id, filhos, ...this.contornos(filhos, meia) };
   }
 
-  /** Os dois perfis da subárvore, nível a nível, a partir dos filhos. */
-  private contornos(filhos: Disposto["filhos"]): {
+  /** Os dois perfis da subárvore, nível a nível, a partir dos filhos.
+   *
+   * O perfil do nível 0 são as BORDAS do próprio nó, e não o centro dele: com
+   * nós de largura variável, é a borda que encosta na do vizinho. */
+  private contornos(
+    filhos: Disposto["filhos"],
+    meia: number,
+  ): {
     contornoEsq: number[];
     contornoDir: number[];
   } {
-    const contornoEsq = [0];
-    const contornoDir = [0];
+    const contornoEsq = [-meia];
+    const contornoDir = [+meia];
 
     let profundidade = 0;
     for (const { no } of filhos) {
@@ -250,75 +284,34 @@ export class ArvoreView extends Tela {
     /* Arestas primeiro, para o nó cobrir a ponta da linha. */
     for (const id of m.ordem) {
       const pose = this.poses.get(id);
-      const no = m.nos.get(id);
-      if (!pose || !no) continue;
+      if (!pose || !m.nos.has(id)) continue;
 
-      for (const slot of [SLOT_ESQ, SLOT_DIR]) {
-        const destino = no.arestas.get(slot) ?? 0;
+      filhosDe(m, id).forEach((destino, indice) => {
         const poseDestino = destino !== 0 ? this.poses.get(destino) : undefined;
-        if (!poseDestino) continue;
+        if (!poseDestino) return;
+
+        const de = this.saidaDaAresta(m, id, indice, pose.x, pose.y);
+        const para = this.entradaDaAresta(
+          m,
+          destino,
+          poseDestino.x,
+          poseDestino.y,
+        );
 
         ctx.globalAlpha = Math.min(pose.alfa, poseDestino.alfa);
         ctx.strokeStyle = p.linha2;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(pose.x, pose.y + this.raio);
-        ctx.lineTo(poseDestino.x, poseDestino.y - this.raio);
+        ctx.moveTo(de.x, de.y);
+        ctx.lineTo(para.x, para.y);
         ctx.stroke();
         ctx.globalAlpha = 1;
-      }
+      });
     }
 
     for (const id of m.ordem) {
-      const pose = this.poses.get(id);
-      const no = m.nos.get(id);
-      if (!pose || !no) continue;
-
-      const visitado = m.visitados.has(id);
-      ctx.globalAlpha = pose.alfa;
-
-      ctx.beginPath();
-      ctx.arc(pose.x, pose.y, this.raio, 0, Math.PI * 2);
-      ctx.fillStyle = p.bg2;
-      ctx.fill();
-
-      /* O acento é da interface, e o cursor do algoritmo é justamente onde a
-       * interface está olhando — é a única vez que ele encosta num nó. */
-      ctx.strokeStyle = visitado ? p.acento : p.linha2;
-      ctx.lineWidth = visitado ? 2 : 1;
-      ctx.stroke();
-
-      /* A fonte acompanha o nó: com a árvore alta o raio encolhe, e um 14px
-       * dentro de um círculo de 9 vazaria por todos os lados. */
-      const corpo = Math.max(8, Math.round(this.raio * 0.74));
-
-      ctx.fillStyle = p.fg;
-      ctx.font = `600 ${corpo}px ${p.mono}`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(String(no.valor), pose.x, pose.y);
-
-      /* O fator de balanceamento, quando a estrutura tem um.
-       *
-       * Fica fora do círculo, de propósito: ele não é a chave, é uma medida
-       * sobre o nó. E acende quando estoura — o instante em que |FB| passa de
-       * 1 é a única explicação de por que a rotação vai acontecer NAQUELE nó
-       * e não em outro. Sem esse número, ela parece mágica. */
-      if (no.fb !== null) {
-        const estourou = no.fb > 1 || no.fb < -1;
-
-        ctx.fillStyle = estourou ? p.stSwap : p.fg3;
-        ctx.font = `600 ${Math.max(8, corpo - 3)}px ${p.mono}`;
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(
-          no.fb > 0 ? `+${no.fb}` : String(no.fb),
-          pose.x + this.raio + 4,
-          pose.y - this.raio + 4,
-        );
-      }
-
-      ctx.globalAlpha = 1;
+      if (!this.poses.has(id) || !m.nos.has(id)) continue;
+      this.desenharNo(m, id);
     }
 
     this.ponteiroRaiz(m);
@@ -351,5 +344,93 @@ export class ArvoreView extends Tela {
     ctx.lineTo(pose.x, pose.y - this.raio - 2);
     ctx.stroke();
     this.setaBaixo(pose.x, pose.y - this.raio, p.acento);
+  }
+
+  /* ---- os três ganchos ------------------------------------------------- *
+   *
+   * São as únicas decisões que dependem da FORMA do nó, e é por isso que a
+   * árvore B precisou sobrescrever exatamente estas três — e nada do layout.
+   * Um nó-página é uma caixa com várias células; um nó-círculo tem uma chave
+   * no meio. O resto é igual.                                              */
+
+  /** Desenha um nó. O padrão é o círculo da ABB e da AVL. */
+  protected desenharNo(m: Modelo, id: number): void {
+    const ctx = this.ctx;
+    const p = this.paleta;
+    const pose = this.poses.get(id);
+    const no = m.nos.get(id);
+    if (!pose || !no) return;
+
+    const visitado = m.visitados.has(id);
+    ctx.globalAlpha = pose.alfa;
+
+    ctx.beginPath();
+    ctx.arc(pose.x, pose.y, this.raio, 0, Math.PI * 2);
+    ctx.fillStyle = p.bg2;
+    ctx.fill();
+
+    /* O acento é da interface, e o cursor do algoritmo é justamente onde a
+     * interface está olhando — é a única vez que ele encosta num nó. */
+    ctx.strokeStyle = visitado ? p.acento : p.linha2;
+    ctx.lineWidth = visitado ? 2 : 1;
+    ctx.stroke();
+
+    /* A fonte acompanha o nó: com a árvore alta o raio encolhe, e um 14px
+     * dentro de um círculo de 9 vazaria por todos os lados. */
+    const corpo = Math.max(8, Math.round(this.raio * 0.74));
+
+    ctx.fillStyle = p.fg;
+    ctx.font = `600 ${corpo}px ${p.mono}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(no.valor), pose.x, pose.y);
+
+    /* O fator de balanceamento, quando a estrutura tem um.
+     *
+     * Fica fora do círculo, de propósito: ele não é a chave, é uma medida
+     * sobre o nó. E acende quando estoura — o instante em que |FB| passa de 1
+     * é a única explicação de por que a rotação vai acontecer NAQUELE nó e não
+     * em outro. Sem esse número, ela parece mágica. */
+    if (no.fb !== null) {
+      const estourou = no.fb > 1 || no.fb < -1;
+
+      ctx.fillStyle = estourou ? p.stSwap : p.fg3;
+      ctx.font = `600 ${Math.max(8, corpo - 3)}px ${p.mono}`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        no.fb > 0 ? `+${no.fb}` : String(no.fb),
+        pose.x + this.raio + 4,
+        pose.y - this.raio + 4,
+      );
+    }
+
+    ctx.globalAlpha = 1;
+  }
+
+  /** De onde a aresta para o filho `indice` sai. Do fundo do círculo, aqui. */
+  protected saidaDaAresta(
+    m: Modelo,
+    id: number,
+    indice: number,
+    x: number,
+    y: number,
+  ): { x: number; y: number } {
+    void m;
+    void id;
+    void indice;
+    return { x, y: y + this.raio };
+  }
+
+  /** Onde a aresta encosta no filho. No topo do círculo, aqui. */
+  protected entradaDaAresta(
+    m: Modelo,
+    id: number,
+    x: number,
+    y: number,
+  ): { x: number; y: number } {
+    void m;
+    void id;
+    return { x, y: y - this.raio };
   }
 }

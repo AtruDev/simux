@@ -25,14 +25,22 @@ export type Mundo =
   | "busca"
   | "arvore"
   | "hashEnc"
-  | "hashAbe";
+  | "hashAbe"
+  | "arvoreB";
 
 export interface Estrutura {
   tipo: number;
   nome: Chave;
   mundo: Mundo;
   /* Famílias iguais aparecem juntas no seletor de implementação. */
-  familia: "pilha" | "fila" | "lista" | "busca" | "arvore" | "hash";
+  familia:
+    | "pilha"
+    | "fila"
+    | "lista"
+    | "busca"
+    | "arvore"
+    | "hash"
+    | "disco";
   rotuloInserir: Chave;
   rotuloRemover: Chave;
   rotuloConsultar: Chave;
@@ -224,6 +232,23 @@ export const ESTRUTURAS: Estrutura[] = [
     nome: "estrutura.hashDuplo",
     mundo: "hashAbe",
     familia: "hash",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    semExtremos: true,
+  },
+  /* A árvore B é a única estrutura do projeto que mora em disco, e por isso
+   * fica na família dela: comparar as três sondagens de hash faz sentido,
+   * comparar uma árvore B com uma tabela hash é comparar respostas a perguntas
+   * diferentes. O contraste que vale — contra a ABB — se faz trocando de
+   * estrutura e olhando os números, que é o que a fase pede. */
+  {
+    tipo: Tipo.TIPO_ARVORE_B,
+    nome: "estrutura.arvoreB",
+    mundo: "arvoreB",
+    familia: "disco",
     rotuloInserir: "op.inserir",
     rotuloRemover: "op.removerValor",
     rotuloConsultar: "op.buscar",

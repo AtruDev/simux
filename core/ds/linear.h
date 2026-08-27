@@ -91,4 +91,8 @@ extern const TAD_Linear HASH_LINEAR;
 extern const TAD_Linear HASH_QUAD;
 extern const TAD_Linear HASH_DUPLO;
 
+/* A capacidade da sessão dela é o GRAU t, e não um número de células: é o
+ * único parâmetro que uma árvore B tem, e é ele que muda a forma inteira. */
+extern const TAD_Linear ARVORE_B;
+
 #endif /* DS_LINEAR_H */

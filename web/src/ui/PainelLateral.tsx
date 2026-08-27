@@ -46,7 +46,31 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "hashEnc" || mundo === "hashAbe") {
+  if (mundo === "arvoreB") {
+    /* Acessos a disco primeiro, e é o painel inteiro desta estrutura: um
+     * acesso custa uns dez milhões de vezes mais que uma comparação, e é por
+     * isso que a árvore B é larga e baixa. Ao lado deles, a altura — que é
+     * quantos acessos uma busca custa. */
+    const paginas = modelo.nos.size;
+    const altura = alturaDaArvore(modelo, alvoDe(modelo, Ptr.PTR_RAIZ));
+
+    linhas.length = 0;
+    linhas.push([t("metrica.tamanho"), String(tamanho)]);
+    linhas.push([t("metrica.altura"), String(altura)]);
+    linhas.push([
+      t("metrica.discoLe"),
+      String(contador(modelo, Cnt.CNT_DISCO_LE)),
+    ]);
+    linhas.push([
+      t("metrica.discoEscreve"),
+      String(contador(modelo, Cnt.CNT_DISCO_ESCREVE)),
+    ]);
+    linhas.push([t("metrica.paginas"), String(paginas)]);
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+  } else if (mundo === "hashEnc" || mundo === "hashAbe") {
     /* O fator de carga primeiro: é o número que resume a tabela inteira, e é
      * dele que sai tudo o que se pode prever sobre ela.
      *
@@ -207,6 +231,8 @@ const NOME_CONTADOR: Partial<Record<number, Chave>> = {
   [Cnt.CNT_ROTACOES]: "metrica.rotacoes",
   [Cnt.CNT_COLISOES]: "metrica.colisoes",
   [Cnt.CNT_SONDAGENS]: "metrica.sondagens",
+  [Cnt.CNT_DISCO_LE]: "metrica.discoLe",
+  [Cnt.CNT_DISCO_ESCREVE]: "metrica.discoEscreve",
 };
 
 const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
@@ -330,6 +356,12 @@ export function descrever(ev: Ev, mundo: Mundo): string {
     }
     case EvKind.EV_NODE_SET:
       return `${no(ev.a)} = ${ev.c}`;
+
+    case EvKind.EV_DISK_READ:
+      return `${t("log.leuPagina")} ${ev.a}`;
+
+    case EvKind.EV_DISK_WRITE:
+      return `${t("log.escreveuPagina")} ${ev.a}`;
 
     case EvKind.EV_VISIT:
       return `${t("log.visita")} ${no(ev.a)}`;

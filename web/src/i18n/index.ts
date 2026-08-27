@@ -188,7 +188,14 @@ export type ChaveUI =
   | "metrica.sondagens"
   | "metrica.tumulos"
   | "metrica.baldes"
-  | "log.balde";
+  | "log.balde"
+  | "estrutura.arvoreB"
+  | "metrica.grau"
+  | "metrica.paginas"
+  | "metrica.discoLe"
+  | "metrica.discoEscreve"
+  | "log.leuPagina"
+  | "log.escreveuPagina";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

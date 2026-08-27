@@ -22,6 +22,7 @@ import { Op, Percurso, Status, Tipo } from "../core/ops";
 import { Player, type Operacao } from "../core/player";
 import { ERR_CHAVES } from "../core/ops";
 import { t, type Chave } from "../i18n";
+import { ArvoreBView } from "../render/arvoreBView";
 import { ArvoreView } from "../render/arvoreView";
 import { GrafoView } from "../render/grafoView";
 import { HashView } from "../render/hashView";
@@ -134,6 +135,7 @@ export function AbaEstruturas() {
       if (t_.mundo === "hashEnc") return new HashView(canvas);
       if (t_.mundo === "lista") return new ListaView(canvas, t_.tipo);
       if (t_.mundo === "arvore") return new ArvoreView(canvas);
+      if (t_.mundo === "arvoreB") return new ArvoreBView(canvas);
       return new GrafoView(canvas, t_.tipo);
     });
 
@@ -310,13 +312,19 @@ export function AbaEstruturas() {
             (x) =>
               x.mundo === "vetor" ||
               x.mundo === "hashEnc" ||
-              x.mundo === "hashAbe",
+              x.mundo === "hashAbe" ||
+              x.mundo === "arvoreB",
           ) && (
             <div className="campo campo-capacidade">
               <label htmlFor="cap">
+                {/* O mesmo campo, três significados: capacidade num vetor,
+                    `m` numa tabela hash, e GRAU numa árvore B — que é o único
+                    parâmetro que ela tem, e o que muda a forma inteira. */}
                 {trilhas.some((x) => x.familia === "hash")
                   ? t("metrica.baldes")
-                  : t("op.capacidade")}
+                  : trilhas.some((x) => x.familia === "disco")
+                    ? t("metrica.grau")
+                    : t("op.capacidade")}
               </label>
               <input
                 id="cap"

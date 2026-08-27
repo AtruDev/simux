@@ -267,6 +267,22 @@ const en: Dicionario = {
   STR_TUMULO: "tombstone — a removed cell the probe has to cross",
   STR_TABELA_CHEIA: "the table is full: the probe wrapped around without a slot",
 
+  "estrutura.arvoreB": "B-tree",
+  "metrica.grau": "degree t",
+  "metrica.paginas": "pages",
+  "metrica.discoLe": "disk reads",
+  "metrica.discoEscreve": "disk writes",
+  "log.leuPagina": "read page",
+  "log.escreveuPagina": "wrote page",
+
+  STR_PAGINA_CHEIA: "the page is full: 2t-1 keys",
+  STR_DIVIDE: "split the page in two",
+  STR_SOBE_CHAVE: "the middle key moves up to the parent",
+  STR_EMPRESTA_ESQ: "the left sibling has a key to spare: borrow it",
+  STR_EMPRESTA_DIR: "the right sibling has a key to spare: borrow it",
+  STR_FUNDE: "no sibling has room to spare: the two pages become one",
+  STR_DESCE_CHAVE: "the parent key moves down into the merged page",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

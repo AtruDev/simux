@@ -11,7 +11,14 @@ import type { Modelo } from "./modelo";
 function garantirNo(m: Modelo, id: number) {
   let no = m.nos.get(id);
   if (!no) {
-    no = { id, valor: 0, arestas: new Map(), fb: null };
+    no = {
+      id,
+      valor: 0,
+      arestas: new Map(),
+      fb: null,
+      chaves: [],
+      pagina: null,
+    };
     m.nos.set(id, no);
     m.ordem.push(id);
   }
@@ -59,8 +66,23 @@ export function aplicar(m: Modelo, ev: Ev): void {
        * balanceamento da AVL. Um evento novo para o FB seria o mesmo evento
        * com outro nome. */
       const no = garantirNo(m, ev.a);
+
       if (ev.b === Campo.CAMPO_VALOR) no.valor = ev.c;
       else if (ev.b === Campo.CAMPO_FB) no.fb = ev.c;
+      else if (ev.b === Campo.CAMPO_PAGINA) no.pagina = ev.c;
+      else if (ev.b === Campo.CAMPO_N) {
+        /* Quantas chaves o nó tem AGORA. Encolher aqui é o que faz uma divisão
+         * ou uma fusão largarem as chaves que saíram, em vez de deixá-las
+         * penduradas no desenho. */
+        no.chaves.length = Math.max(0, ev.c);
+      } else if (ev.b >= Campo.CAMPO_CHAVE) {
+        /* CAMPO_CHAVE é uma BASE, e não um campo: a chave `i` vem em
+         * CAMPO_CHAVE + i. É o que deixa o mesmo EV_NODE_SET escrever a chave
+         * 0 e a chave 5 sem inventar evento novo. */
+        const i = ev.b - Campo.CAMPO_CHAVE;
+        while (no.chaves.length <= i) no.chaves.push(0);
+        no.chaves[i] = ev.c;
+      }
       break;
     }
 
