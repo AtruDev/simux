@@ -7,6 +7,7 @@
 #include "ds/api.h"
 #include "ds/erros.h"
 #include "ds/ids.h"
+#include "ds/tipos.h"
 #include "ds/trace.h"
 
 #include "runner.h"
@@ -150,6 +151,134 @@ void suite_api(void)
         ASSERT_EQ(ds_sessao_nova(TIPO_PILHA_ENC, 8), OK);
         ASSERT_EQ(ds_call(9999, 0, 0, 0), -1);
         ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+        ds_sessao_fim();
+    }
+
+    /* A sessão de ordenação não tem TAD atrás dela, e é o único lugar em que
+     * `tad == NULL` não quer dizer "sessão fechada". Vale checar que ela não
+     * atende as operações do vtable nem o contrário. */
+    CASO("sessão de ordenação: só gerar e ordenar");
+    {
+        ASSERT_EQ(ds_sessao_nova(TIPO_ORDENACAO, 16), OK);
+        ASSERT_EQ(ds_tipo_sessao(), TIPO_ORDENACAO);
+        ASSERT_EQ(ds_capacidade(), 16);
+        ASSERT_EQ(ds_tamanho(), 0);
+
+        ASSERT_EQ(ds_call(OP_PUSH, 5, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+
+        /* Ordenar antes de gerar não tem o que ordenar. */
+        ASSERT_EQ(ds_call(OP_ORDENAR, ALG_BOLHA, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_VAZIA);
+
+        ASSERT_EQ(ds_call(OP_GERAR, 8, DIST_INVERSO, 1), OK);
+        ASSERT_EQ(ds_tamanho(), 8);
+        ASSERT_EQ(conta(EV_ARR_INIT), 1);
+        ASSERT_EQ(conta(EV_ARR_WRITE), 8);
+
+        ASSERT_EQ(ds_call(OP_ORDENAR, ALG_BOLHA, 0, 0), OK);
+        ASSERT_TRUE(conta(EV_ARR_SWAP) > 0);
+        /* A varredura final vem de api.c, uma marca por célula. */
+        ASSERT_TRUE(conta(EV_ARR_MARK) >= 8);
+        ASSERT_EQ(conta(EV_MSG), 1);
+
+        ASSERT_EQ(ds_call(OP_GERAR, 99, DIST_ALEATORIO, 1), -1);
+        ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+        ASSERT_EQ(ds_call(OP_ORDENAR, 99, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+
+        ds_sessao_fim();
+    }
+
+    /* A estrutura da aba 1 não atende as operações da aba 2, e é o vtable que
+     * responde por isso — não um `if` espalhado. */
+    CASO("uma pilha não sabe ordenar");
+    {
+        ASSERT_EQ(ds_sessao_nova(TIPO_PILHA_VET, 8), OK);
+        ASSERT_EQ(ds_call(OP_ORDENAR, ALG_BOLHA, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+        ds_sessao_fim();
+    }
+
+    CASO("o buffer de entrada alimenta a distribuição manual");
+    {
+        elem_t *entrada;
+        int     i;
+
+        ASSERT_TRUE(ds_buffer(0) == NULL);
+        ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+
+        entrada = ds_buffer(4);
+        ASSERT_TRUE(entrada != NULL);
+        entrada[0] = 40;
+        entrada[1] = 10;
+        entrada[2] = 30;
+        entrada[3] = 20;
+
+        ASSERT_EQ(ds_sessao_nova(TIPO_ORDENACAO, 4), OK);
+        ASSERT_EQ(ds_call(OP_GERAR, 4, DIST_MANUAL, 0), OK);
+
+        /* Os valores chegaram pelo buffer, e não pelos quatro inteiros. */
+        {
+            const ev_t *evs = ds_trace_ptr();
+            int32_t     n = ds_trace_len();
+            int32_t     j;
+            int         escritos[4];
+            int         k = 0;
+
+            for (j = 0; j < n && k < 4; j++) {
+                if (evs[j].kind == EV_ARR_WRITE) escritos[k++] = evs[j].b;
+            }
+            ASSERT_EQ(k, 4);
+            for (i = 0; i < 4; i++) {
+                ASSERT_EQ(escritos[i], entrada[i]);
+            }
+        }
+
+        ds_sessao_fim();
+    }
+
+    /* O modo empírico. O que ele mede tem que bater com a teoria, senão o
+     * gráfico não vale nada — e é justamente o gráfico que é o argumento. */
+    CASO("ds_bench mede sem gerar evento");
+    {
+        int32_t comparacoes;
+        int32_t cem;
+        int32_t duzentos;
+
+        ASSERT_EQ(ds_sessao_nova(TIPO_ORDENACAO, 8), OK);
+        ASSERT_EQ(ds_call(OP_GERAR, 8, DIST_ALEATORIO, 1), OK);
+        ASSERT_TRUE(ds_trace_len() > 0);
+
+        comparacoes = ds_bench(ALG_MERGE, 1024, DIST_ALEATORIO, 7);
+        ASSERT_TRUE(comparacoes > 0);
+        ASSERT_TRUE(ds_bench_escritas() > 0);
+        /* Nenhum evento: é o ponto inteiro de desligar o trace. */
+        ASSERT_EQ(ds_trace_len(), 0);
+
+        /* A sessão da tela não foi tocada pelo bench. */
+        ASSERT_EQ(ds_tamanho(), 8);
+
+        /* Dobrar n num algoritmo quadrático quadruplica as comparações; num
+         * n log n, pouco mais que dobra. A margem é larga de propósito — o
+         * que se testa é a ORDEM, não o número. */
+        cem = ds_bench(ALG_SELECAO, 100, DIST_ALEATORIO, 3);
+        duzentos = ds_bench(ALG_SELECAO, 200, DIST_ALEATORIO, 3);
+        ASSERT_TRUE(duzentos > 3 * cem);
+
+        cem = ds_bench(ALG_MERGE, 100, DIST_ALEATORIO, 3);
+        duzentos = ds_bench(ALG_MERGE, 200, DIST_ALEATORIO, 3);
+        ASSERT_TRUE(duzentos < 3 * cem);
+
+        /* A mesma semente mede a mesma coisa. */
+        ASSERT_EQ(ds_bench(ALG_QUICK, 512, DIST_ALEATORIO, 9),
+                  ds_bench(ALG_QUICK, 512, DIST_ALEATORIO, 9));
+
+        ASSERT_EQ(ds_bench(99, 100, DIST_ALEATORIO, 1), -1);
+        ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+        ASSERT_EQ(ds_bench(ALG_BOLHA, 0, DIST_ALEATORIO, 1), -1);
+        ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+
         ds_sessao_fim();
     }
 }

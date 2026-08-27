@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 
+#include "ds/tipos.h"
 #include "ds/trace.h"
 
 /* Abre uma sessão sobre uma estrutura (TIPO_* em ids.h), descartando a
@@ -58,5 +59,25 @@ int32_t     ds_erro(void);
 const ev_t *ds_trace_ptr(void);
 int32_t     ds_trace_len(void);
 int32_t     ds_trace_truncado(void);
+
+/* Buffer de ENTRADA, para o dado que não cabe nos quatro inteiros de ds_call.
+ *
+ * Devolve um ponteiro para dentro da heap, ou NULL com o motivo em ds_erro().
+ * Hoje serve à distribuição manual da aba de ordenação: o JS escreve n
+ * valores aqui e chama OP_GERAR com DIST_MANUAL. Continua sem string e sem
+ * parser — a regra é que nenhum texto atravessa, não que nenhum dado atravessa.
+ *
+ * Como qualquer chamada que pode alocar, esta pode crescer a heap e desanexar
+ * as views antigas: recrie a view depois dela também. */
+elem_t     *ds_buffer(int32_t n);
+
+/* Modo empírico: roda um algoritmo com o trace DESLIGADO e devolve quantas
+ * comparações fez, ou -1 e o motivo em ds_erro().
+ *
+ * É o que separa "eu implementei os algoritmos" de "eu medi, e a curva bate
+ * com a teoria". Com o trace ligado, medir n = 25 600 geraria centenas de
+ * milhões de eventos para ninguém assistir. */
+int32_t     ds_bench(int32_t alg, int32_t n, int32_t dist, int32_t semente);
+int32_t     ds_bench_escritas(void);
 
 #endif /* DS_API_H */

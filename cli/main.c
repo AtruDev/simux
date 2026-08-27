@@ -7,8 +7,11 @@
  *
  *   cli                          cena curta com a pilha encadeada
  *   cli fila_vet 4 i1 i2 i3 r c  fila circular de capacidade 4
+ *   cli ordenacao 12 g0 o4       quicksort sobre doze valores aleatórios
  *
  *   i<valor>  inserir      r  remover      c  consultar      l  limpar
+ *   g<dist>   gerar a cena da aba de ordenação (semente 1)
+ *   o<alg>    ordenar com ALG_<alg>
  */
 
 #include <stdio.h>
@@ -37,6 +40,10 @@ static const struct Nomeado TIPOS[] = {
     { "pilha_vet", TIPO_PILHA_VET },
     { "fila_enc",  TIPO_FILA_ENC  },
     { "fila_vet",  TIPO_FILA_VET  },
+    { "lista",     TIPO_LISTA_SIMPLES  },
+    { "lista_dupla",    TIPO_LISTA_DUPLA    },
+    { "lista_circular", TIPO_LISTA_CIRCULAR },
+    { "ordenacao", TIPO_ORDENACAO },
 };
 
 static int32_t tipo_por_nome(const char *nome)
@@ -89,6 +96,17 @@ static void executar(const char *passo)
         break;
     case 'l':
         despejar("limpar", ds_call(OP_LIMPAR, 0, 0, 0));
+        break;
+    case 'g':
+        /* O tamanho é a capacidade da sessão: gerar menos que o vetor inteiro
+         * é caso da interface, e aqui só atrapalharia. */
+        snprintf(rotulo, sizeof rotulo, "gerar dist=%s", passo + 1);
+        despejar(rotulo, ds_call(OP_GERAR, ds_capacidade(),
+                                 atoi(passo + 1), 1));
+        break;
+    case 'o':
+        snprintf(rotulo, sizeof rotulo, "ordenar alg=%s", passo + 1);
+        despejar(rotulo, ds_call(OP_ORDENAR, atoi(passo + 1), 0, 0));
         break;
     default:
         fprintf(stderr, "passo desconhecido: %s\n", passo);

@@ -27,7 +27,12 @@ typedef enum {
     /* mundo "vetor": ordenação, busca, hash aberto */
     EV_ARR_INIT,        /* a = n                                           */
     EV_ARR_READ,        /* a = i                                           */
-    EV_ARR_COMPARE,     /* a = i, b = j                                    */
+    EV_ARR_COMPARE,     /* a = i, b = j; c = 1 -> b é índice no auxiliar    *
+                         * O c = 1 é o "elemento em mãos" da inserção e do   *
+                         * shell: eles tiram um valor do vetor e comparam    *
+                         * contra ele. Um evento novo para isso seria o      *
+                         * mesmo evento com outro nome — o auxiliar já       *
+                         * existe no vocabulário, e é onde o valor está.     */
     EV_ARR_SWAP,        /* a = i, b = j                                    */
     EV_ARR_WRITE,       /* a = i, b = valor                                */
     EV_ARR_RANGE,       /* a = lo, b = hi — destaca o subvetor ativo       */
@@ -66,6 +71,13 @@ typedef enum {
     SRC_LISTA_SIMPLES,
     SRC_LISTA_DUPLA,
     SRC_LISTA_CIRCULAR,
+    SRC_BOLHA,
+    SRC_SELECAO,
+    SRC_INSERCAO,
+    SRC_SHELL,
+    SRC_QUICK,
+    SRC_MERGE,
+    SRC_CENA,
     SRC_COUNT
 } ds_src;
 
@@ -86,6 +98,18 @@ typedef enum {
     STR_ACHOU,
     STR_NAO_ACHOU,
     STR_ANDANDO,        /* percorrendo a lista até a posição pedida         */
+
+    /* ordenação. A fase é o que o algoritmo está fazendo agora, e é o que
+     * separa um vetor piscando de um algoritmo com etapas. */
+    STR_ORDENADO,
+    STR_SEM_TROCAS,     /* a bolha passou inteira sem trocar: pode parar    */
+    STR_PASSADA,
+    STR_PROCURANDO_MIN,
+    STR_DESLOCANDO,     /* inserção abrindo espaço à direita                */
+    STR_GAP,            /* shellsort: a passada de um gap                   */
+    STR_PARTICIONANDO,
+    STR_DIVIDINDO,
+    STR_INTERCALANDO,
     STR_COUNT
 } ds_str;
 
@@ -107,6 +131,13 @@ typedef enum {
     PTR_FIM,
     PTR_INICIO,
     PTR_CURSOR,         /* onde a travessia está agora                      */
+
+    /* Os dois índices que todo algoritmo de ordenação tem, e o terceiro que
+     * a seleção precisa. Ficam aqui, e não num evento novo, porque índice com
+     * nome é exatamente o que EV_PTR_SET já carrega. */
+    PTR_I,
+    PTR_J,
+    PTR_MIN,
     PTR_COUNT
 } ds_ptr;
 
@@ -144,6 +175,8 @@ typedef enum {
     OP_INSERIR_EM,      /* a = valor, b = posição                            */
     OP_REMOVER_EM,      /* b = posição                                       */
     OP_BUSCAR,          /* a = valor                                         */
+    OP_GERAR,           /* a = n, b = DIST_*, c = semente                    */
+    OP_ORDENAR,         /* a = ALG_*                                         */
     OP_COUNT
 } ds_op;
 
@@ -161,7 +194,45 @@ typedef enum {
     TIPO_LISTA_SIMPLES,
     TIPO_LISTA_DUPLA,
     TIPO_LISTA_CIRCULAR,
+    TIPO_ORDENACAO,     /* a sessão é um vetor a ordenar, não um TAD        */
     TIPO_COUNT
 } ds_tipo;
+
+/* ---------------------------------------------------------------------------
+ * Algoritmos de ordenação.
+ *
+ * A ordem é a da aula — os três quadráticos, depois os que melhoram o pior
+ * caso —, e é ela que o seletor da aba usa. Acrescentar um algoritmo aqui e
+ * na tabela de core/sort/ordenacao.c basta: a interface se monta sozinha.
+ * ------------------------------------------------------------------------- */
+typedef enum {
+    ALG_BOLHA,
+    ALG_SELECAO,
+    ALG_INSERCAO,
+    ALG_SHELL,
+    ALG_QUICK,
+    ALG_MERGE,
+    ALG_COUNT
+} ds_alg;
+
+/* ---------------------------------------------------------------------------
+ * Distribuição do vetor inicial.
+ *
+ * Não é enfeite: é o que mostra que complexidade média e pior caso são coisas
+ * diferentes. POUCOS_DISTINTOS existe para matar o quicksort de partição
+ * ingênua, e QUASE_ORDENADO para a inserção ganhar do quicksort na tela.
+ *
+ * MANUAL lê os valores do buffer de entrada (ds_buffer), único caminho para
+ * um dado que não cabe nos quatro inteiros de ds_call.
+ * ------------------------------------------------------------------------- */
+typedef enum {
+    DIST_ALEATORIO,
+    DIST_QUASE_ORDENADO,
+    DIST_INVERSO,
+    DIST_POUCOS_DISTINTOS,
+    DIST_ORDENADO,
+    DIST_MANUAL,
+    DIST_COUNT
+} ds_dist;
 
 #endif /* DS_IDS_H */

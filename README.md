@@ -7,7 +7,8 @@ operation step by step, highlighting the exact line of C that is executing.
 Built as a portfolio piece and as a study aid for an undergraduate Data
 Structures course.
 
-> **Status:** Phase 0 — foundation. Nothing to look at yet.
+> **Status:** Phase 2 done — stacks, queues and lists, each in both a linked
+> and an array implementation, with a side-by-side compare mode. Sorting is next.
 
 ## How it works
 

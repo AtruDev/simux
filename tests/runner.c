@@ -48,6 +48,7 @@ int main(void)
     suite_fila();
     suite_fuzz();
     suite_lista();
+    suite_ordenacao();
     suite_api();
 
     printf("\n%d checagens, %d falha(s)\n", g_checagens, g_falhas);

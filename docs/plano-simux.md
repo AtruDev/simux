@@ -779,13 +779,13 @@ Cada fase termina com algo funcionando e comitado. Nada de "vou fazer todas as e
 
 ### Fase 0 — Fundação · ~1 semana
 
-- [ ] Repositório, licença MIT, `.gitignore`, `.editorconfig`
-- [ ] CMake com os alvos `core`, `cli`, `tests`
-- [ ] `trace.c` + `idmap.c` + `ids.h` + script `gen_enums.py`
-- [ ] emsdk instalado; build wasm gerando `.js` + `.wasm`
-- [ ] Vite + TS + React inicializado, carregando o módulo WASM
-- [ ] **Camada `t()` de i18n com `pt.ts` e `en.ts`** — vazios, mas no lugar (§7.6)
-- [ ] CI: build nativo + testes + verificação de chaves de tradução
+- [x] Repositório, licença MIT, `.gitignore`, `.editorconfig`
+- [x] CMake com os alvos `core`, `cli`, `tests`
+- [x] `trace.c` + `idmap.c` + `ids.h` + script `gen_enums.py`
+- [x] emsdk instalado; build wasm gerando `.js` + `.wasm`
+- [x] Vite + TS + React inicializado, carregando o módulo WASM
+- [x] **Camada `t()` de i18n com `pt.ts` e `en.ts`** — vazios, mas no lugar (§7.6)
+- [x] CI: build nativo + testes + verificação de chaves de tradução
 - **Pronto quando:** o botão na página chama uma função em C que devolve `42`.
 
 ### Fase 1 — Fatia vertical: a Pilha · ~1–2 semanas ⭐
@@ -794,15 +794,15 @@ Cada fase termina com algo funcionando e comitado. Nada de "vou fazer todas as e
 
 Só a versão **encadeada** aqui. A com vetor entra na Fase 2, e a razão é deliberada: a encadeada exercita `idmap`, `EV_NODE_NEW` e `EV_EDGE_SET`, que são a parte do trace com mais chance de estar mal desenhada. A com vetor é mais fácil e não testaria nada novo.
 
-- [ ] `pilha_enc.c` instrumentada (push, pop, topo, limpar)
-- [ ] `ds_call` + leitura do trace no JS
-- [ ] `graphModel` + `apply.ts` para os eventos de nó
-- [ ] `GraphView` desenhando nós, setas e o rótulo `topo`
-- [ ] Tween de posição
-- [ ] `Player` completo: play/pause/step/scrub/velocidade
-- [ ] Painel de código-fonte com destaque de linha
-- [ ] Painel de métricas e log
-- [ ] Testes de `pilha_enc` + invariantes
+- [x] `pilha_enc.c` instrumentada (push, pop, topo, limpar)
+- [x] `ds_call` + leitura do trace no JS
+- [x] `graphModel` + `apply.ts` para os eventos de nó
+- [x] `GraphView` desenhando nós, setas e o rótulo `topo`
+- [x] Tween de posição
+- [x] `Player` completo: play/pause/step/scrub/velocidade
+- [x] Painel de código-fonte com destaque de linha
+- [x] Painel de métricas e log
+- [x] Testes de `pilha_enc` + invariantes
 - **Pronto quando:** você dá push em cinco valores, arrasta a barra de progresso para trás e para a frente e a animação está correta nos dois sentidos.
 
 ### Fase 2 — Lineares completas, nas duas implementações · ~2 semanas

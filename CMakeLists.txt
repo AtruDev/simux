@@ -121,10 +121,19 @@ add_library(core STATIC
     core/ds/lista_simples.c
     core/ds/lista_dupla.c
     core/ds/lista_circular.c
+    core/sort/medida.c
+    core/sort/ordenacao.c
+    core/sort/cena.c
+    core/sort/bolha.c
+    core/sort/selecao.c
+    core/sort/insercao.c
+    core/sort/shell.c
+    core/sort/quick.c
+    core/sort/merge.c
     core/util/aleatorio.c)
 
 target_include_directories(core PUBLIC core/include)
-target_include_directories(core PRIVATE core/ds)
+target_include_directories(core PRIVATE core/ds core/sort)
 target_link_libraries(core PUBLIC ds_opcoes)
 
 # ---------------------------------------------------------------------------
@@ -159,7 +168,7 @@ if(EMSCRIPTEN)
         # UTF8ToString ficou de fora de propósito: nenhuma string atravessa a
         # fronteira, e exportá-la só convidaria alguém a mandar texto do C.
         -sEXPORTED_RUNTIME_METHODS=HEAP32,HEAPU8
-        -sEXPORTED_FUNCTIONS=_ds_sessao_nova,_ds_sessao_fim,_ds_sessao_slot,_ds_sessao_slots,_ds_tipo_sessao,_ds_tamanho,_ds_capacidade,_ds_call,_ds_erro,_ds_trace_ptr,_ds_trace_len,_ds_trace_truncado,_malloc,_free)
+        -sEXPORTED_FUNCTIONS=_ds_sessao_nova,_ds_sessao_fim,_ds_sessao_slot,_ds_sessao_slots,_ds_tipo_sessao,_ds_tamanho,_ds_capacidade,_ds_call,_ds_erro,_ds_trace_ptr,_ds_trace_len,_ds_trace_truncado,_ds_buffer,_ds_bench,_ds_bench_escritas,_malloc,_free)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         target_compile_options(simux PRIVATE -flto)
@@ -188,8 +197,9 @@ if(NOT EMSCRIPTEN)
         tests/test_fila.c
         tests/test_fuzz.c
         tests/test_lista.c
+        tests/test_ordenacao.c
         tests/test_api.c)
-    target_include_directories(testes PRIVATE tests core/ds)
+    target_include_directories(testes PRIVATE tests core/ds core/sort)
     target_link_libraries(testes PRIVATE core)
 
     add_test(NAME nucleo COMMAND testes)
