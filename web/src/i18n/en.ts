@@ -107,6 +107,95 @@ const en: Dicionario = {
   STR_NAO_ACHOU: "not in the list",
   STR_ANDANDO: "walking to the position",
 
+  "aba.estruturas": "Structures",
+  "aba.ordenacao": "Sorting",
+
+  "painel.algoritmo": "Algorithm",
+  "painel.cena": "Initial array",
+  "painel.empirico": "Empirical mode",
+  "painel.legenda": "Legend",
+  "painel.fase": "Phase",
+
+  "alg.bolha": "Bubble",
+  "alg.selecao": "Selection",
+  "alg.insercao": "Insertion",
+  "alg.shell": "Shellsort",
+  "alg.quick": "Quicksort",
+  "alg.merge": "Mergesort",
+
+  "ordem.quadratica": "O(nÂ²)",
+  "ordem.linearitmica": "O(n log n)",
+  "ordem.shell": "between O(n logÂ² n) and O(nÂ²)",
+
+  "dist.aleatorio": "random",
+  "dist.aleatorioPorque": "the average case, which is what the tables measure",
+  "dist.quaseOrdenado": "nearly sorted",
+  "dist.quaseOrdenadoPorque":
+    "insertion beats quicksort here, and bubble exits after one pass",
+  "dist.inverso": "reverse sorted",
+  "dist.inversoPorque":
+    "insertion sort's worst case, and bubble sort's maximum swaps",
+  "dist.poucosDistintos": "few distinct values",
+  "dist.poucosDistintosPorque":
+    "breaks naive-pivot quicksort: nearly everything lands on one side",
+  "dist.ordenado": "already sorted",
+  "dist.ordenadoPorque":
+    "bubble stops after one pass; selection costs exactly the same as always",
+  "dist.manual": "manual",
+  "dist.manualPorque": "the values from the exercise, pasted as they are",
+
+  "ord.tamanho": "size",
+  "ord.semente": "seed",
+  "ord.distribuicao": "distribution",
+  "ord.gerar": "generate array",
+  "ord.novaSemente": "roll a seed",
+  "ord.ordenar": "sort",
+  "ord.corrida": "race mode",
+  "ord.valores": "values",
+  "ord.valoresAjuda": "Separate with commas, spaces or line breaks.",
+  "ord.semFase": "idle",
+
+  "legenda.comparando": "comparing",
+  "legenda.escrita": "just written",
+  "legenda.ordenado": "in final position",
+  "legenda.pivo": "pivot",
+  "legenda.auxiliar": "auxiliary memory (dashed)",
+  "legenda.fora": "outside the active range",
+  "legenda.cursores": "cursors i, j and min",
+
+  "empirico.rodar": "measure",
+  "empirico.rodando": "measuringâ¦",
+  "empirico.metrica": "metric",
+  "empirico.comparacoes": "comparisons",
+  "empirico.escritas": "writes",
+  "empirico.vazio": "Nothing measured yet.",
+  "empirico.explica":
+    "Every point is a real run, with the trace switched off. The thin lines " +
+    "are the theoretical curves, anchored at each algorithm's first point â " +
+    "if the measurement follows the curve, the theory holds.",
+  "empirico.teoria": "theoretical curves",
+  "empirico.limite": "each algorithm runs as far as it is still worth measuring",
+
+  "log.compara": "compare",
+  "log.emMaos": "against the held value",
+  "log.troca": "swap",
+  "log.faixa": "active range",
+  "log.auxInicia": "auxiliary of",
+  "log.auxEscreve": "write to auxiliary",
+  "log.fase": "phase",
+  "log.marcaOrdenado": "in place",
+  "log.marcaPivo": "becomes the pivot",
+
+  STR_ORDENADO: "array sorted",
+  STR_SEM_TROCAS: "no swaps in this pass â it is already sorted",
+  STR_PASSADA: "pass",
+  STR_PROCURANDO_MIN: "looking for the smallest in the range",
+  STR_DESLOCANDO: "shifting right to open a slot",
+  STR_GAP: "pass with gap",
+  STR_PARTICIONANDO: "partitioning",
+  STR_DIVIDINDO: "splitting",
+  STR_INTERCALANDO: "merging",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

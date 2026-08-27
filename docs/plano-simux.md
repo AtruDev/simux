@@ -825,13 +825,23 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 
 ### Fase 3 — Aba de ordenação · ~2 semanas
 
-- [ ] Eventos de array de ordenação sobre o `ArrayView` que já existe desde a Fase 2
-- [ ] Bolha, seleção, inserção, shell, quick, merge
-- [ ] Controles de distribuição e seed
-- [ ] Modo corrida
-- [ ] `ds_bench` + gráfico empírico
-- [ ] Testes: ordenado + permutação, para toda distribuição
+- [x] Eventos de array de ordenação — nenhum evento novo foi preciso; o `.c = 1`
+      do `EV_ARR_COMPARE` cobriu o "valor em mãos" da inserção e do shell
+- [x] Bolha, seleção, inserção, shell, quick, merge
+- [x] Controles de distribuição e seed (e a distribuição manual, pelo `ds_buffer`)
+- [x] Modo corrida — é o modo comparar da Fase 2, com algoritmos no lugar de
+      implementações; o `Player` já aceitava as seis trilhas
+- [x] `ds_bench` + gráfico empírico, em log-log
+- [x] Testes: ordenado **e** permutação, para toda distribuição
+- [ ] O GIF do modo corrida no README
 - **Pronto quando:** o GIF do modo corrida está no README.
+
+> O `ArrayView` não foi reusado como o plano previa, e a razão apareceu na
+> tela: ele desenha células com o número dentro, que é o desenho certo para uma
+> pilha de oito posições — ali importa QUAL valor está em QUAL índice. Ordenar
+> precisa de forma, e vinte células com número não viram forma. O `OrdenacaoView`
+> desenha barras. O reúso que valia aconteceu uma camada abaixo, que é onde ele
+> costuma valer: o `VetorModelo` e o `aplicar.ts` são os mesmos.
 
 ### Fase 4 — Busca em memória primária · ~2–3 semanas
 

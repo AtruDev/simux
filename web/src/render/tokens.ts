@@ -15,6 +15,12 @@ export interface Paleta {
   acentoFraco: string;
   stDone: string;
   stSwap: string;
+  stCompare: string;
+  stPivot: string;
+  stAux: string;
+  alg1: string;
+  alg2: string;
+  alg3: string;
   mono: string;
 }
 
@@ -36,6 +42,12 @@ export function lerPaleta(el: Element): Paleta {
     acentoFraco: v("--accent-dim"),
     stDone: v("--st-done"),
     stSwap: v("--st-swap"),
+    stCompare: v("--st-compare"),
+    stPivot: v("--st-pivot"),
+    stAux: v("--st-aux"),
+    alg1: v("--alg-1"),
+    alg2: v("--alg-2"),
+    alg3: v("--alg-3"),
     mono: v("--fonte-mono"),
   };
 }

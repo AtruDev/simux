@@ -540,3 +540,265 @@ button.icone.principal {
 .numero {
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- abas -------------------------------------------------------------- */
+
+/* O cabeçalho ganhou uma quarta coluna quando a aba de ordenação chegou. */
+.cabecalho {
+  grid-template-columns: auto 1fr auto auto;
+}
+
+.abas {
+  display: flex;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  align-self: center;
+}
+
+.aba {
+  background: var(--bg-1);
+  color: var(--fg-3);
+  border: 0;
+  border-radius: 0;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.aba:hover {
+  color: var(--fg-2);
+  background: var(--bg-2);
+}
+
+/* O acento é da interface, e a aba corrente é o caso mais puro disso. */
+.aba.ativa {
+  background: var(--bg-3);
+  color: var(--fg);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.aba:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ---- aba de ordenação --------------------------------------------------- */
+
+/* A régua de identidade do algoritmo: linha fina ao lado do nome, com a mesma
+ * cor que a curva dele tem no gráfico. Nunca preenche barra — no canvas, cor
+ * cheia quer dizer estado. */
+.regua-alg {
+  display: inline-block;
+  width: 1.1rem;
+  height: 2px;
+  border-radius: 1px;
+  margin-left: auto;
+  flex: none;
+}
+
+.faixa-nome .regua-alg {
+  margin: 0 0.4rem 0 0;
+  vertical-align: middle;
+}
+
+.dica {
+  color: var(--fg-3);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin: 0.5rem 0 0;
+}
+
+.campo-manual {
+  display: block;
+}
+
+.campo-manual textarea {
+  width: 100%;
+  margin-top: 0.35rem;
+  background: var(--bg-0);
+  color: var(--fg);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.campo-manual textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.fase {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--fg-2);
+}
+
+/* No modo corrida são seis faixas; sem isto cada uma fica com a altura de uma
+ * linha de texto e o gráfico de barras some. */
+.faixas.corrida {
+  overflow-y: auto;
+  grid-auto-rows: minmax(9rem, 1fr);
+}
+
+/* ---- legenda ------------------------------------------------------------ */
+
+/* Fica sempre visível, e não atrás de um "?": nenhum estado da tela é
+ * distinguido só por matiz, então a chave de cor E de traço é parte da
+ * leitura, não um extra. */
+.legenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--fg-2);
+}
+
+.legenda li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.amostra {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 3px;
+  flex: none;
+  border: 1px solid var(--fg-3);
+}
+
+.amostra.tracejada {
+  border-style: dashed;
+}
+
+.amostra.apagada {
+  background: var(--bg-3);
+  opacity: 0.32;
+}
+
+/* ---- gráfico empírico --------------------------------------------------- */
+
+.painel-grafico {
+  border-top: 1px solid var(--line);
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.grafico-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.grafico-cabecalho h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.grafico {
+  width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+  display: block;
+}
+
+/* Grade e eixos recessivos: eles orientam, não competem com os dados. */
+.grafico-eixos line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.grafico-tick {
+  fill: var(--fg-3);
+  font-family: var(--fonte-mono);
+  font-size: 10px;
+  text-anchor: end;
+}
+
+.grafico-tick.meio {
+  text-anchor: middle;
+}
+
+/* As teóricas são referência, não série: tinta neutra e tracejado largo, para
+ * nunca serem confundidas com uma medida. */
+.grafico-teorica path {
+  stroke: var(--fg-3);
+  stroke-dasharray: 3 5;
+}
+
+.grafico-teorica text {
+  fill: var(--fg-3);
+  font-family: var(--fonte-mono);
+  font-size: 10px;
+}
+
+/* Texto usa tinta de texto, nunca a cor da série: quem carrega a identidade é
+ * a linha ao lado. */
+.grafico-rotulo {
+  fill: var(--fg-2);
+  font-family: var(--fonte-mono);
+  font-size: 10px;
+}
+
+/* A tabela existe para o gráfico não ser a única forma de ler o número. */
+.tabela-medida {
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.tabela-medida summary {
+  cursor: pointer;
+  color: var(--fg-3);
+}
+
+.tabela-medida .rolagem {
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.tabela-medida table {
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.tabela-medida th,
+.tabela-medida td {
+  border: 1px solid var(--line);
+  padding: 0.2rem 0.5rem;
+  text-align: right;
+  color: var(--fg-2);
+}
+
+.tabela-medida thead th {
+  color: var(--fg-3);
+  font-weight: 600;
+}
+
+/* O seletor de distribuição e o de métrica precisam do estilo dos campos: sem
+ * isto o <select> herda o do sistema, fica branco e estoura o painel. */
+.campo select {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-0);
+  color: var(--fg);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 0.3rem 0.4rem;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.campo select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}

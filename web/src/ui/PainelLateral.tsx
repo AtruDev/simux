@@ -36,7 +36,26 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "lista") {
+  if (mundo === "ordenacao") {
+    /* Comparações e escritas são o que descreve um algoritmo de ordenação, e
+     * os dois juntos são o que separa a seleção da bolha: as duas fazem O(n²)
+     * comparações, e só uma faz O(n) escritas. Tamanho e ocupação não dizem
+     * nada aqui — o vetor não cresce nem encolhe. */
+    linhas.length = 0;
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+    linhas.push([
+      t("metrica.escritas"),
+      String(contador(modelo, Cnt.CNT_ESCRITAS)),
+    ]);
+    linhas.push([
+      t("metrica.alocacoes"),
+      String(contador(modelo, Cnt.CNT_ALOCACOES)),
+    ]);
+    linhas.push([t("ord.tamanho"), String(modelo.vetor?.capacidade ?? 0)]);
+  } else if (mundo === "lista") {
     linhas.push([
       t("metrica.comparacoes"),
       String(contador(modelo, Cnt.CNT_COMPARACOES)),
@@ -101,11 +120,21 @@ const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
  * encadeado, 0 é NULL. Foi por pouco que isto não virou um log mentindo
  * "NULO" para a célula zero. */
 function alvoPonteiro(valor: number, mundo: Mundo): string {
-  if (mundo === "vetor") {
+  if (mundo === "vetor" || mundo === "ordenacao") {
     return valor < 0 ? "—" : `[${valor}]`;
   }
   return valor === 0 ? t("log.nulo") : `#${valor}`;
 }
+
+/* i, j e mín não passam pelo i18n, e é deliberado: são os identificadores do
+ * laço em C, os mesmos que o painel de código está exibindo ao lado. Traduzir
+ * "i" faria o log falar de uma variável que não existe no arquivo. É a mesma
+ * decisão dos rótulos `topo` e `frente` desenhados no canvas. */
+const NOME_CURSOR: Partial<Record<number, string>> = {
+  [Ptr.PTR_I]: "i →",
+  [Ptr.PTR_J]: "j →",
+  [Ptr.PTR_MIN]: "mín →",
+};
 
 /** Descreve um evento em português ou inglês, a partir do id — nunca de texto
  * vindo do C, que não devolve texto nenhum. */
@@ -123,7 +152,8 @@ export function descrever(ev: Ev, mundo: Mundo): string {
       return `${no(ev.a)} ${t("log.aresta")} ${no(ev.c)}`;
     case EvKind.EV_PTR_SET: {
       const nome = NOME_PONTEIRO[ev.a];
-      const rotulo = nome ? t(nome) : `ptr ${ev.a} →`;
+      const cursor = NOME_CURSOR[ev.a];
+      const rotulo = nome ? t(nome) : (cursor ?? `ptr ${ev.a} →`);
       return `${rotulo} ${alvoPonteiro(ev.b, mundo)}`;
     }
 
@@ -137,9 +167,44 @@ export function descrever(ev: Ev, mundo: Mundo): string {
       return `${t("log.le")} [${ev.a}]`;
 
     case EvKind.EV_ARR_MARK:
-      return ev.b === Tag.TAG_LIVRE
-        ? `${t("log.marcaLivre")} [${ev.a}]`
-        : `mark [${ev.a}] = ${ev.b}`;
+      switch (ev.b) {
+        case Tag.TAG_LIVRE:
+          return `${t("log.marcaLivre")} [${ev.a}]`;
+        case Tag.TAG_ORDENADO:
+          return `[${ev.a}] ${t("log.marcaOrdenado")}`;
+        case Tag.TAG_PIVO:
+          return `[${ev.a}] ${t("log.marcaPivo")}`;
+        default:
+          return `[${ev.a}]`;
+      }
+
+    case EvKind.EV_ARR_COMPARE:
+      /* c = 1 é o valor em mãos: b indexa o auxiliar, e escrever "[0]" aqui
+       * faria o log dizer que a comparação foi com a célula zero do vetor. */
+      return ev.c === 1
+        ? `${t("log.compara")} [${ev.a}] ${t("log.emMaos")}`
+        : `${t("log.compara")} [${ev.a}] ↔ [${ev.b}]`;
+
+    case EvKind.EV_ARR_SWAP:
+      return `${t("log.troca")} [${ev.a}] ↔ [${ev.b}]`;
+
+    case EvKind.EV_ARR_RANGE:
+      return `${t("log.faixa")} [${ev.a}…${ev.b}]`;
+
+    case EvKind.EV_AUX_INIT:
+      return `${t("log.auxInicia")} ${ev.a}`;
+
+    case EvKind.EV_AUX_WRITE:
+      return `${t("log.auxEscreve")} [${ev.a}] = ${ev.b}`;
+
+    case EvKind.EV_PHASE: {
+      const chave = STR_CHAVES[ev.a];
+      const nome = chave ? t(chave as Chave) : t("log.fase");
+      /* O operando da fase é o gap do shell, o número da passada, os extremos
+       * do trecho do merge. Só aparece quando existe. */
+      if (ev.c !== 0) return `${nome} ${ev.b}…${ev.c}`;
+      return ev.b !== 0 ? `${nome} ${ev.b}` : nome;
+    }
     case EvKind.EV_VISIT:
       return `${t("log.visita")} ${no(ev.a)}`;
     case EvKind.EV_UNVISIT:

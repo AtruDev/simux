@@ -7,8 +7,10 @@ operation step by step, highlighting the exact line of C that is executing.
 Built as a portfolio piece and as a study aid for an undergraduate Data
 Structures course.
 
-> **Status:** Phase 2 done — stacks, queues and lists, each in both a linked
-> and an array implementation, with a side-by-side compare mode. Sorting is next.
+> **Status:** Phase 3 done — two tabs. Structures: stacks, queues and lists,
+> each in both a linked and an array implementation, with a side-by-side
+> compare mode. Sorting: six algorithms, a race mode, and an empirical mode
+> that measures real comparison counts against the theoretical curves.
 
 ## How it works
 
@@ -56,6 +58,9 @@ A short glossary for readers of the C source:
 | `pilha` | stack | `fila` | queue |
 | `arvore` | tree | `busca` | search |
 | `ordenacao` | sorting | `troca` | swap |
+| `bolha` | bubble sort | `selecao` | selection sort |
+| `insercao` | insertion sort | `intercalar` | merge |
+| `particionar` | partition | `medida` | measurement |
 
 ## License
 

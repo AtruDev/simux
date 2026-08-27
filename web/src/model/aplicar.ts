@@ -70,6 +70,11 @@ export function aplicar(m: Modelo, ev: Ev): void {
         marcas: new Array<number>(ev.a).fill(Tag.TAG_NENHUMA),
         ultimoLido: -1,
         ultimoEscrito: -1,
+        comparando: null,
+        comparandoMao: false,
+        faixa: null,
+        aux: null,
+        auxUltimoEscrito: -1,
       };
       break;
 
@@ -80,6 +85,7 @@ export function aplicar(m: Modelo, ev: Ev): void {
         m.vetor.marcas[ev.a] = Tag.TAG_NENHUMA;
         m.vetor.ultimoEscrito = ev.a;
         m.vetor.ultimoLido = -1;
+        m.vetor.comparando = null;
       }
       break;
 
@@ -93,6 +99,10 @@ export function aplicar(m: Modelo, ev: Ev): void {
     case EvKind.EV_ARR_MARK:
       if (m.vetor && ev.a >= 0 && ev.a < m.vetor.capacidade) {
         m.vetor.marcas[ev.a] = ev.b;
+        /* Marcar é o algoritmo mudando de assunto: a comparação anterior
+         * acabou. Sem isto, as duas últimas células comparadas ficavam acesas
+         * até o fim da animação, com o vetor já ordenado. */
+        m.vetor.comparando = null;
       }
       break;
 
@@ -105,7 +115,45 @@ export function aplicar(m: Modelo, ev: Ev): void {
         m.vetor.valores[j] = t;
         m.vetor.ultimoEscrito = i;
         m.vetor.ultimoLido = -1;
+        m.vetor.comparando = null;
       }
+      break;
+
+    /* A comparação é um instante, não um estado que dura: ela vale até a
+     * próxima, ou até o algoritmo escrever alguma coisa. Quem faz o destaque
+     * durar o suficiente para ser visto é o renderizador, com o brilho que
+     * decai — o modelo continua sendo o que é verdade agora. */
+    case EvKind.EV_ARR_COMPARE:
+      if (m.vetor) {
+        m.vetor.comparando = [ev.a, ev.b];
+        /* c = 1 é o valor em mãos: b indexa o auxiliar, não o vetor. */
+        m.vetor.comparandoMao = ev.c === 1;
+        m.vetor.ultimoLido = -1;
+        m.vetor.ultimoEscrito = -1;
+      }
+      break;
+
+    case EvKind.EV_ARR_RANGE:
+      if (m.vetor) m.vetor.faixa = [ev.a, ev.b];
+      break;
+
+    case EvKind.EV_AUX_INIT:
+      if (m.vetor) {
+        m.vetor.aux = new Array<number | null>(ev.a).fill(null);
+        m.vetor.auxUltimoEscrito = -1;
+      }
+      break;
+
+    case EvKind.EV_AUX_WRITE:
+      if (m.vetor?.aux && ev.a >= 0 && ev.a < m.vetor.aux.length) {
+        m.vetor.aux[ev.a] = ev.b;
+        m.vetor.auxUltimoEscrito = ev.a;
+      }
+      break;
+
+    case EvKind.EV_PHASE:
+      m.fase = { str: ev.a, a: ev.b, b: ev.c };
+      if (m.vetor) m.vetor.comparando = null;
       break;
 
     case EvKind.EV_PTR_SET:
@@ -121,9 +169,9 @@ export function aplicar(m: Modelo, ev: Ev): void {
       break;
 
     default:
-      /* Os eventos de vetor e de disco chegam nas fases seguintes. Ignorar o
-       * desconhecido é melhor que quebrar: um trace com evento novo continua
-       * reproduzível no que ele já entende. */
+      /* Os eventos de disco chegam na Fase 5. Ignorar o desconhecido é melhor
+       * que quebrar: um trace com evento novo continua reproduzível no que
+       * ele já entende. */
       break;
   }
 }

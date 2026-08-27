@@ -139,6 +139,49 @@ function lerTrace(m: ModuloSimux): Ev[] {
   return eventos;
 }
 
+/**
+ * Uma view sobre o buffer de ENTRADA do core, com espaço para `n` inteiros.
+ *
+ * É a outra metade da fronteira de dados. O trace sai por `ds_trace_ptr`; o
+ * que não cabe nos quatro inteiros de `ds_call` entra por aqui — hoje, os
+ * valores da distribuição manual da aba de ordenação. Continua sem string e
+ * sem parser em C: o JS escreve int32 direto na heap do wasm.
+ *
+ * Devolve null quando o core recusa o tamanho.
+ *
+ * A view NÃO pode ser guardada, pela mesma razão de sempre: o próximo malloc
+ * que cresça a heap a desanexa. Escrever nela e usá-la na mesma tarefa é
+ * seguro — crescer a heap preserva o conteúdo, e o que fica inválido é a view
+ * do JS, não o ponteiro do C.
+ */
+export function bufferEntrada(n: number): Int32Array | null {
+  const m = exigirModulo();
+
+  const ptr = m._ds_buffer(n);
+  if (ptr === 0) return null;
+
+  return new Int32Array(m.HEAP32.buffer, ptr, n);
+}
+
+/** Modo empírico: roda um algoritmo com o trace desligado.
+ *
+ * Devolve as comparações e as escritas de uma execução de verdade. É uma
+ * chamada síncrona e pode demorar — quem chama decide como não travar a
+ * página, cedendo o controle entre as medidas. */
+export function medir(
+  alg: number,
+  n: number,
+  dist: number,
+  semente: number,
+): { comparacoes: number; escritas: number } | null {
+  const m = exigirModulo();
+
+  const comparacoes = m._ds_bench(alg, n, dist, semente);
+  if (comparacoes < 0) return null;
+
+  return { comparacoes, escritas: m._ds_bench_escritas() };
+}
+
 /** Verdadeiro se a última operação encheu o buffer e perdeu eventos. */
 export function truncado(): boolean {
   return modulo !== null && modulo._ds_trace_truncado() !== 0;

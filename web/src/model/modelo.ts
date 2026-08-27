@@ -28,6 +28,33 @@ export interface VetorModelo {
   marcas: number[];
   ultimoLido: number;
   ultimoEscrito: number;
+
+  /* ---- o que a ordenação acrescentou ---------------------------------- *
+   *
+   * Tudo aqui é o ÚLTIMO de cada coisa, pela mesma razão que ultimoLido:
+   * conjunto que cresce acumula ao reproduzir, e depois de arrastar a barra
+   * até o fim a tela ficaria toda acesa.                                  */
+
+  /** As duas células sendo comparadas agora, ou null. */
+  comparando: readonly [number, number] | null;
+  /** Verdadeiro quando o segundo operando é o valor em mãos, e não a célula
+   * `b` do vetor. É o `c = 1` de EV_ARR_COMPARE. */
+  comparandoMao: boolean;
+  /** O subvetor que o algoritmo está olhando: a partição, a metade do merge,
+   * o trecho ainda desordenado da bolha. */
+  faixa: readonly [number, number] | null;
+  /** O buffer auxiliar. Uma célula na inserção e no shell — o valor em mãos;
+   * n células no merge. */
+  aux: (number | null)[] | null;
+  auxUltimoEscrito: number;
+}
+
+/** O que o algoritmo está fazendo agora: EV_PHASE, com os operandos. */
+export interface FaseModelo {
+  /** STR_* — a frase vem do i18n, como toda mensagem do C. */
+  str: number;
+  a: number;
+  b: number;
 }
 
 export interface Modelo {
@@ -46,6 +73,8 @@ export interface Modelo {
   fonte: { src: number; linha: number } | null;
   /** Existe só depois de um EV_ARR_INIT. */
   vetor: VetorModelo | null;
+  /** Existe só depois de um EV_PHASE. */
+  fase: FaseModelo | null;
 }
 
 export function modeloNovo(): Modelo {
@@ -58,6 +87,7 @@ export function modeloNovo(): Modelo {
     mensagem: null,
     fonte: null,
     vetor: null,
+    fase: null,
   };
 }
 

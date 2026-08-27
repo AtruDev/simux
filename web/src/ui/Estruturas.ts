@@ -12,7 +12,12 @@
 import { Tipo } from "../core/ops";
 import type { Chave } from "../i18n";
 
-export type Mundo = "encadeada" | "vetor" | "lista";
+/* Qual renderizador e quais métricas a tela usa.
+ *
+ * "ordenacao" não tem entrada em ESTRUTURAS: a aba 2 não escolhe estrutura,
+ * escolhe algoritmo. Ela está aqui porque o painel de métricas e o log são os
+ * mesmos das duas abas, e é o mundo que diz a eles como ler o modelo. */
+export type Mundo = "encadeada" | "vetor" | "lista" | "ordenacao";
 
 export interface Estrutura {
   tipo: number;

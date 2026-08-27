@@ -276,6 +276,10 @@ static int ordenar(int32_t alg)
      * cópias do mesmo laço seriam seis lugares para esquecer. O que os
      * algoritmos marcam durante a execução é outra coisa — é a fronteira
      * crescendo, que faz parte de como cada um funciona. */
+    /* A faixa volta a ser o vetor inteiro antes das marcas. Ela é o trecho que
+     * o algoritmo estava olhando, e no fim ele não está olhando trecho nenhum
+     * — sem isto, a última partição continuava apagando o resto da tela. */
+    TR(EV_ARR_RANGE, .a = 0, .b = ATIVA.n - 1);
     for (i = 0; i < ATIVA.n; i++) {
         TR(EV_ARR_MARK, .a = i, .b = TAG_ORDENADO);
     }

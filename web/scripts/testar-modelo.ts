@@ -7,7 +7,7 @@
  * Sem framework, pelo mesmo motivo do runner em C: não é preciso. */
 
 import type { Ev } from "../src/core/bridge";
-import { Cnt, EvKind, Ptr, Src } from "../src/core/ops";
+import { Cnt, EvKind, Ptr, Src, Str, Tag } from "../src/core/ops";
 import { Player } from "../src/core/player";
 import { aplicar } from "../src/model/aplicar";
 import { alvoDe, contador, modeloNovo, type Modelo } from "../src/model/modelo";
@@ -325,6 +325,107 @@ CASO("modo comparar: o histórico é por trilha");
   /* Um só: o quadro em que a trilha 1 esperou não entra no log dela — esperar
    * não é uma coisa que ela fez. */
   igual(player.historico(9, 1).length, 1, "um evento na trilha 1");
+}
+
+/* ---- ordenação --------------------------------------------------------- */
+
+CASO("a comparação vale até a próxima, e some quando o algoritmo escreve");
+{
+  const m = reproduzir([
+    ev(EvKind.EV_ARR_INIT, 4),
+    ev(EvKind.EV_ARR_COMPARE, 0, 1),
+  ]);
+  igual(m.vetor?.comparando?.[0] ?? -1, 0, "compara a célula 0");
+  igual(m.vetor?.comparando?.[1] ?? -1, 1, "com a célula 1");
+  ok(m.vetor?.comparandoMao === false, "e não é o valor em mãos");
+
+  aplicar(m, ev(EvKind.EV_ARR_SWAP, 0, 1));
+  ok(m.vetor?.comparando === null, "a troca apaga a comparação");
+}
+
+CASO("c = 1 é o valor em mãos, e não a célula b");
+{
+  const m = reproduzir([
+    ev(EvKind.EV_ARR_INIT, 4),
+    ev(EvKind.EV_AUX_INIT, 1),
+    ev(EvKind.EV_AUX_WRITE, 0, 42),
+    ev(EvKind.EV_ARR_COMPARE, 2, 0, 1),
+  ]);
+  ok(m.vetor?.comparandoMao === true, "a comparação é contra o auxiliar");
+  igual(m.vetor?.aux?.[0] ?? null, 42, "que guarda o valor em mãos");
+  /* Se o renderizador tratasse b como índice do vetor, acenderia a célula 0
+   * enquanto a comparação é com a 2. Foi por isto que o c = 1 existe. */
+  igual(m.vetor?.comparando?.[0] ?? -1, 2, "a célula comparada é a 2");
+}
+
+CASO("a faixa ativa e o auxiliar do merge");
+{
+  const m = reproduzir([
+    ev(EvKind.EV_ARR_INIT, 8),
+    ev(EvKind.EV_ARR_RANGE, 2, 5),
+    ev(EvKind.EV_AUX_INIT, 8),
+    ev(EvKind.EV_AUX_WRITE, 2, 7),
+    ev(EvKind.EV_AUX_WRITE, 3, 9),
+  ]);
+  igual(m.vetor?.faixa?.[0] ?? -1, 2, "faixa começa em 2");
+  igual(m.vetor?.faixa?.[1] ?? -1, 5, "e termina em 5");
+  igual(m.vetor?.aux?.length ?? 0, 8, "auxiliar do tamanho do vetor");
+  igual(m.vetor?.aux?.[3] ?? null, 9, "com o valor escrito");
+  igual(m.vetor?.auxUltimoEscrito ?? -1, 3, "e a última escrita marcada");
+}
+
+CASO("a fase carrega os operandos, não a frase");
+{
+  const m = reproduzir([
+    ev(EvKind.EV_ARR_INIT, 8),
+    ev(EvKind.EV_PHASE, Str.STR_INTERCALANDO, 0, 3),
+  ]);
+  igual(m.fase?.str ?? -1, Str.STR_INTERCALANDO, "o id da mensagem");
+  igual(m.fase?.a ?? -1, 0, "e os extremos do trecho");
+  igual(m.fase?.b ?? -1, 3, "que vieram em b e c");
+}
+
+CASO("os contadores da ordenação vêm dos eventos, como os das estruturas");
+{
+  const m = reproduzir([
+    ev(EvKind.EV_ARR_INIT, 4),
+    ev(EvKind.EV_ARR_COMPARE, 0, 1),
+    ev(EvKind.EV_COUNT, Cnt.CNT_COMPARACOES, +1),
+    ev(EvKind.EV_ARR_SWAP, 0, 1),
+    ev(EvKind.EV_COUNT, Cnt.CNT_ESCRITAS, +2),
+  ]);
+  igual(contador(m, Cnt.CNT_COMPARACOES), 1, "uma comparação");
+  igual(contador(m, Cnt.CNT_ESCRITAS), 2, "duas escritas na troca");
+}
+
+CASO("voltar no tempo desfaz a ordenação inteira, reexecutando");
+{
+  const player = new Player();
+  const cena = [
+    ev(EvKind.EV_ARR_INIT, 3),
+    ev(EvKind.EV_ARR_WRITE, 0, 3),
+    ev(EvKind.EV_ARR_WRITE, 1, 1),
+    ev(EvKind.EV_ARR_WRITE, 2, 2),
+  ];
+  const ordenar = [
+    ev(EvKind.EV_ARR_COMPARE, 0, 1),
+    ev(EvKind.EV_ARR_SWAP, 0, 1),
+    ev(EvKind.EV_ARR_MARK, 2, Tag.TAG_ORDENADO),
+  ];
+  player.carregarTrilhas([[cena], [ordenar]]);
+
+  igual(player.estadoDe(0).vetor?.valores[0] ?? null, 1, "ordenado no fim");
+
+  /* Ir ao passo em que a cena acabou tem que devolver o vetor original — e
+   * chegar lá é reexecutar do zero, não desfazer a troca. */
+  player.irPara(cena.length);
+  igual(player.estadoDe(0).vetor?.valores[0] ?? null, 3, "e o original ao voltar");
+  igual(player.estadoDe(0).vetor?.valores[1] ?? null, 1, "com a célula 1 intacta");
+  igual(
+    player.estadoDe(0).vetor?.marcas[2] ?? -1,
+    Tag.TAG_NENHUMA,
+    "e sem a marca de ordenado",
+  );
 }
 
 if (falhas.length > 0) {

@@ -20,6 +20,13 @@ declare module "*/wasm/simux.js" {
     _ds_trace_len(): number;
     _ds_trace_truncado(): number;
 
+    /* Buffer de entrada: devolve o offset dentro da heap, ou 0. */
+    _ds_buffer(n: number): number;
+
+    /* Modo empírico: roda com o trace desligado e devolve as comparações. */
+    _ds_bench(alg: number, n: number, dist: number, semente: number): number;
+    _ds_bench_escritas(): number;
+
     /* Estas views são trocadas pelo próprio glue quando a heap cresce.
      * Leia-as sempre pelo módulo, nunca guarde uma cópia. */
     readonly HEAP32: Int32Array;
