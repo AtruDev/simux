@@ -121,6 +121,7 @@ add_library(core STATIC
     core/ds/lista_simples.c
     core/ds/lista_dupla.c
     core/ds/lista_circular.c
+    core/arvore/abb.c
     core/busca/vetor_ord.c
     core/sort/medida.c
     core/sort/ordenacao.c
@@ -134,7 +135,7 @@ add_library(core STATIC
     core/util/aleatorio.c)
 
 target_include_directories(core PUBLIC core/include)
-target_include_directories(core PRIVATE core/ds core/sort core/busca)
+target_include_directories(core PRIVATE core/ds core/sort core/busca core/arvore)
 target_link_libraries(core PUBLIC ds_opcoes)
 
 # ---------------------------------------------------------------------------
@@ -200,8 +201,9 @@ if(NOT EMSCRIPTEN)
         tests/test_lista.c
         tests/test_ordenacao.c
         tests/test_busca.c
+        tests/test_arvore.c
         tests/test_api.c)
-    target_include_directories(testes PRIVATE tests core/ds core/sort core/busca)
+    target_include_directories(testes PRIVATE tests core/ds core/sort core/busca core/arvore)
     target_link_libraries(testes PRIVATE core)
 
     add_test(NAME nucleo COMMAND testes)

@@ -18,10 +18,11 @@ import {
 } from "react";
 
 import { chamar, selecionarSlot, sessaoNova, tamanho } from "../core/bridge";
-import { Op, Status } from "../core/ops";
+import { Op, Percurso, Status } from "../core/ops";
 import { Player, type Operacao } from "../core/player";
 import { ERR_CHAVES } from "../core/ops";
 import { t, type Chave } from "../i18n";
+import { ArvoreView } from "../render/arvoreView";
 import { GrafoView } from "../render/grafoView";
 import { ListaView } from "../render/listaView";
 import { VetorView } from "../render/vetorView";
@@ -36,6 +37,14 @@ import { PainelScript } from "./PainelScript";
 import { PainelLog, PainelMetricas } from "./PainelLateral";
 import type { Passo } from "./Script";
 import { Transporte } from "./Transporte";
+
+/* Os três percursos, na ordem da aula. Uma tabela e não três botões escritos
+ * à mão: acrescentar um percurso no C é acrescentar uma linha aqui. */
+const PERCURSOS: Array<[number, Chave]> = [
+  [Percurso.PERC_EM_ORDEM, "perc.emOrdem"],
+  [Percurso.PERC_PRE_ORDEM, "perc.preOrdem"],
+  [Percurso.PERC_POS_ORDEM, "perc.posOrdem"],
+];
 
 export function AbaEstruturas() {
   const player = useMemo(() => new Player(), []);
@@ -105,8 +114,11 @@ export function AbaEstruturas() {
     const views = trilhas.map((t_, k) => {
       const canvas = refCanvas.current[k];
       if (!canvas) return null;
-      if (t_.mundo === "vetor") return new VetorView(canvas, t_.tipo);
+      if (t_.mundo === "vetor" || t_.mundo === "busca") {
+        return new VetorView(canvas, t_.tipo);
+      }
       if (t_.mundo === "lista") return new ListaView(canvas, t_.tipo);
+      if (t_.mundo === "arvore") return new ArvoreView(canvas);
       return new GrafoView(canvas, t_.tipo);
     });
 
@@ -370,6 +382,31 @@ export function AbaEstruturas() {
                 >
                   {t("op.removerEm")}
                 </button>
+              </>
+            )}
+
+            {/* Remover por valor e percorrer são da árvore. Numa árvore a
+                posição não existe, e é a remoção por valor que traz os três
+                casos — o botão é a porta de entrada da aula inteira. */}
+            {estrutura.arvore && (
+              <>
+                <button
+                  type="button"
+                  className="secundario"
+                  onClick={() => rodar(Op.OP_REMOVER_VALOR, Number(valor) | 0)}
+                >
+                  {t("op.removerValor")}
+                </button>
+                {PERCURSOS.map(([perc, chave]) => (
+                  <button
+                    key={perc}
+                    type="button"
+                    className="secundario"
+                    onClick={() => rodar(Op.OP_PERCURSO, perc)}
+                  >
+                    {t(chave)}
+                  </button>
+                ))}
               </>
             )}
 

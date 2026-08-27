@@ -50,6 +50,7 @@ int main(void)
     suite_lista();
     suite_ordenacao();
     suite_busca();
+    suite_arvore();
     suite_api();
 
     printf("\n%d checagens, %d falha(s)\n", g_checagens, g_falhas);

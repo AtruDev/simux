@@ -17,14 +17,20 @@ import type { Chave } from "../i18n";
  * "ordenacao" não tem entrada em ESTRUTURAS: a aba 2 não escolhe estrutura,
  * escolhe algoritmo. Ela está aqui porque o painel de métricas e o log são os
  * mesmos das duas abas, e é o mundo que diz a eles como ler o modelo. */
-export type Mundo = "encadeada" | "vetor" | "lista" | "ordenacao" | "busca";
+export type Mundo =
+  | "encadeada"
+  | "vetor"
+  | "lista"
+  | "ordenacao"
+  | "busca"
+  | "arvore";
 
 export interface Estrutura {
   tipo: number;
   nome: Chave;
   mundo: Mundo;
   /* Famílias iguais aparecem juntas no seletor de implementação. */
-  familia: "pilha" | "fila" | "lista" | "busca";
+  familia: "pilha" | "fila" | "lista" | "busca" | "arvore";
   rotuloInserir: Chave;
   rotuloRemover: Chave;
   rotuloConsultar: Chave;
@@ -33,6 +39,10 @@ export interface Estrutura {
   /* O vtable dela tem `buscar`. Não é o mesmo que ter posição: no vetor
    * ordenado a posição é consequência do valor, e só a busca existe. */
   buscavel?: boolean;
+  /* Remove por valor e percorre — os dois membros que a árvore trouxe para o
+   * vtable. Numa árvore a posição não existe, e é a remoção por valor que traz
+   * os três casos. */
+  arvore?: boolean;
 }
 
 export const ESTRUTURAS: Estrutura[] = [
@@ -130,6 +140,21 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloRemover: "op.removerMenor",
     rotuloConsultar: "op.menor",
     buscavel: true,
+  },
+  /* A ABB é a primeira estrutura que não é linear, e mesmo assim entrou pelo
+   * mesmo vtable: `remover` sem argumento quer dizer "remova o menor", que é
+   * o que uma fila de prioridade faria, e os dois membros novos cobrem o que
+   * ela tem de próprio. */
+  {
+    tipo: Tipo.TIPO_ABB,
+    nome: "estrutura.abb",
+    mundo: "arvore",
+    familia: "arvore",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerMenor",
+    rotuloConsultar: "op.menor",
+    buscavel: true,
+    arvore: true,
   },
 ];
 

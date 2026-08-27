@@ -3,7 +3,7 @@
 
 import { EvKind, Cnt, Ptr, Tag, STR_CHAVES } from "../core/ops";
 import type { Ev } from "../core/bridge";
-import { contador, type Modelo } from "../model/modelo";
+import { alturaDaArvore, alvoDe, contador, type Modelo } from "../model/modelo";
 import { t, type Chave } from "../i18n";
 import type { Mundo } from "./Estruturas";
 
@@ -36,7 +36,30 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "busca") {
+  if (mundo === "arvore") {
+    /* Altura contra altura mínima é o painel inteiro desta estrutura.
+     *
+     * A mínima é ⌈log₂(n+1)⌉ — a altura que uma árvore com esses n nós teria
+     * se estivesse perfeitamente equilibrada. Os dois números lado a lado
+     * dizem, sem texto, o quanto esta árvore está torta; e quando a AVL
+     * chegar, é a igualdade entre eles que vai ser o argumento dela. */
+    const nos = modelo.nos.size;
+    const altura = alturaDaArvore(modelo, alvoDe(modelo, Ptr.PTR_RAIZ));
+    const ideal = nos === 0 ? 0 : Math.ceil(Math.log2(nos + 1));
+
+    linhas.length = 0;
+    linhas.push([t("metrica.tamanho"), String(tamanho)]);
+    linhas.push([t("metrica.altura"), String(altura)]);
+    linhas.push([t("metrica.alturaIdeal"), String(ideal)]);
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+    linhas.push([
+      t("metrica.alocacoes"),
+      String(contador(modelo, Cnt.CNT_ALOCACOES)),
+    ]);
+  } else if (mundo === "busca") {
     /* Comparações primeiro, e isso é a tela inteira: no modo comparar, o
      * número da sequencial e o da binária lado a lado são o argumento. As
      * escritas vêm logo depois porque a inserção ordenada é o preço pago pela
@@ -132,6 +155,7 @@ const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
   [Ptr.PTR_FIM]: "log.fim",
   [Ptr.PTR_INICIO]: "log.inicio",
   [Ptr.PTR_CURSOR]: "log.cursor",
+  [Ptr.PTR_RAIZ]: "log.raiz",
 };
 
 /* O mesmo EV_PTR_SET carrega coisas diferentes conforme o mundo, e sem saber
@@ -168,6 +192,13 @@ export function descrever(ev: Ev, mundo: Mundo): string {
     case EvKind.EV_NODE_FREE:
       return `${t("log.noLiberado")} ${no(ev.a)}`;
     case EvKind.EV_EDGE_SET:
+      /* O mesmo slot quer dizer coisas diferentes conforme o mundo: na lista
+       * dupla é prox e ant, na árvore é esquerda e direita. Sem dizer qual,
+       * o log de uma remoção com dois filhos fica ilegível. */
+      if (mundo === "arvore") {
+        const lado = ev.b === 0 ? t("log.esquerda") : t("log.direita");
+        return `${no(ev.a)} ${lado} ${no(ev.c)}`;
+      }
       return `${no(ev.a)} ${t("log.aresta")} ${no(ev.c)}`;
     case EvKind.EV_PTR_SET: {
       const nome = NOME_PONTEIRO[ev.a];
@@ -230,6 +261,9 @@ export function descrever(ev: Ev, mundo: Mundo): string {
       if (ev.c !== 0) return `${nome} ${ev.b}…${ev.c}`;
       return ev.b !== 0 ? `${nome} ${ev.b}` : nome;
     }
+    case EvKind.EV_NODE_SET:
+      return `${no(ev.a)} = ${ev.c}`;
+
     case EvKind.EV_VISIT:
       return `${t("log.visita")} ${no(ev.a)}`;
     case EvKind.EV_UNVISIT:

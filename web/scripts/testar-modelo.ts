@@ -10,7 +10,13 @@ import type { Ev } from "../src/core/bridge";
 import { Cnt, EvKind, Ptr, Src, Str, Tag } from "../src/core/ops";
 import { Player } from "../src/core/player";
 import { aplicar } from "../src/model/aplicar";
-import { alvoDe, contador, modeloNovo, type Modelo } from "../src/model/modelo";
+import {
+  alturaDaArvore,
+  alvoDe,
+  contador,
+  modeloNovo,
+  type Modelo,
+} from "../src/model/modelo";
 
 let checagens = 0;
 const falhas: string[] = [];
@@ -426,6 +432,98 @@ CASO("voltar no tempo desfaz a ordenação inteira, reexecutando");
     Tag.TAG_NENHUMA,
     "e sem a marca de ordenado",
   );
+}
+
+/* ---- árvore ------------------------------------------------------------ */
+
+/* Os eventos que o abb.c emite ao criar um nó, na ordem. Os dois filhos nulos
+ * são anunciados de propósito: o desenho precisa saber que o nó tem dois
+ * lugares vazios, e não que ele não tem lugar nenhum. */
+function noArvore(id: number, valor: number): Ev[] {
+  return [
+    ev(EvKind.EV_NODE_NEW, id, valor),
+    ev(EvKind.EV_EDGE_SET, id, 0, 0),
+    ev(EvKind.EV_EDGE_SET, id, 1, 0),
+  ];
+}
+
+CASO("a altura é medida no desenho, não recebida do C");
+{
+  const m = reproduzir([
+    ...noArvore(1, 50),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    ...noArvore(2, 30),
+    ev(EvKind.EV_EDGE_SET, 1, 0, 2),
+    ...noArvore(3, 70),
+    ev(EvKind.EV_EDGE_SET, 1, 1, 3),
+    ...noArvore(4, 20),
+    ev(EvKind.EV_EDGE_SET, 2, 0, 4),
+  ]);
+
+  igual(alturaDaArvore(m, alvoDe(m, Ptr.PTR_RAIZ)), 3, "três níveis");
+  igual(m.nos.size, 4, "quatro nós");
+}
+
+CASO("a árvore degenerada tem altura n, e é isso que a AVL vai desentortar");
+{
+  const eventos: Ev[] = [
+    ...noArvore(1, 1),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+  ];
+  for (let k = 2; k <= 8; k++) {
+    eventos.push(...noArvore(k, k), ev(EvKind.EV_EDGE_SET, k - 1, 1, k));
+  }
+  const m = reproduzir(eventos);
+
+  igual(
+    alturaDaArvore(m, alvoDe(m, Ptr.PTR_RAIZ)),
+    8,
+    "oito níveis para oito nós",
+  );
+}
+
+CASO("a altura de uma árvore vazia é zero, e um ciclo não trava a medida");
+{
+  const m = reproduzir([]);
+  igual(alturaDaArvore(m, 0), 0, "sem raiz");
+
+  /* Um EV_EDGE_SET defeituoso pode fechar um ciclo. Uma árvore não tem
+   * ciclos, mas travar a aba num laço infinito seria o pior jeito de
+   * descobrir isso. */
+  const ciclo = reproduzir([
+    ...noArvore(1, 1),
+    ...noArvore(2, 2),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    ev(EvKind.EV_EDGE_SET, 1, 1, 2),
+    ev(EvKind.EV_EDGE_SET, 2, 1, 1),
+  ]);
+  igual(alturaDaArvore(ciclo, 1), 2, "para no nó já visto");
+}
+
+CASO("EV_NODE_SET troca o valor no lugar — é o sucessor subindo");
+{
+  const m = reproduzir([
+    ...noArvore(1, 50),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    /* slot 0 é o da chave; o C manda o valor em c. */
+    ev(EvKind.EV_NODE_SET, 1, 0, 60),
+  ]);
+  igual(m.nos.get(1)?.valor ?? -1, 60, "o nó ficou com o valor do sucessor");
+  igual(m.nos.size, 1, "e nenhum nó foi criado por isso");
+}
+
+CASO("liberar um nó desfaz as arestas que apontavam para ele");
+{
+  const m = reproduzir([
+    ...noArvore(1, 50),
+    ...noArvore(2, 30),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    ev(EvKind.EV_EDGE_SET, 1, 0, 2),
+    ev(EvKind.EV_NODE_FREE, 2),
+  ]);
+  igual(m.nos.size, 1, "sobrou a raiz");
+  igual(m.nos.get(1)?.arestas.get(0) ?? -1, 0, "e o filho esquerdo virou NULL");
+  igual(alturaDaArvore(m, 1), 1, "com a altura caindo junto");
 }
 
 if (falhas.length > 0) {

@@ -10,7 +10,8 @@
  *   cli ordenacao 12 g0 o4       quicksort sobre doze valores aleatórios
  *
  *   i<valor>  inserir      r  remover      c  consultar      l  limpar
- *   b<valor>  buscar
+ *   b<valor>  buscar      x<valor>  remover por valor (árvore)
+ *   p<ordem>  percurso: 0 em ordem, 1 pré-ordem, 2 pós-ordem
  *   g<dist>   gerar a cena da aba de ordenação (semente 1)
  *   o<alg>    ordenar com ALG_<alg>
  */
@@ -47,6 +48,7 @@ static const struct Nomeado TIPOS[] = {
     { "ordenacao", TIPO_ORDENACAO },
     { "busca_seq", TIPO_BUSCA_SEQ },
     { "busca_bin", TIPO_BUSCA_BIN },
+    { "abb",       TIPO_ABB       },
 };
 
 static int32_t tipo_por_nome(const char *nome)
@@ -103,6 +105,14 @@ static void executar(const char *passo)
     case 'b':
         snprintf(rotulo, sizeof rotulo, "buscar %s", passo + 1);
         despejar(rotulo, ds_call(OP_BUSCAR, atoi(passo + 1), 0, 0));
+        break;
+    case 'x':
+        snprintf(rotulo, sizeof rotulo, "remover %s", passo + 1);
+        despejar(rotulo, ds_call(OP_REMOVER_VALOR, atoi(passo + 1), 0, 0));
+        break;
+    case 'p':
+        snprintf(rotulo, sizeof rotulo, "percurso %s", passo + 1);
+        despejar(rotulo, ds_call(OP_PERCURSO, atoi(passo + 1), 0, 0));
         break;
     case 'g':
         /* O tamanho é a capacidade da sessão: gerar menos que o vetor inteiro

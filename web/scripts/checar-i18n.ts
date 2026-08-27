@@ -36,6 +36,48 @@ for (const k of chavesPt) {
   if (a === "" || b === "") problemas.push(`tradução vazia: ${k}`);
 }
 
+/* Bytes UTF-8 lidos como latin-1 e regravados como UTF-8.
+ *
+ * O erro entra em silêncio — o arquivo continua UTF-8 válido, o TypeScript
+ * compila, o teste de chaves passa — e só aparece na tela, com uma seta virando
+ * três caracteres de lixo. Aconteceu de verdade, ao acrescentar as traduções da
+ * árvore por um console em cp1252.
+ *
+ * A detecção é a própria definição do erro: se a frase, recodificada em
+ * latin-1, ainda for UTF-8 válido E der outra coisa, ela passou pela conversão
+ * errada. Texto correto não sobrevive ao encode('latin-1') — e é exatamente
+ * por isso que o teste não tem falso positivo. */
+function passouPelaCodificacaoErrada(frase: string): boolean {
+  const bytes: number[] = [];
+
+  for (const c of frase) {
+    const ponto = c.codePointAt(0)!;
+    if (ponto > 0xff) return false;   /* não cabe em latin-1: está correta */
+    bytes.push(ponto);
+  }
+
+  try {
+    const decodificada = new TextDecoder("utf-8", { fatal: true }).decode(
+      new Uint8Array(bytes),
+    );
+    return decodificada !== frase;
+  } catch {
+    return false;   /* não era UTF-8 disfarçado */
+  }
+}
+
+for (const k of chavesPt) {
+  for (const [idioma, dic] of [
+    ["pt.ts", pt],
+    ["en.ts", en],
+  ] as const) {
+    const frase = (dic as Record<string, string>)[k];
+    if (frase && passouPelaCodificacaoErrada(frase)) {
+      problemas.push(`texto com codificação trocada em ${idioma}: ${k}`);
+    }
+  }
+}
+
 if (problemas.length > 0) {
   console.error("checar-i18n falhou:");
   for (const p of problemas) console.error(`  - ${p}`);

@@ -79,6 +79,7 @@ typedef enum {
     SRC_MERGE,
     SRC_CENA,
     SRC_VETOR_ORD,
+    SRC_ABB,
     SRC_COUNT
 } ds_src;
 
@@ -116,6 +117,17 @@ typedef enum {
     STR_VETOR_CHEIO,
     STR_DESCARTA_ESQ,   /* a busca binária joga fora a metade de baixo      */
     STR_DESCARTA_DIR,
+
+    /* árvore de busca */
+    STR_VAI_ESQ,        /* o procurado é menor: desce à esquerda            */
+    STR_VAI_DIR,
+    STR_JA_EXISTE,
+    STR_CASO_FOLHA,         /* remoção, caso 1: o nó não tem filho          */
+    STR_CASO_UM_FILHO,      /* caso 2: o filho único sobe                   */
+    STR_CASO_DOIS_FILHOS,   /* caso 3: o sucessor em ordem toma o lugar     */
+    STR_PROCURA_SUCESSOR,
+    STR_SUBSTITUI,
+    STR_PERCURSO,
     STR_COUNT
 } ds_str;
 
@@ -144,6 +156,7 @@ typedef enum {
     PTR_I,
     PTR_J,
     PTR_MIN,
+    PTR_RAIZ,
     PTR_COUNT
 } ds_ptr;
 
@@ -183,6 +196,8 @@ typedef enum {
     OP_BUSCAR,          /* a = valor                                         */
     OP_GERAR,           /* a = n, b = DIST_*, c = semente                    */
     OP_ORDENAR,         /* a = ALG_*                                         */
+    OP_REMOVER_VALOR,   /* a = valor — a remoção da árvore é por valor        */
+    OP_PERCURSO,        /* a = PERC_*                                        */
     OP_COUNT
 } ds_op;
 
@@ -203,6 +218,7 @@ typedef enum {
     TIPO_ORDENACAO,     /* a sessão é um vetor a ordenar, não um TAD        */
     TIPO_BUSCA_SEQ,
     TIPO_BUSCA_BIN,
+    TIPO_ABB,
     TIPO_COUNT
 } ds_tipo;
 
@@ -242,5 +258,18 @@ typedef enum {
     DIST_MANUAL,
     DIST_COUNT
 } ds_dist;
+
+/* ---------------------------------------------------------------------------
+ * Percursos de árvore. A ordem dos três é a da aula, e é a do seletor.
+ *
+ * O percurso em ordem é o que prova que a árvore é de busca: ele sai
+ * crescente, e é essa a invariante que os testes verificam.
+ * ------------------------------------------------------------------------- */
+typedef enum {
+    PERC_EM_ORDEM,
+    PERC_PRE_ORDEM,
+    PERC_POS_ORDEM,
+    PERC_COUNT
+} ds_percurso;
 
 #endif /* DS_IDS_H */

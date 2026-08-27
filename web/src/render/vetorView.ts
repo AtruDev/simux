@@ -90,9 +90,16 @@ export class VetorView {
    * traduzi-los faria a tela falar de variáveis que não existem no arquivo. É
    * a mesma decisão de `topo` e `frente`. */
   private rotulos(): Rotulo[] {
-    if (this.ehBusca()) {
+    /* A sequencial não tem lo nem hi — ela tem um índice só. Desenhá-los
+     * apontando para a célula zero, que é onde um ponteiro nunca emitido cai,
+     * faria a tela afirmar que o algoritmo mantém uma faixa que ele não
+     * mantém. É metade da comparação sendo contada errado. */
+    if (this.tipo === Tipo.TIPO_BUSCA_SEQ) {
+      return [{ ptr: Ptr.PTR_CURSOR, texto: "i" }];
+    }
+    if (this.tipo === Tipo.TIPO_BUSCA_BIN) {
       return [
-        { ptr: Ptr.PTR_CURSOR, texto: this.tipo === Tipo.TIPO_BUSCA_BIN ? "meio" : "i" },
+        { ptr: Ptr.PTR_CURSOR, texto: "meio" },
         { ptr: Ptr.PTR_I, texto: "lo" },
         { ptr: Ptr.PTR_J, texto: "hi" },
       ];
@@ -236,14 +243,14 @@ export class VetorView {
     }
 
     this.ponteiros(m, x0, largura, y);
-    if (this.ehBusca()) this.chave(m, x0, y);
+    if (this.ehBusca()) this.chave(m, y);
   }
 
   /** A chave procurada, na célula auxiliar que o C emite antes de buscar.
    *
    * Toda comparação da busca é contra ela — é o `.c = 1` do EV_ARR_COMPARE.
    * Sem desenhá-la, o destaque da célula comparada não diria contra o quê. */
-  private chave(m: Modelo, x0: number, y: number): void {
+  private chave(m: Modelo, y: number): void {
     const ctx = this.ctx;
     const p = this.paleta;
     const valor = m.vetor?.aux?.[0] ?? null;
@@ -251,7 +258,9 @@ export class VetorView {
 
     const largura = 74;
     const altura = 34;
-    const x = x0;
+    /* Centrada, e não no canto: o canto de cima à esquerda é do nome da faixa
+     * no modo comparar, e as duas coisas se sobrepunham. */
+    const x = (this.larguraCss - largura) / 2;
     const topo = y - 74;
 
     this.retangulo(x, topo, largura, altura, RAIO);
@@ -286,6 +295,11 @@ export class VetorView {
     const rotulos = this.rotulos();
 
     rotulos.forEach((rotulo, nivel) => {
+      /* Ponteiro que a estrutura nunca emitiu não é desenhado. Sem isto ele
+       * cairia na célula zero, que é o alvo padrão, e a tela afirmaria algo
+       * que o algoritmo não fez. */
+      if (!m.ponteiros.has(rotulo.ptr)) return;
+
       const alvo = alvoDe(m, rotulo.ptr);
       const baseY = y + ALTURA_CELULA + 24 + nivel * 22;
 

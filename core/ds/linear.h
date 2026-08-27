@@ -45,6 +45,23 @@ typedef struct {
     int   (*remover_em)(void *s, int pos, elem_t *saida);
     /* devolve OK e a posição por ponteiro, ou ERR_NAO_ENCONTRADO */
     int   (*buscar)(const void *s, elem_t valor, int *pos);
+
+    /* ---- opcionais da árvore -------------------------------------------- *
+     * A árvore entrou por aqui pelo mesmo motivo que a lista: um segundo
+     * caminho de despacho dobraria api.c e a interface inteira, para uma
+     * estrutura que já cabe em inserir/remover/consultar/buscar.
+     *
+     * O que ela tem de próprio são dois. Remover por VALOR — numa árvore a
+     * posição não existe, e é essa remoção que traz os três casos que a aula
+     * inteira gira em torno. E percorrer, que não é remoção nem consulta: é a
+     * estrutura sendo lida numa ordem que ela mesma define.
+     *
+     * `remover` sem argumento continua valendo, e quer dizer "remova o
+     * menor" — é o que a fila de prioridade faria, e é o que o vetor
+     * ordenado já faz.                                                      */
+    int   (*remover_valor)(void *s, elem_t valor);
+    /* ordem é um PERC_* de ids.h */
+    int   (*percurso)(const void *s, int ordem);
 } TAD_Linear;
 
 extern const TAD_Linear PILHA_ENC;
@@ -61,5 +78,7 @@ extern const TAD_Linear LISTA_CIRCULAR;
  * O(n) contra O(log n). */
 extern const TAD_Linear BUSCA_SEQ;
 extern const TAD_Linear BUSCA_BIN;
+
+extern const TAD_Linear ABB;
 
 #endif /* DS_LINEAR_H */

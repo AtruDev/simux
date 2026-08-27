@@ -17,6 +17,7 @@
 
 #include "ds/api.h"
 
+#include "ds/arvore.h"
 #include "ds/busca.h"
 
 #include <stddef.h>
@@ -107,6 +108,7 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_LISTA_CIRCULAR: return &LISTA_CIRCULAR;
     case TIPO_BUSCA_SEQ: return &BUSCA_SEQ;
     case TIPO_BUSCA_BIN: return &BUSCA_BIN;
+    case TIPO_ABB:       return &ABB;
     default:             return NULL;
     }
 }
@@ -349,6 +351,21 @@ API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
             return concluir(ERR_OP_DESCONHECIDA);
         }
         return concluir(ATIVA.tad->remover_em(ATIVA.estrutura, b, &descartado));
+
+    /* Remover por VALOR é da árvore: nela a posição não existe, e é essa
+     * remoção que traz os três casos. O ponteiro nulo no vtable responde por
+     * quem não tem — pedir isso a uma pilha é operação desconhecida. */
+    case OP_REMOVER_VALOR:
+        if (ATIVA.tad->remover_valor == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
+        return concluir(ATIVA.tad->remover_valor(ATIVA.estrutura, a));
+
+    case OP_PERCURSO:
+        if (ATIVA.tad->percurso == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
+        return concluir(ATIVA.tad->percurso(ATIVA.estrutura, a));
 
     case OP_BUSCAR:
         if (ATIVA.tad->buscar == NULL) {

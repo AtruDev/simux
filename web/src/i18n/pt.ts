@@ -211,6 +211,31 @@ const pt: Dicionario = {
   STR_DESCARTA_ESQ: "o procurado é maior: a metade de baixo sai",
   STR_DESCARTA_DIR: "o procurado é menor: a metade de cima sai",
 
+  "estrutura.abb": "Árvore binária de busca",
+  "op.inserir": "inserir",
+  "op.removerValor": "remover o valor",
+  "op.percurso": "percorrer",
+  "perc.emOrdem": "em ordem",
+  "perc.preOrdem": "pré-ordem",
+  "perc.posOrdem": "pós-ordem",
+  "metrica.altura": "altura",
+  "metrica.alturaIdeal": "altura mínima",
+
+  STR_VAI_ESQ: "o procurado é menor: desce à esquerda",
+  STR_VAI_DIR: "o procurado é maior: desce à direita",
+  STR_JA_EXISTE: "o valor já está na árvore",
+  STR_CASO_FOLHA: "caso 1: o nó é folha — sai sem substituto",
+  STR_CASO_UM_FILHO: "caso 2: o filho único sobe para o lugar dele",
+  STR_CASO_DOIS_FILHOS: "caso 3: dois filhos — quem sobe é o sucessor em ordem",
+  STR_PROCURA_SUCESSOR:
+    "o sucessor é o menor da subárvore direita: à direita uma vez, e à esquerda o resto",
+  STR_SUBSTITUI: "o valor do sucessor toma o lugar, e o sucessor é que sai",
+  STR_PERCURSO: "percorrendo",
+
+  "log.raiz": "raiz passa a ser",
+  "log.esquerda": "esquerda →",
+  "log.direita": "direita →",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

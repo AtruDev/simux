@@ -101,6 +101,33 @@ export function contador(m: Modelo, cnt: number): number {
 }
 
 /**
+ * A altura da árvore, medida no desenho.
+ *
+ * Não vem do C de propósito. O painel tem que dizer a altura da árvore que
+ * está na tela, e a do C é a de depois que a operação inteira terminou —
+ * arrastar a barra do transporte para o meio faria os dois discordarem.
+ * Calculada aqui, o número e o desenho não têm como divergir.
+ *
+ * `visto` protege contra um ciclo vindo de um trace defeituoso: uma árvore não
+ * tem ciclos, mas um EV_EDGE_SET errado, sim.
+ */
+export function alturaDaArvore(m: Modelo, raiz: number): number {
+  const visto = new Set<number>();
+
+  function medir(id: number): number {
+    if (id === 0 || !m.nos.has(id) || visto.has(id)) return 0;
+    visto.add(id);
+
+    const no = m.nos.get(id)!;
+    const esq = medir(no.arestas.get(0) ?? 0);
+    const dir = medir(no.arestas.get(1) ?? 0);
+    return 1 + Math.max(esq, dir);
+  }
+
+  return medir(raiz);
+}
+
+/**
  * A ordem lógica de uma fila circular: os índices físicos, a partir da frente,
  * dando a volta.
  *

@@ -849,7 +849,9 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       previa: elas entraram como **duas implementações do mesmo TAD**, e o modo
       comparar da Fase 2 as põe lado a lado sem uma linha de interface nova
 - [ ] ABB: inserir, buscar, remover (os três casos), percursos
-- [ ] Layout Reingold–Tilford
+- [x] Layout Reingold–Tilford, com um desvio deliberado: nó de filho único
+      fica meio passo para o lado, senão a árvore degenerada desenharia uma
+      linha vertical e esconderia a degeneração que a aba existe para mostrar
 - [ ] AVL com rotações destacadas e FB por nó
 - [ ] Hash encadeado e hash aberto (três sondagens)
 - [ ] Invariantes + fuzz de ABB/AVL

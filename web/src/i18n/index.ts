@@ -163,7 +163,19 @@ export type ChaveUI =
   | "op.menor"
   | "legenda.chave"
   | "legenda.faixaViva"
-  | "legenda.achado";
+  | "legenda.achado"
+  | "estrutura.abb"
+  | "op.inserir"
+  | "op.removerValor"
+  | "op.percurso"
+  | "perc.emOrdem"
+  | "perc.preOrdem"
+  | "perc.posOrdem"
+  | "metrica.altura"
+  | "metrica.alturaIdeal"
+  | "log.raiz"
+  | "log.esquerda"
+  | "log.direita";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

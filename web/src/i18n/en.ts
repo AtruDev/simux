@@ -123,9 +123,9 @@ const en: Dicionario = {
   "alg.quick": "Quicksort",
   "alg.merge": "Mergesort",
 
-  "ordem.quadratica": "O(nÂ²)",
+  "ordem.quadratica": "O(n²)",
   "ordem.linearitmica": "O(n log n)",
-  "ordem.shell": "between O(n logÂ² n) and O(nÂ²)",
+  "ordem.shell": "between O(n log² n) and O(n²)",
 
   "dist.aleatorio": "random",
   "dist.aleatorioPorque": "the average case, which is what the tables measure",
@@ -164,14 +164,14 @@ const en: Dicionario = {
   "legenda.cursores": "cursors i, j and min",
 
   "empirico.rodar": "measure",
-  "empirico.rodando": "measuringâ¦",
+  "empirico.rodando": "measuring…",
   "empirico.metrica": "metric",
   "empirico.comparacoes": "comparisons",
   "empirico.escritas": "writes",
   "empirico.vazio": "Nothing measured yet.",
   "empirico.explica":
     "Every point is a real run, with the trace switched off. The thin lines " +
-    "are the theoretical curves, anchored at each algorithm's first point â " +
+    "are the theoretical curves, anchored at each algorithm's first point — " +
     "if the measurement follows the curve, the theory holds.",
   "empirico.teoria": "theoretical curves",
   "empirico.limite": "each algorithm runs as far as it is still worth measuring",
@@ -187,7 +187,7 @@ const en: Dicionario = {
   "log.marcaPivo": "becomes the pivot",
 
   STR_ORDENADO: "array sorted",
-  STR_SEM_TROCAS: "no swaps in this pass â it is already sorted",
+  STR_SEM_TROCAS: "no swaps in this pass — it is already sorted",
   STR_PASSADA: "pass",
   STR_PROCURANDO_MIN: "looking for the smallest in the range",
   STR_DESLOCANDO: "shifting right to open a slot",
@@ -205,9 +205,35 @@ const en: Dicionario = {
   "legenda.faixaViva": "range that can still hold the key",
   "legenda.achado": "found",
 
-  STR_VETOR_CHEIO: "the array is full â n == capacity",
+  STR_VETOR_CHEIO: "the array is full — n == capacity",
   STR_DESCARTA_ESQ: "the key is larger: the bottom half goes",
   STR_DESCARTA_DIR: "the key is smaller: the top half goes",
+
+  "estrutura.abb": "Binary search tree",
+  "op.inserir": "insert",
+  "op.removerValor": "remove the value",
+  "op.percurso": "traverse",
+  "perc.emOrdem": "in-order",
+  "perc.preOrdem": "pre-order",
+  "perc.posOrdem": "post-order",
+  "metrica.altura": "height",
+  "metrica.alturaIdeal": "minimum height",
+
+  STR_VAI_ESQ: "the key is smaller: go left",
+  STR_VAI_DIR: "the key is larger: go right",
+  STR_JA_EXISTE: "the value is already in the tree",
+  STR_CASO_FOLHA: "case 1: the node is a leaf — nothing replaces it",
+  STR_CASO_UM_FILHO: "case 2: the only child moves up into its place",
+  STR_CASO_DOIS_FILHOS:
+    "case 3: two children — the in-order successor moves up",
+  STR_PROCURA_SUCESSOR:
+    "the successor is the smallest of the right subtree: right once, then left all the way",
+  STR_SUBSTITUI: "the successor's value takes the place, and the successor is what goes",
+  STR_PERCURSO: "traversing",
+
+  "log.raiz": "root is now",
+  "log.esquerda": "left →",
+  "log.direita": "right →",
 
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
