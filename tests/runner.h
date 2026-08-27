@@ -25,5 +25,6 @@ void suite_idmap(void);
 void suite_pilha(void);
 void suite_fila(void);
 void suite_fuzz(void);
+void suite_api(void);
 
 #endif /* RUNNER_H */

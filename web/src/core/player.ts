@@ -32,9 +32,40 @@ export interface FotoPlayer {
   readonly geracao: number;
 }
 
+/** Os eventos que uma operação emitiu, uma lista por trilha. */
+export type Operacao = Ev[][];
+
+/* Um passo da linha do tempo: o que cada trilha faz neste instante.
+ *
+ * null é "esta trilha já acabou a sua parte da operação e espera a outra". É
+ * daí que sai a sincronia do modo comparar: as duas implementações começam
+ * cada operação juntas, e a que precisa de menos eventos fica parada até a
+ * outra terminar. Sincronizar por evento não daria certo — o mesmo push emite
+ * cinco eventos na encadeada e quatro na de vetor, e as trilhas iam se
+ * desencontrando um pouco a cada operação. */
+type Quadro = Array<Ev | null>;
+
+/** Enfileira as operações em quadros, alinhando as trilhas em cada uma. */
+function emQuadros(ops: Operacao[], trilhas: number): Quadro[] {
+  const quadros: Quadro[] = [];
+
+  for (const op of ops) {
+    let passos = 0;
+    for (const eventos of op) passos = Math.max(passos, eventos.length);
+
+    for (let i = 0; i < passos; i++) {
+      const quadro: Quadro = new Array<Ev | null>(trilhas).fill(null);
+      for (let t = 0; t < trilhas; t++) quadro[t] = op[t]?.[i] ?? null;
+      quadros.push(quadro);
+    }
+  }
+
+  return quadros;
+}
+
 export class Player {
-  private eventos: Ev[] = [];
-  private modelo: Modelo = modeloNovo();
+  private quadros: Quadro[] = [];
+  private modelos: Modelo[] = [modeloNovo()];
   private i = 0;
   private vel = 1;
   private tocando = false;
@@ -73,17 +104,30 @@ export class Player {
   /* ---- leitura ------------------------------------------------------- */
 
   get estado(): Modelo {
-    return this.modelo;
+    return this.modelos[0]!;
   }
 
-  get eventoAtual(): Ev | null {
-    return this.i > 0 ? (this.eventos[this.i - 1] ?? null) : null;
+  /** Quantas trilhas a linha do tempo atual tem. */
+  get trilhas(): number {
+    return this.modelos.length;
   }
 
-  /** Eventos já aplicados, do mais recente para o mais antigo. */
-  historico(limite: number): Ev[] {
-    const inicio = Math.max(0, this.i - limite);
-    return this.eventos.slice(inicio, this.i).reverse();
+  estadoDe(trilha: number): Modelo {
+    return this.modelos[trilha] ?? this.modelos[0]!;
+  }
+
+  /** Eventos já aplicados numa trilha, do mais recente para o mais antigo.
+   *
+   * Os quadros vazios da trilha são pulados: o log mostra o que ela fez, e
+   * esperar a outra não é uma coisa que ela fez. */
+  historico(limite: number, trilha = 0): Ev[] {
+    const saida: Ev[] = [];
+
+    for (let j = this.i - 1; j >= 0 && saida.length < limite; j--) {
+      const ev = this.quadros[j]?.[trilha];
+      if (ev) saida.push(ev);
+    }
+    return saida;
   }
 
   ler = (): FotoPlayer => this.foto;
@@ -108,12 +152,20 @@ export class Player {
    * apontando para lugar nenhum. Isso é estado inicial, não operação para
    * assistir: parar antes deles deixaria a tela vazia sem explicação. */
   carregar(evs: Ev[]): void {
-    this.eventos = evs.slice();
+    this.carregarTrilhas([[evs]]);
+  }
+
+  /** A mesma coisa, com mais de uma trilha: o modo comparar. */
+  carregarTrilhas(ops: Operacao[]): void {
+    let trilhas = 1;
+    for (const op of ops) trilhas = Math.max(trilhas, op.length);
+
+    this.quadros = emQuadros(ops, trilhas);
+    this.modelos = Array.from({ length: trilhas }, modeloNovo);
     this.geracao++;
     this.i = 0;
-    this.modelo = modeloNovo();
     this.tocando = false;
-    this.irPara(this.eventos.length);
+    this.irPara(this.quadros.length);
   }
 
   /** Acrescenta o trace de uma operação nova e a mostra acontecendo.
@@ -124,13 +176,20 @@ export class Player {
    * operações que de fato aconteceram, e foi exatamente o que acontecia ao
    * operar antes de a animação anterior terminar. */
   anexar(evs: Ev[]): void {
-    const inicioDosNovos = this.eventos.length;
-    this.eventos.push(...evs);
+    this.anexarTrilhas([[evs]]);
+  }
+
+  /** Acrescenta operações já alinhadas entre as trilhas. */
+  anexarTrilhas(ops: Operacao[]): void {
+    const inicioDosNovos = this.quadros.length;
+    const novos = emQuadros(ops, this.trilhas);
+
+    this.quadros.push(...novos);
 
     /* Volta ao instante anterior aos eventos novos, para eles serem vistos
      * acontecendo em vez de aparecerem prontos. */
     this.irPara(inicioDosNovos);
-    this.tocando = evs.length > 0;
+    this.tocando = novos.length > 0;
     this.avisar();
   }
 
@@ -141,19 +200,16 @@ export class Player {
    * que a reexecução paga o seu preço, e é o que dispensa escrever o
    * inverso de cada evento. */
   irPara(k: number): void {
-    const destino = Math.max(0, Math.min(k, this.eventos.length));
+    const destino = Math.max(0, Math.min(k, this.quadros.length));
+    let de = this.i;
 
     if (destino < this.i) {
-      this.modelo = modeloNovo();
-      for (let j = 0; j < destino; j++) {
-        const ev = this.eventos[j];
-        if (ev) aplicar(this.modelo, ev);
-      }
-    } else {
-      for (let j = this.i; j < destino; j++) {
-        const ev = this.eventos[j];
-        if (ev) aplicar(this.modelo, ev);
-      }
+      this.modelos = this.modelos.map(modeloNovo);
+      de = 0;
+    }
+
+    for (let j = de; j < destino; j++) {
+      this.aplicarQuadro(j);
     }
 
     this.i = destino;
@@ -167,7 +223,7 @@ export class Player {
   }
 
   play(): void {
-    if (this.i >= this.eventos.length) {
+    if (this.i >= this.quadros.length) {
       this.irPara(0);
     }
     this.tocando = true;
@@ -200,13 +256,12 @@ export class Player {
 
     if (this.tocando) {
       this.acumulado += dt * RITMO_BASE * this.vel;
-      while (this.acumulado >= 1 && this.i < this.eventos.length) {
-        const ev = this.eventos[this.i];
-        if (ev) aplicar(this.modelo, ev);
+      while (this.acumulado >= 1 && this.i < this.quadros.length) {
+        this.aplicarQuadro(this.i);
         this.i++;
         this.acumulado -= 1;
       }
-      if (this.i >= this.eventos.length) {
+      if (this.i >= this.quadros.length) {
         this.tocando = false;
         this.acumulado = 0;
       }
@@ -218,10 +273,22 @@ export class Player {
     this.raf = requestAnimationFrame(this.laco);
   }
 
+  /** Aplica o quadro j em cada trilha que tenha evento nele. */
+  private aplicarQuadro(j: number): void {
+    const quadro = this.quadros[j];
+    if (!quadro) return;
+
+    for (let t = 0; t < quadro.length; t++) {
+      const ev = quadro[t];
+      const modelo = this.modelos[t];
+      if (ev && modelo) aplicar(modelo, ev);
+    }
+  }
+
   private avisar(): void {
     const mudou =
       this.foto.i !== this.i ||
-      this.foto.total !== this.eventos.length ||
+      this.foto.total !== this.quadros.length ||
       this.foto.tocando !== this.tocando ||
       this.foto.velocidade !== this.vel ||
       this.foto.geracao !== this.geracao;
@@ -233,7 +300,7 @@ export class Player {
      * sobre com que frequência o React redesenha, não sobre a verdade. */
     this.foto = {
       i: this.i,
-      total: this.eventos.length,
+      total: this.quadros.length,
       tocando: this.tocando,
       velocidade: this.vel,
       geracao: this.geracao,

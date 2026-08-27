@@ -11,9 +11,12 @@ interface PropsMetricas {
   modelo: Modelo;
   i: number;
   total: number;
+  /* No modo comparar, o nome da implementação vira o título — senão os dois
+   * painéis dizem "MÉTRICAS" e não dá para saber qual é qual. */
+  titulo?: string;
 }
 
-export function PainelMetricas({ modelo, i, total }: PropsMetricas) {
+export function PainelMetricas({ modelo, i, total, titulo }: PropsMetricas) {
   const tamanho = contador(modelo, Cnt.CNT_TAMANHO);
 
   /* As duas implementações contam histórias diferentes de propósito: a
@@ -40,7 +43,7 @@ export function PainelMetricas({ modelo, i, total }: PropsMetricas) {
 
   return (
     <section className="painel">
-      <h2>{t("painel.metricas")}</h2>
+      <h2>{titulo ?? t("painel.metricas")}</h2>
       <dl className="metricas">
         {linhas.map(([rotulo, valor]) => (
           <div key={rotulo}>

@@ -5,8 +5,7 @@
  * quadro. É essa separação que faz um pop parecer um pop sem existir uma única
  * linha de código de animação de pop. */
 
-import { Ptr } from "../core/ops";
-import type { Player } from "../core/player";
+import { Ptr, Tipo } from "../core/ops";
 import { alvoDe, type Modelo } from "../model/modelo";
 import { lerPaleta, type Paleta } from "./tokens";
 
@@ -35,7 +34,10 @@ export class GrafoView {
   private observador: ResizeObserver;
   private semMovimento: boolean;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  constructor(
+    private canvas: HTMLCanvasElement,
+    private tipo: number,
+  ) {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("canvas 2d indisponível");
     this.ctx = ctx;
@@ -66,11 +68,31 @@ export class GrafoView {
 
   /* ---- layout --------------------------------------------------------- */
 
-  /** A cadeia a partir do topo, seguindo o slot 0 de cada nó. */
+  private ehFila(): boolean {
+    return this.tipo === Tipo.TIPO_FILA_ENC;
+  }
+
+  /** Os ponteiros que esta estrutura nomeia, o primeiro sendo a raiz.
+   *
+   * A pilha tem topo; a fila tem frente e fim. Sem isto o grafo desenhava
+   * "topo" também na fila encadeada — a cadeia até saía certa, porque o C
+   * emite os dois ponteiros e o alvo de PTR_TOPO ficava em zero, mas o rótulo
+   * mentia. Ficou visível no modo comparar, com a fila circular ao lado
+   * dizendo frente e fim. */
+  private rotulos(): Array<{ ptr: number; texto: string }> {
+    return this.ehFila()
+      ? [
+          { ptr: Ptr.PTR_FRENTE, texto: "frente" },
+          { ptr: Ptr.PTR_FIM, texto: "fim" },
+        ]
+      : [{ ptr: Ptr.PTR_TOPO, texto: "topo" }];
+  }
+
+  /** A cadeia a partir da raiz, seguindo o slot 0 de cada nó. */
   private cadeia(m: Modelo): number[] {
     const fila: number[] = [];
     const visto = new Set<number>();
-    let id = alvoDe(m, Ptr.PTR_TOPO);
+    let id = alvoDe(m, this.rotulos()[0]!.ptr);
 
     while (id !== 0 && m.nos.has(id) && !visto.has(id)) {
       visto.add(id);
@@ -91,8 +113,7 @@ export class GrafoView {
 
   /* ---- quadro --------------------------------------------------------- */
 
-  desenhar(player: Player): void {
-    const m = player.estado;
+  desenhar(m: Modelo): void {
     const ordem = this.cadeia(m);
     const cx = this.larguraCss / 2;
     const k = this.semMovimento ? 1 : SUAVIZACAO;
@@ -204,19 +225,48 @@ export class GrafoView {
       ctx.globalAlpha = 1;
     }
 
-    this.ponteiro(m, "topo", Ptr.PTR_TOPO);
+    this.ponteiros(m);
+  }
+
+  /** Desenha os ponteiros nomeados, juntando os que apontam para o mesmo nó.
+   *
+   * Com um elemento só, frente e fim são o mesmo nó — e duas caixas no mesmo
+   * lugar viram borrão. Juntas, elas dizem melhor o que está acontecendo, que
+   * é justamente o instante em que a fila tem um elemento. */
+  private ponteiros(m: Modelo): void {
+    const porAlvo = new Map<number, string[]>();
+
+    for (const rotulo of this.rotulos()) {
+      const alvo = alvoDe(m, rotulo.ptr);
+      porAlvo.set(alvo, [...(porAlvo.get(alvo) ?? []), rotulo.texto]);
+    }
+
+    /* Onde vai um ponteiro nulo.
+     *
+     * No alto quando não há nada na tela — é o desenho da estrutura vazia, e
+     * ele fica bem assim. Mas com nós em cena, o alto é a linha do primeiro
+     * deles: a caixa do ponteiro nulo caía em cima da caixa do ponteiro que
+     * aponta para ele. Acontece no meio de todo enfileirar, entre criar o nó
+     * e mover o fim, e é justamente o passo em que alguém para para olhar. */
+    let yNulo = MARGEM_TOPO;
+    for (const pose of this.poses.values()) {
+      yNulo = Math.max(yNulo, pose.y + ALTURA_NO + ESPACO);
+    }
+
+    for (const [alvo, textos] of porAlvo) {
+      this.ponteiro(textos.join(" · "), alvo, yNulo);
+    }
   }
 
   /** O rótulo do ponteiro nomeado, com a seta que o liga ao nó. */
-  private ponteiro(m: Modelo, rotulo: string, ptr: number): void {
+  private ponteiro(rotulo: string, alvo: number, yNulo: number): void {
     const ctx = this.ctx;
     const p = this.paleta;
-    const alvo = alvoDe(m, ptr);
     const pose = alvo !== 0 ? this.poses.get(alvo) : undefined;
 
-    const y = pose ? pose.y : MARGEM_TOPO;
+    const y = pose ? pose.y : yNulo;
     const xNo = pose ? pose.x : this.larguraCss / 2;
-    const larguraCaixa = 58;
+    const larguraCaixa = Math.max(58, rotulo.length * 8 + 16);
 
     /* Quando o ponteiro é nulo, a seta e o rótulo NULL ocupam espaço à
      * direita da caixa. Sem recuar, eles invadem a coluna dos nós — o que

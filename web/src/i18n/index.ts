@@ -77,7 +77,8 @@ export type ChaveUI =
   | "script.exemplo"
   | "script.ajuda"
   | "script.rodar"
-  | "script.linha";
+  | "script.linha"
+  | "estrutura.comparar";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

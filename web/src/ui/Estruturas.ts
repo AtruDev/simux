@@ -63,3 +63,15 @@ export const ESTRUTURAS: Estrutura[] = [
 export function estruturaDe(tipo: number): Estrutura {
   return ESTRUTURAS.find((e) => e.tipo === tipo) ?? ESTRUTURAS[0]!;
 }
+
+/** As duas implementações de uma família, sempre encadeada antes de vetor.
+ *
+ * É o par que o modo comparar põe lado a lado. A ordem é fixa para a faixa de
+ * cima não trocar de lugar ao mudar de pilha para fila. */
+export function parDaFamilia(familia: Estrutura["familia"]): Estrutura[] {
+  const daFamilia = ESTRUTURAS.filter((e) => e.familia === familia);
+  const encadeada = daFamilia.find((e) => e.mundo === "encadeada");
+  const vetor = daFamilia.find((e) => e.mundo === "vetor");
+
+  return encadeada && vetor ? [encadeada, vetor] : daFamilia;
+}

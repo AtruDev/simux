@@ -10,7 +10,6 @@
  * só as duas leituras juntas explicam o que se está vendo. */
 
 import { Cnt, Ptr, Tag, Tipo } from "../core/ops";
-import type { Player } from "../core/player";
 import { alvoDe, contador, ordemLogica, type Modelo } from "../model/modelo";
 import { lerPaleta, type Paleta } from "./tokens";
 
@@ -83,8 +82,7 @@ export class VetorView {
       : [{ ptr: Ptr.PTR_TOPO, texto: "topo" }];
   }
 
-  desenhar(player: Player): void {
-    const m = player.estado;
+  desenhar(m: Modelo): void {
     const k = this.semMovimento ? 1 : SUAVIZACAO;
 
     /* decaimento do brilho */

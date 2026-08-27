@@ -67,6 +67,8 @@ const en: Dicionario = {
   "log.fim": "rear becomes",
   "log.nulo": "NULL",
 
+  "estrutura.comparar": "compare both implementations",
+
   "painel.script": "Operation script",
   "script.exemplo": "push 10\npush 20\npop\n# or: i 1 2 3",
   "script.ajuda":

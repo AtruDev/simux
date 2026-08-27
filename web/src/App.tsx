@@ -15,14 +15,19 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { chamar, iniciar, sessaoNova, type Ev } from "./core/bridge";
+import { chamar, iniciar, selecionarSlot, sessaoNova } from "./core/bridge";
 import { Op, Status } from "./core/ops";
-import { Player } from "./core/player";
+import { Player, type Operacao } from "./core/player";
 import { ERR_CHAVES } from "./core/ops";
 import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
 import { GrafoView } from "./render/grafoView";
 import { VetorView } from "./render/vetorView";
-import { ESTRUTURAS, estruturaDe } from "./ui/Estruturas";
+import {
+  ESTRUTURAS,
+  estruturaDe,
+  parDaFamilia,
+  type Estrutura,
+} from "./ui/Estruturas";
 import { PainelCodigo } from "./ui/PainelCodigo";
 import { PainelScript } from "./ui/PainelScript";
 import { PainelLog, PainelMetricas } from "./ui/PainelLateral";
@@ -39,19 +44,38 @@ export function App() {
   const [valor, setValor] = useState("42");
   const [tipo, setTipo] = useState<number>(ESTRUTURAS[0]!.tipo);
   const [capacidade, setCapacidade] = useState(8);
+  const [comparar, setComparar] = useState(false);
 
   const estrutura = estruturaDe(tipo);
 
-  const refCanvas = useRef<HTMLCanvasElement>(null);
+  /* As trilhas em cena: uma só, ou o par de implementações da família.
+   *
+   * Tudo o que vem depois — sessões, operações, canvas, painéis — percorre
+   * esta lista. É o que evita um `if (comparando)` em cada um deles. */
+  const trilhas: Estrutura[] = useMemo(
+    () => (comparar ? parDaFamilia(estrutura.familia) : [estrutura]),
+    [comparar, estrutura],
+  );
+
+  const refCanvas = useRef<Array<HTMLCanvasElement | null>>([]);
 
   /* ---- núcleo --------------------------------------------------------- */
+
+  /* Abre uma sessão por trilha, cada uma no seu slot do core, e devolve os
+   * eventos de criação já separados por trilha. */
+  const abrirSessoes = useCallback((): Operacao => {
+    return trilhas.map((t_, slot) => {
+      selecionarSlot(slot);
+      return sessaoNova(t_.tipo, capacidade);
+    });
+  }, [trilhas, capacidade]);
 
   useEffect(() => {
     let vivo = true;
     iniciar()
       .then(() => {
         if (!vivo) return;
-        player.carregar(sessaoNova(tipo, capacidade));
+        player.carregarTrilhas([abrirSessoes()]);
         setCarregado(true);
       })
       .catch((e: unknown) => vivo && setErro(String(e)));
@@ -63,51 +87,87 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player]);
 
-  /* Trocar estrutura ou capacidade descarta a sessão e começa outra. O C não
-   * guarda histórico, e a linha do tempo do Player também não faria sentido
-   * atravessando duas estruturas diferentes. */
+  /* Trocar estrutura, capacidade ou modo descarta as sessões e começa outras.
+   * O C não guarda histórico, e a linha do tempo do Player também não faria
+   * sentido atravessando duas estruturas diferentes. */
   useEffect(() => {
     if (!carregado) return;
     try {
-      player.carregar(sessaoNova(tipo, capacidade));
+      player.carregarTrilhas([abrirSessoes()]);
       setErro(null);
     } catch (e) {
       setErro(String(e));
     }
-  }, [player, carregado, tipo, capacidade]);
+  }, [player, carregado, abrirSessoes]);
 
   /* ---- laço de animação ----------------------------------------------- */
 
   useEffect(() => player.iniciarLaco(), [player]);
 
   useEffect(() => {
-    const canvas = refCanvas.current;
-    if (!canvas || !carregado) return;
+    if (!carregado) return;
 
-    /* O renderizador é escolhido pelo mundo da estrutura, não pela estrutura:
+    /* Uma view por trilha, cada uma no seu canvas.
+     *
+     * Dois canvas, e não um dividido em duas faixas: assim cada view continua
+     * achando que a superfície é toda dela, e o CSS resolve a divisão. Ensinar
+     * as views a desenhar num retângulo seria mudança em duas delas para
+     * ganhar nada.
+     *
+     * O renderizador é escolhido pelo mundo da estrutura, não pela estrutura:
      * pilha e fila com vetor desenham no mesmo VetorView, e é o rótulo do
      * ponteiro que muda. */
-    const view =
-      estrutura.mundo === "vetor"
-        ? new VetorView(canvas, tipo)
-        : new GrafoView(canvas);
+    const views = trilhas.map((t_, k) => {
+      const canvas = refCanvas.current[k];
+      if (!canvas) return null;
+      return t_.mundo === "vetor"
+        ? new VetorView(canvas, t_.tipo)
+        : new GrafoView(canvas, t_.tipo);
+    });
 
-    const solta = player.aoQuadro(() => view.desenhar(player));
+    const solta = player.aoQuadro(() => {
+      views.forEach((view, k) => view?.desenhar(player.estadoDe(k)));
+    });
+
     return () => {
       solta();
-      view.destruir();
+      for (const view of views) view?.destruir();
     };
-  }, [player, carregado, tipo, estrutura.mundo]);
+  }, [player, carregado, trilhas]);
 
   /* ---- operações ------------------------------------------------------ */
 
+  /* Executa a mesma operação em cada trilha e devolve os eventos separados.
+   *
+   * É aqui que o modo comparar acontece: uma operação, dois slots, dois traces
+   * — e o Player os alinha para as duas começarem juntas. O erro que interessa
+   * é o da trilha 0; quando as duas implementações são do mesmo TAD elas
+   * recusam pelo mesmo motivo, e quando divergem é a de vetor que enche
+   * primeiro, o que o painel dela já mostra. */
+  const executar = useCallback(
+    (op: Op, a: number): { operacao: Operacao; erro: number } => {
+      const operacao: Operacao = [];
+      let erroDaPrimeira = Status.OK;
+
+      trilhas.forEach((_, slot) => {
+        selecionarSlot(slot);
+        const saida = chamar(op, a);
+        operacao.push(saida.eventos);
+        if (slot === 0) erroDaPrimeira = saida.erro;
+      });
+
+      return { operacao, erro: erroDaPrimeira };
+    },
+    [trilhas],
+  );
+
   const rodar = useCallback(
     (op: Op, a = 0) => {
-      const { eventos, erro: codigo } = chamar(op, a);
-      player.anexar(eventos);
+      const { operacao, erro: codigo } = executar(op, a);
+      player.anexarTrilhas([operacao]);
       setErro(textoDoErro(codigo));
     },
-    [player],
+    [player, executar],
   );
 
   /* Um script é uma anexação só, não uma por passo.
@@ -118,13 +178,13 @@ export function App() {
    * cima dele como se fosse uma operação longa. */
   const rodarScript = useCallback(
     (passos: Passo[]) => {
-      const eventos: Ev[] = [];
+      const operacoes: Operacao[] = [];
 
       for (const passo of passos) {
         /* Uma operação recusada no meio do script não interrompe o resto: a
          * estrutura fica intacta, e a recusa é justamente o que o exercício
          * costuma querer mostrar. */
-        eventos.push(...chamar(passo.op, passo.valor).eventos);
+        operacoes.push(executar(passo.op, passo.valor).operacao);
       }
 
       /* E ela não vai para o aviso de erro no alto.
@@ -134,16 +194,16 @@ export function App() {
        * ainda mostra a pilha cheia — um erro sobre um instante que ainda não
        * chegou. Ela chega sozinha, no seu momento: o EV_MSG está no trace, sai
        * no log e ilumina a linha do .c que recusou. */
-      player.anexar(eventos);
+      player.anexarTrilhas(operacoes);
       setErro(null);
     },
-    [player],
+    [player, executar],
   );
 
   const reiniciar = useCallback(() => {
-    player.carregar(sessaoNova(tipo, capacidade));
+    player.carregarTrilhas([abrirSessoes()]);
     setErro(null);
-  }, [player, tipo, capacidade]);
+  }, [player, abrirSessoes]);
 
   /* ---- atalhos de teclado --------------------------------------------- */
 
@@ -185,9 +245,6 @@ export function App() {
     setIdioma(novo);
   }
 
-  const modelo = player.estado;
-  const fonte = modelo.fonte;
-
   return (
     <div className="app">
       <header className="cabecalho">
@@ -204,7 +261,16 @@ export function App() {
             <h2>{t("estrutura.titulo")}</h2>
             <div className="lista-estruturas">
               {ESTRUTURAS.map((e) => (
-                <label key={e.tipo} className="opcao">
+                <label
+                  key={e.tipo}
+                  className={
+                    /* No modo comparar as duas implementações da família estão
+                     * em cena, então as duas ficam marcadas. */
+                    trilhas.some((x) => x.tipo === e.tipo)
+                      ? "opcao em-cena"
+                      : "opcao"
+                  }
+                >
                   <input
                     type="radio"
                     name="estrutura"
@@ -216,7 +282,16 @@ export function App() {
               ))}
             </div>
 
-            {estrutura.mundo === "vetor" && (
+            <label className="opcao opcao-comparar">
+              <input
+                type="checkbox"
+                checked={comparar}
+                onChange={(ev) => setComparar(ev.target.checked)}
+              />
+              <span>{t("estrutura.comparar")}</span>
+            </label>
+
+            {trilhas.some((x) => x.mundo === "vetor") && (
               <div className="campo campo-capacidade">
                 <label htmlFor="cap">{t("op.capacidade")}</label>
                 <input
@@ -312,11 +387,33 @@ export function App() {
 
           <PainelScript desativado={!carregado} aoRodar={rodarScript} />
 
-          <PainelMetricas modelo={modelo} i={foto.i} total={foto.total} />
+          {trilhas.map((faixa, k) => (
+            <PainelMetricas
+              key={faixa.tipo}
+              modelo={player.estadoDe(k)}
+              i={foto.i}
+              total={foto.total}
+              titulo={trilhas.length > 1 ? t(faixa.nome) : undefined}
+            />
+          ))}
         </aside>
 
         <main className="coluna centro">
-          <canvas ref={refCanvas} className="canvas" />
+          <div className="faixas">
+            {trilhas.map((faixa, k) => (
+              <div className="faixa" key={faixa.tipo}>
+                {trilhas.length > 1 && (
+                  <span className="faixa-nome">{t(faixa.nome)}</span>
+                )}
+                <canvas
+                  ref={(el) => {
+                    refCanvas.current[k] = el;
+                  }}
+                  className="canvas"
+                />
+              </div>
+            ))}
+          </div>
           <Transporte
             player={player}
             i={foto.i}
@@ -327,8 +424,25 @@ export function App() {
         </main>
 
         <aside className="coluna direita">
-          <PainelCodigo src={fonte?.src ?? 0} linha={fonte?.linha ?? 0} />
-          <PainelLog eventos={player.historico(12)} mundo={estrutura.mundo} />
+          {trilhas.map((faixa, k) => {
+            const daTrilha = player.estadoDe(k).fonte;
+            return (
+              <PainelCodigo
+                key={faixa.tipo}
+                src={daTrilha?.src ?? 0}
+                linha={daTrilha?.linha ?? 0}
+                titulo={trilhas.length > 1 ? t(faixa.nome) : undefined}
+              />
+            );
+          })}
+
+          {/* O log fica de fora do modo comparar: dois logs lado a lado
+              cansam mais do que informam, e o espaço vale mais para o segundo
+              painel de código, que é onde a comparação fica evidente — os dois
+              arquivos executando a mesma operação, cada um na sua linha. */}
+          {trilhas.length === 1 && (
+            <PainelLog eventos={player.historico(12)} mundo={estrutura.mundo} />
+          )}
         </aside>
       </div>
     </div>

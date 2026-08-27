@@ -5,7 +5,13 @@
  *
  * Desde que existe o vtable TAD_Linear, esta camada não sabe qual estrutura
  * está do outro lado: ela repassa inserir, remover e consultar. Acrescentar a
- * lista dupla não vai mudar uma linha daqui. */
+ * lista dupla não vai mudar uma linha daqui.
+ *
+ * As sessões são um vetor de slots, e não uma só, porque o modo comparar roda
+ * a mesma sequência nas duas implementações do mesmo TAD. ds_call continua
+ * sendo (op, a, b, c): o slot não entra na chamada, escolhe-se antes com
+ * ds_sessao_slot. Pôr o slot no ds_call custaria o quinto inteiro da fronteira
+ * para uma informação que muda uma vez por operação, não por chamada. */
 
 #define TR_SRC SRC_API
 
@@ -30,10 +36,19 @@
 #define API
 #endif
 
-static int32_t           g_erro = OK;
-static int32_t           g_tipo = TIPO_NENHUM;
-static const TAD_Linear *g_tad;
-static void             *g_estrutura;
+enum { SESSOES = 2 };
+
+typedef struct {
+    const TAD_Linear *tad;
+    void             *estrutura;
+    int32_t           tipo;
+} Sessao;
+
+static Sessao  g_sessao[SESSOES];
+static int32_t g_ativa = 0;
+static int32_t g_erro  = OK;
+
+#define ATIVA (g_sessao[g_ativa])
 
 /* As funções das estruturas devolvem OK ou um ERR_*; a fronteira devolve -1 e
  * guarda o motivo, porque é isso que o JS sabe testar. */
@@ -57,18 +72,53 @@ static const TAD_Linear *tad_de(int32_t tipo)
     }
 }
 
+/* Verdadeiro enquanto qualquer slot ainda tiver estrutura viva. */
+static int alguma_aberta(void)
+{
+    int i;
+
+    for (i = 0; i < SESSOES; i++) {
+        if (g_sessao[i].estrutura != NULL) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Escolhe o slot sobre o qual as próximas chamadas operam. */
+API int32_t ds_sessao_slot(int32_t slot)
+{
+    if (slot < 0 || slot >= SESSOES) {
+        g_erro = ERR_ARG_INVALIDO;
+        return -1;
+    }
+    g_ativa = slot;
+    return OK;
+}
+
+API int32_t ds_sessao_slots(void)
+{
+    return SESSOES;
+}
+
 API void ds_sessao_fim(void)
 {
-    if (g_estrutura != NULL && g_tad != NULL) {
-        g_tad->destruir(g_estrutura);
+    if (ATIVA.estrutura != NULL && ATIVA.tad != NULL) {
+        ATIVA.tad->destruir(ATIVA.estrutura);
     }
-    g_estrutura = NULL;
-    g_tad = NULL;
-    g_tipo = TIPO_NENHUM;
+    ATIVA.estrutura = NULL;
+    ATIVA.tad = NULL;
+    ATIVA.tipo = TIPO_NENHUM;
 
-    /* A numeração recomeça do 1 a cada sessão: os ids são identidade visual,
-     * e nada da sessão anterior continua na tela. */
-    idmap_reset();
+    /* A numeração recomeça do 1 a cada sessão: os ids são identidade visual, e
+     * nada da sessão anterior continua na tela.
+     *
+     * Mas só quando a última fecha. Zerar com o outro slot aberto renumeraria
+     * nós que continuam na tela — os ids que o frontend já recebeu deixariam
+     * de valer, e a comparação passaria a desenhar sobre o nó errado. */
+    if (!alguma_aberta()) {
+        idmap_reset();
+    }
 }
 
 API int32_t ds_sessao_nova(int32_t tipo, int32_t capacidade)
@@ -85,24 +135,24 @@ API int32_t ds_sessao_nova(int32_t tipo, int32_t capacidade)
 
     /* A criação já emite eventos — EV_ARR_INIT e os ponteiros iniciais —,
      * então o trace precisa estar zerado antes dela, e não depois. */
-    g_estrutura = tad->criar(capacidade);
-    if (g_estrutura == NULL) {
+    ATIVA.estrutura = tad->criar(capacidade);
+    if (ATIVA.estrutura == NULL) {
         return concluir(ERR_SEM_MEMORIA);
     }
 
-    g_tad = tad;
-    g_tipo = tipo;
+    ATIVA.tad = tad;
+    ATIVA.tipo = tipo;
     return OK;
 }
 
 API int32_t ds_tipo_sessao(void)
 {
-    return g_tipo;
+    return ATIVA.tipo;
 }
 
 API int32_t ds_capacidade(void)
 {
-    return (g_tad != NULL) ? g_tad->capacidade(g_estrutura) : -1;
+    return (ATIVA.tad != NULL) ? ATIVA.tad->capacidade(ATIVA.estrutura) : -1;
 }
 
 API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
@@ -120,22 +170,22 @@ API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
         return OK;
     }
 
-    if (g_tad == NULL) {
+    if (ATIVA.tad == NULL) {
         return concluir(ERR_SEM_SESSAO);
     }
 
     switch (op) {
     case OP_PUSH:
-        return concluir(g_tad->inserir(g_estrutura, a));
+        return concluir(ATIVA.tad->inserir(ATIVA.estrutura, a));
 
     case OP_POP:
-        return concluir(g_tad->remover(g_estrutura, &descartado));
+        return concluir(ATIVA.tad->remover(ATIVA.estrutura, &descartado));
 
     case OP_TOPO:
-        return concluir(g_tad->consultar(g_estrutura, &descartado));
+        return concluir(ATIVA.tad->consultar(ATIVA.estrutura, &descartado));
 
     case OP_LIMPAR:
-        g_tad->limpar(g_estrutura);
+        ATIVA.tad->limpar(ATIVA.estrutura);
         return OK;
 
     default:

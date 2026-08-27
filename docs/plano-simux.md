@@ -809,16 +809,16 @@ Só a versão **encadeada** aqui. A com vetor entra na Fase 2, e a razão é del
 
 A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3. Quando a aba de ordenação chegar, ele já existe e já foi depurado numa estrutura de 40 linhas.
 
-- [ ] `linear.h` + o vtable `TAD_Linear`; `pilha_enc` migrada para ele
-- [ ] `pilha_vet.c` — com **overflow** visível quando `n == cap`
-- [ ] `arrayModel` + `ArrayView` (células, índices, ponteiros nomeados)
-- [ ] `fila_enc.c` e `fila_vet.c` — a com vetor é a circular
-- [ ] Wrap-around desenhado, com a ordem lógica por cima das células
-- [ ] Seletor de implementação na barra lateral: `encadeada | vetor | comparar`
-- [ ] **Modo comparar**: duas sessões, dois traces, um `Player` só
+- [x] `linear.h` + o vtable `TAD_Linear`; `pilha_enc` migrada para ele
+- [x] `pilha_vet.c` — com **overflow** visível quando `n == cap`
+- [x] `arrayModel` + `ArrayView` (células, índices, ponteiros nomeados)
+- [x] `fila_enc.c` e `fila_vet.c` — a com vetor é a circular
+- [x] Wrap-around desenhado, com a ordem lógica por cima das células
+- [x] Seletor de implementação na barra lateral: `encadeada | vetor | comparar`
+- [x] **Modo comparar**: duas sessões, dois traces, um `Player` só
 - [ ] Lista simples, dupla, circular
-- [ ] Modo script de operações
-- [ ] Testes das quatro + fuzz diferencial (as duas implementações do mesmo TAD contra o mesmo modelo de referência — se divergirem, uma está errada)
+- [x] Modo script de operações
+- [x] Testes das quatro + fuzz diferencial (as duas implementações do mesmo TAD contra o mesmo modelo de referência — se divergirem, uma está errada)
 - **Pronto quando:** a mesma sequência de operações roda nas duas implementações lado a lado, e os contadores de `malloc` e de escritas contam histórias diferentes.
 
 > O fuzz diferencial fica especialmente barato aqui: as duas implementações têm a mesma interface, então você roda a mesma sequência aleatória nas duas e compara as saídas. Não precisa nem de modelo de referência — uma é o oráculo da outra.

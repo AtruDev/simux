@@ -24,6 +24,16 @@ int32_t     ds_sessao_nova(int32_t tipo, int32_t capacidade);
 void        ds_sessao_fim(void);
 int32_t     ds_tipo_sessao(void);
 
+/* Escolhe o slot de sessão sobre o qual as próximas chamadas operam, e quantos
+ * existem. Devolve OK, ou -1 e ERR_ARG_INVALIDO em ds_erro().
+ *
+ * Existem porque o modo comparar precisa das duas implementações do mesmo TAD
+ * vivas ao mesmo tempo, alimentadas pela mesma sequência. O slot fica fora do
+ * ds_call de propósito: ele muda uma vez por operação, não a cada chamada, e a
+ * fronteira continua sendo quatro inteiros. */
+int32_t     ds_sessao_slot(int32_t slot);
+int32_t     ds_sessao_slots(void);
+
 /* Capacidade da estrutura da sessão, ou -1 quando não há limite. */
 int32_t     ds_capacidade(void);
 

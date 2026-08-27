@@ -35,6 +35,23 @@ export function pronto(): boolean {
   return modulo !== null;
 }
 
+/** Escolhe o slot de sessão sobre o qual as próximas chamadas operam.
+ *
+ * O modo comparar mantém as duas implementações do mesmo TAD vivas ao mesmo
+ * tempo. O slot fica fora do ds_call de propósito: ele muda uma vez por
+ * operação, e a fronteira continua sendo quatro inteiros. */
+export function selecionarSlot(slot: number): void {
+  const m = exigirModulo();
+  if (m._ds_sessao_slot(slot) < 0) {
+    throw new ErroDs(m._ds_erro());
+  }
+}
+
+/** Quantos slots o core tem. */
+export function slots(): number {
+  return modulo ? modulo._ds_sessao_slots() : 1;
+}
+
 /** Abre uma sessão sobre uma estrutura, descartando a anterior.
  *
  * A capacidade é ignorada pelas implementações encadeadas, que não têm

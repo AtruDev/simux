@@ -254,6 +254,79 @@ CASO("trocar de linha do tempo avisa mesmo com o mesmo tamanho");
 
 /* ------------------------------------------------------------------------ */
 
+CASO("modo comparar: as trilhas andam alinhadas por operação");
+{
+  /* Uma operação que a trilha 0 faz em três eventos e a trilha 1 em um. Os
+   * quadros da operação têm que ser três: a trilha curta espera, não corre na
+   * frente. Antes deles vem o quadro da sessão, que é onde o vetor nasce. */
+  const player = new Player();
+  player.carregarTrilhas([[[], [ev(EvKind.EV_ARR_INIT, 8)]]]);
+  player.anexarTrilhas([
+    [
+      [
+        ev(EvKind.EV_NODE_NEW, 1, 10),
+        ev(EvKind.EV_EDGE_SET, 1, 0, 0),
+        ev(EvKind.EV_PTR_SET, Ptr.PTR_TOPO, 1),
+      ],
+      [ev(EvKind.EV_ARR_WRITE, 0, 10)],
+    ],
+  ]);
+
+  igual(player.trilhas, 2, "duas trilhas");
+  igual(player.ler().total, 4, "1 da sessão + 3 da trilha mais longa");
+
+  /* No primeiro passo da operação as duas já agiram: a curta escreveu na
+   * célula, a longa criou o nó. É o que faz a comparação ser legível. */
+  player.irPara(2);
+  igual(player.estadoDe(0).nos.size, 1, "trilha 0 criou o nó");
+  igual(player.estadoDe(1).vetor?.valores[0], 10, "trilha 1 escreveu a célula");
+
+  /* E no fim, a trilha curta não ganhou nada a mais por ter esperado. */
+  player.irPara(4);
+  igual(alvoDe(player.estadoDe(0), Ptr.PTR_TOPO), 1, "topo da trilha 0");
+  igual(player.estadoDe(1).nos.size, 0, "a trilha 1 não tem nós");
+  igual(player.estadoDe(1).vetor?.valores[0], 10, "e a célula continua escrita");
+}
+
+CASO("modo comparar: voltar reexecuta as duas trilhas");
+{
+  const player = new Player();
+  player.carregarTrilhas([[[], [ev(EvKind.EV_ARR_INIT, 8)]]]);
+  player.anexarTrilhas([
+    [[ev(EvKind.EV_NODE_NEW, 1, 10)], [ev(EvKind.EV_ARR_WRITE, 0, 10)]],
+    [[ev(EvKind.EV_NODE_NEW, 2, 20)], [ev(EvKind.EV_ARR_WRITE, 1, 20)]],
+  ]);
+
+  player.irPara(3);
+  igual(player.estadoDe(0).nos.size, 2, "dois nós no fim");
+  igual(player.estadoDe(1).vetor?.valores[1], 20, "e duas células escritas");
+
+  /* Voltar um passo tem que desfazer nas DUAS. Reexecutar só a trilha 0 é o
+   * erro que passaria despercebido: o canvas de cima ficaria certo e o de
+   * baixo continuaria mostrando o futuro. */
+  player.irPara(2);
+  igual(player.estadoDe(0).nos.size, 1, "um nó ao voltar");
+  igual(player.estadoDe(1).vetor?.valores[1] ?? null, null, "e a célula 1 vazia");
+}
+
+CASO("modo comparar: o histórico é por trilha");
+{
+  const player = new Player();
+  player.carregarTrilhas([[[], []]]);
+  player.anexarTrilhas([
+    [
+      [ev(EvKind.EV_NODE_NEW, 1, 10), ev(EvKind.EV_PTR_SET, Ptr.PTR_TOPO, 1)],
+      [ev(EvKind.EV_COUNT, Cnt.CNT_ESCRITAS, +1)],
+    ],
+  ]);
+  player.irPara(2);
+
+  igual(player.historico(9, 0).length, 2, "dois eventos na trilha 0");
+  /* Um só: o quadro em que a trilha 1 esperou não entra no log dela — esperar
+   * não é uma coisa que ela fez. */
+  igual(player.historico(9, 1).length, 1, "um evento na trilha 1");
+}
+
 if (falhas.length > 0) {
   console.error("testar-modelo falhou:");
   for (const f of falhas) console.error(`  - ${f}`);

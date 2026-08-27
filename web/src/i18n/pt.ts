@@ -69,6 +69,8 @@ const pt: Dicionario = {
   "log.fim": "fim passa a ser",
   "log.nulo": "NULO",
 
+  "estrutura.comparar": "comparar as duas implementações",
+
   "painel.script": "Script de operações",
   "script.exemplo": "empilhar 10\nempilhar 20\ndesempilhar\n# ou: i 1 2 3",
   "script.ajuda":

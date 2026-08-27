@@ -246,6 +246,54 @@ select:focus-visible {
   max-width: 5rem;
 }
 
+/* ---- faixas do modo comparar ------------------------------------------- */
+
+.faixas {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-auto-rows: 1fr;
+}
+
+/* Uma linha entre as faixas, e nenhuma quando há só uma. */
+.faixa + .faixa {
+  border-top: 1px solid var(--line);
+}
+
+.faixa {
+  position: relative;
+  min-height: 0;
+}
+
+.faixa-nome {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.9rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  pointer-events: none;
+}
+
+.faixa .canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Marcada por estar em cena, e não por ser a selecionada: no modo comparar as
+ * duas implementações da família rodam, e o rádio só aponta uma. */
+.opcao.em-cena:not(:has(input:checked)) {
+  color: var(--fg-2);
+  background: var(--bg-2);
+}
+
+.opcao-comparar {
+  margin-top: 0.5rem;
+}
+
 /* ---- script de operações ----------------------------------------------- */
 
 /* O <summary> carrega o mesmo <h2> dos outros painéis, então o cabeçalho fica
@@ -411,6 +459,9 @@ button.icone.principal {
 .codigo {
   flex: 1;
   overflow: auto;
+  /* offsetTop da linha ativa é medido a partir daqui: é como o painel rola
+     sozinho, sem arrastar a coluna junto. */
+  position: relative;
   font-family: var(--fonte-mono);
   font-size: 0.78rem;
   line-height: 1.55;
