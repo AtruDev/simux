@@ -80,6 +80,7 @@ typedef enum {
     SRC_CENA,
     SRC_VETOR_ORD,
     SRC_ABB,
+    SRC_AVL,
     SRC_COUNT
 } ds_src;
 
@@ -128,6 +129,14 @@ typedef enum {
     STR_PROCURA_SUCESSOR,
     STR_SUBSTITUI,
     STR_PERCURSO,
+
+    /* AVL */
+    STR_DESBALANCEOU,
+    STR_ROT_DIR,        /* caso esquerda-esquerda: uma rotação à direita     */
+    STR_ROT_ESQ,        /* caso direita-direita                              */
+    STR_ROT_ESQ_DIR,    /* caso esquerda-direita: rotação dupla              */
+    STR_ROT_DIR_ESQ,
+    STR_REEQUILIBRADA,
     STR_COUNT
 } ds_str;
 
@@ -168,6 +177,7 @@ typedef enum {
     CNT_COMPARACOES,
     CNT_ESCRITAS,
     CNT_ALOCACOES,
+    CNT_ROTACOES,
     CNT_COUNT
 } ds_cnt;
 
@@ -219,6 +229,7 @@ typedef enum {
     TIPO_BUSCA_SEQ,
     TIPO_BUSCA_BIN,
     TIPO_ABB,
+    TIPO_AVL,
     TIPO_COUNT
 } ds_tipo;
 
@@ -258,6 +269,20 @@ typedef enum {
     DIST_MANUAL,
     DIST_COUNT
 } ds_dist;
+
+/* ---------------------------------------------------------------------------
+ * O que de um nó está sendo escrito, no `b` de EV_NODE_SET.
+ *
+ * O nó da AVL tem duas coisas visíveis: a chave e o fator de balanceamento. O
+ * FB não é dado da estrutura no sentido em que a chave é — ele é derivado das
+ * alturas —, mas é o número que a aula inteira gira em torno, e sem ele na
+ * tela a rotação parece mágica.
+ * ------------------------------------------------------------------------- */
+typedef enum {
+    CAMPO_VALOR,
+    CAMPO_FB,
+    CAMPO_COUNT
+} ds_campo;
 
 /* ---------------------------------------------------------------------------
  * Percursos de árvore. A ordem dos três é a da aula, e é a do seletor.

@@ -11,6 +11,8 @@
  * justamente o que quebra. Depois disso o fuzz entra, contra um multiconjunto
  * como modelo de referência. */
 
+#include <math.h>
+
 #include "ds/arvore.h"
 #include "ds/aleatorio.h"
 #include "ds/erros.h"
@@ -419,6 +421,326 @@ static void suite_vtable(void)
     ASSERT_TRUE(BUSCA_BIN.percurso == NULL);
 }
 
+/* ---- AVL ----------------------------------------------------------------
+ *
+ * A invariante é dupla, e a segunda metade é onde o bug mora. |FB| <= 1 é a
+ * promessa; a altura guardada em cada nó bater com a altura real é o que faz a
+ * promessa continuar valendo. Uma rotação que esquece de atualizar a altura
+ * deixa a árvore equilibrada de fato e mentindo sobre si mesma, e o
+ * desequilíbrio só aparece dezenas de inserções depois — longe da linha
+ * errada. `avl_equilibrada` verifica as duas de uma vez.                    */
+
+static void conferir_avl(const Avl *a, int esperado)
+{
+    elem_t valores[MAX];
+    int    k = avl_em_ordem(a, valores, MAX);
+
+    ASSERT_TRUE(avl_ordenada(a));
+    ASSERT_TRUE(avl_equilibrada(a));
+    ASSERT_EQ(avl_tamanho(a), esperado);
+    ASSERT_EQ(k, esperado);
+}
+
+/* Os quatro casos de rotação, um a um, com a sequência mínima que provoca cada
+ * um. Um fuzz aleatório acerta os quatro por acidente, mas quando falha não
+ * diz qual deles quebrou. */
+static void suite_rotacoes(void)
+{
+    Avl *a;
+
+    CASO("caso esquerda-esquerda: uma rotação à direita");
+    a = avl_criar();
+    /* 30, 20, 10 — cada um menor que o anterior. */
+    ASSERT_EQ(avl_inserir(a, 30), OK);
+    ASSERT_EQ(avl_inserir(a, 20), OK);
+    ASSERT_EQ(avl_inserir(a, 10), OK);
+    conferir_avl(a, 3);
+    ASSERT_EQ(avl_altura(a), 2);        /* e não 3 */
+    ASSERT_EQ(avl_rotacoes(a), 1);
+    avl_destruir(a);
+
+    CASO("caso direita-direita: uma rotação à esquerda");
+    a = avl_criar();
+    ASSERT_EQ(avl_inserir(a, 10), OK);
+    ASSERT_EQ(avl_inserir(a, 20), OK);
+    ASSERT_EQ(avl_inserir(a, 30), OK);
+    conferir_avl(a, 3);
+    ASSERT_EQ(avl_altura(a), 2);
+    ASSERT_EQ(avl_rotacoes(a), 1);
+    avl_destruir(a);
+
+    CASO("caso esquerda-direita: rotação dupla, e são duas rotações");
+    a = avl_criar();
+    /* 30, 10, 20 — o desequilíbrio é à esquerda, mas o filho pesa à direita. */
+    ASSERT_EQ(avl_inserir(a, 30), OK);
+    ASSERT_EQ(avl_inserir(a, 10), OK);
+    ASSERT_EQ(avl_inserir(a, 20), OK);
+    conferir_avl(a, 3);
+    ASSERT_EQ(avl_altura(a), 2);
+    ASSERT_EQ(avl_rotacoes(a), 2);      /* a dupla conta duas */
+    avl_destruir(a);
+
+    CASO("caso direita-esquerda: a espelhada da anterior");
+    a = avl_criar();
+    ASSERT_EQ(avl_inserir(a, 10), OK);
+    ASSERT_EQ(avl_inserir(a, 30), OK);
+    ASSERT_EQ(avl_inserir(a, 20), OK);
+    conferir_avl(a, 3);
+    ASSERT_EQ(avl_altura(a), 2);
+    ASSERT_EQ(avl_rotacoes(a), 2);
+    avl_destruir(a);
+
+    CASO("uma árvore equilibrada não roda nada");
+    a = avl_criar();
+    ASSERT_EQ(avl_inserir(a, 20), OK);
+    ASSERT_EQ(avl_inserir(a, 10), OK);
+    ASSERT_EQ(avl_inserir(a, 30), OK);
+    conferir_avl(a, 3);
+    ASSERT_EQ(avl_rotacoes(a), 0);
+    avl_destruir(a);
+}
+
+/* O argumento inteiro de a AVL existir, medido: a mesma sequência que degenera
+ * a ABB numa lista sai equilibrada aqui. É o "pronto quando" da fase. */
+static void suite_o_argumento(void)
+{
+    enum { N = 32 };
+
+    Abb *abb = abb_criar();
+    Avl *avl = avl_criar();
+    int  i;
+    int  prof_abb = -1;
+    int  prof_avl = -1;
+
+    CASO("a sequência crescente: a ABB vira lista, a AVL não");
+    for (i = 1; i <= N; i++) {
+        ASSERT_EQ(abb_inserir(abb, i), OK);
+        ASSERT_EQ(avl_inserir(avl, i), OK);
+    }
+
+    conferir(abb, N);
+    conferir_avl(avl, N);
+
+    /* Altura n contra altura log n. Com 32 nós, 32 contra 6. */
+    ASSERT_EQ(abb_altura(abb), N);
+    ASSERT_EQ(avl_altura(avl), 6);
+    ASSERT_TRUE(avl_rotacoes(avl) > 0);
+
+    /* E o que isso custa numa busca: a profundidade do último. */
+    ASSERT_EQ(abb_buscar(abb, N, &prof_abb), OK);
+    ASSERT_EQ(avl_buscar(avl, N, &prof_avl), OK);
+    ASSERT_EQ(prof_abb, N - 1);
+    ASSERT_TRUE(prof_avl < 6);
+
+    /* As duas guardam exatamente o mesmo conjunto — o que muda é a forma. */
+    {
+        elem_t da_abb[MAX];
+        elem_t da_avl[MAX];
+        int    ka = abb_em_ordem(abb, da_abb, MAX);
+        int    kv = avl_em_ordem(avl, da_avl, MAX);
+
+        ASSERT_EQ(ka, kv);
+        for (i = 0; i < ka; i++) {
+            ASSERT_EQ(da_abb[i], da_avl[i]);
+        }
+    }
+
+    abb_destruir(abb);
+    avl_destruir(avl);
+}
+
+/* A cota de Adelson-Velsky e Landis: a altura de uma AVL com n nós nunca passa
+ * de 1,44 log2(n+2). Verificar isso é verificar que o rebalanceamento está
+ * fazendo o que promete, e não só que |FB| <= 1 por acaso. */
+static void suite_cota(void)
+{
+    enum { N = 500 };
+
+    Avl      *a = avl_criar();
+    Aleatorio rnd;
+    int       i;
+    int       inseridos = 0;
+    double    cota;
+
+    CASO("a altura respeita a cota da AVL");
+    aleatorio_semear(&rnd, 7u);
+    trace_set_enabled(0);
+
+    for (i = 0; i < N * 4; i++) {
+        elem_t v = aleatorio_entre(&rnd, 0, N - 1);
+        int    antes = avl_tamanho(a);
+
+        ASSERT_EQ(avl_inserir(a, v), OK);
+        if (avl_tamanho(a) > antes) inseridos++;
+
+        /* A cada inserção, e não só no fim: uma rotação errada pode se
+         * corrigir sozinha na inserção seguinte. */
+        if (!avl_equilibrada(a)) {
+            ASSERT_TRUE(0);
+            break;
+        }
+    }
+
+    ASSERT_TRUE(inseridos > 100);
+    ASSERT_EQ(avl_tamanho(a), inseridos);
+
+    /* 1,44 log2(n+2) — a cota clássica. */
+    cota = 1.4405 * (log((double) inseridos + 2.0) / log(2.0));
+    ASSERT_TRUE((double) avl_altura(a) <= cota);
+
+    trace_set_enabled(1);
+    avl_destruir(a);
+}
+
+/* A remoção da AVL tem um passo a mais que a da ABB: uma remoção pode
+ * desbalancear vários níveis de uma vez, e é por isso que o rebalanceamento
+ * fica no caminho de volta inteiro. */
+static void suite_remocao_avl(void)
+{
+    enum { VALORES = 128, OPERACOES = 4000 };
+
+    Avl      *a = avl_criar();
+    Aleatorio rnd;
+    int       presente[VALORES];
+    int       vivos = 0;
+    int       i;
+    int       divergencias = 0;
+    int       removeu = 0;
+
+    CASO("fuzz: a AVL contra um multiconjunto, equilibrada o tempo todo");
+    aleatorio_semear(&rnd, 31337u);
+    for (i = 0; i < VALORES; i++) {
+        presente[i] = 0;
+    }
+    trace_set_enabled(0);
+
+    for (i = 0; i < OPERACOES; i++) {
+        int    sorteio = aleatorio_entre(&rnd, 0, 99);
+        elem_t valor = aleatorio_entre(&rnd, 0, VALORES - 1);
+
+        if (sorteio < 55) {
+            if (avl_inserir(a, valor) != OK) divergencias++;
+            if (!presente[valor]) {
+                presente[valor] = 1;
+                vivos++;
+            }
+        } else if (sorteio < 90) {
+            int rc = avl_remover(a, valor);
+
+            if ((rc == OK) != (presente[valor] != 0)) divergencias++;
+            if (rc == OK) {
+                removeu++;
+                presente[valor] = 0;
+                vivos--;
+            }
+        } else {
+            int prof = -1;
+            int rc = avl_buscar(a, valor, &prof);
+
+            if ((rc == OK) != (presente[valor] != 0)) divergencias++;
+        }
+
+        if (avl_tamanho(a) != vivos) divergencias++;
+        /* A invariante depois de CADA operação: é o único jeito de a falha
+         * apontar para a operação que a causou. */
+        if (!avl_equilibrada(a)) divergencias++;
+    }
+
+    ASSERT_EQ(divergencias, 0);
+    ASSERT_TRUE(removeu > 400);
+    ASSERT_TRUE(avl_ordenada(a));
+
+    /* Esvaziar removendo tudo, e a árvore continua equilibrada até o fim. */
+    for (i = 0; i < VALORES; i++) {
+        if (presente[i]) {
+            ASSERT_EQ(avl_remover(a, i), OK);
+            if (!avl_equilibrada(a)) divergencias++;
+        }
+    }
+    ASSERT_EQ(divergencias, 0);
+    ASSERT_EQ(avl_tamanho(a), 0);
+    ASSERT_EQ(avl_altura(a), 0);
+
+    trace_set_enabled(1);
+    avl_destruir(a);
+}
+
+/* As bordas, e o que a AVL herdou da ABB sem mudar. */
+static void suite_avl_basica(void)
+{
+    Avl   *a = avl_criar();
+    elem_t saida = 0;
+    int    prof = -1;
+    int    i;
+
+    CASO("a AVL vazia");
+    ASSERT_TRUE(a != NULL);
+    conferir_avl(a, 0);
+    ASSERT_EQ(avl_altura(a), 0);
+    ASSERT_EQ(avl_rotacoes(a), 0);
+    ASSERT_EQ(avl_menor(a, &saida), ERR_VAZIA);
+    ASSERT_EQ(avl_remover_menor(a, &saida), ERR_VAZIA);
+    ASSERT_EQ(avl_buscar(a, 1, &prof), ERR_NAO_ENCONTRADO);
+    ASSERT_EQ(avl_remover(a, 1), ERR_NAO_ENCONTRADO);
+
+    CASO("repetido não entra na AVL tampouco");
+    ASSERT_EQ(avl_inserir(a, 5), OK);
+    ASSERT_EQ(avl_inserir(a, 5), OK);
+    conferir_avl(a, 1);
+
+    CASO("remover o menor esvazia em ordem crescente");
+    avl_limpar(a);
+    ASSERT_EQ(avl_rotacoes(a), 0);      /* limpar zera o contador */
+    for (i = 0; i < 16; i++) {
+        ASSERT_EQ(avl_inserir(a, (i * 7) % 16), OK);
+    }
+    conferir_avl(a, 16);
+    {
+        elem_t anterior = -1;
+
+        for (i = 16; i > 0; i--) {
+            ASSERT_EQ(avl_remover_menor(a, &saida), OK);
+            ASSERT_TRUE(saida > anterior);
+            anterior = saida;
+            conferir_avl(a, i - 1);
+        }
+    }
+
+    CASO("percursos e ordem inválida");
+    ASSERT_EQ(avl_inserir(a, 1), OK);
+    ASSERT_EQ(avl_percurso(a, PERC_EM_ORDEM), OK);
+    ASSERT_EQ(avl_percurso(a, PERC_COUNT), ERR_ARG_INVALIDO);
+
+    CASO("limpar não deixa nó vivo");
+    idmap_reset();
+    avl_limpar(a);
+    for (i = 0; i < 32; i++) {
+        ASSERT_EQ(avl_inserir(a, i), OK);
+    }
+    ASSERT_TRUE(idmap_vivos() > 0);
+    avl_limpar(a);
+    ASSERT_EQ(idmap_vivos(), 0);
+    conferir_avl(a, 0);
+
+    avl_destruir(a);
+    avl_destruir(NULL);
+    idmap_reset();
+}
+
+static void suite_vtable_avl(void)
+{
+    CASO("a AVL entra pelo mesmo vtable da ABB");
+    ASSERT_TRUE(AVL.remover_valor != NULL);
+    ASSERT_TRUE(AVL.percurso != NULL);
+    ASSERT_TRUE(AVL.buscar != NULL);
+    ASSERT_TRUE(AVL.inserir_em == NULL);
+    ASSERT_TRUE(AVL.remover_em == NULL);
+    /* Mesma interface, implementações diferentes: é o que o modo comparar
+     * precisa para rodar a mesma sequência nas duas. */
+    ASSERT_TRUE(AVL.inserir != ABB.inserir);
+    ASSERT_TRUE(AVL.remover_valor != ABB.remover_valor);
+}
+
 void suite_arvore(void)
 {
     suite_vtable();
@@ -428,4 +750,11 @@ void suite_arvore(void)
     suite_percursos();
     suite_memoria();
     suite_fuzz_arvore();
+
+    suite_vtable_avl();
+    suite_avl_basica();
+    suite_rotacoes();
+    suite_o_argumento();
+    suite_cota();
+    suite_remocao_avl();
 }

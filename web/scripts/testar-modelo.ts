@@ -7,7 +7,7 @@
  * Sem framework, pelo mesmo motivo do runner em C: não é preciso. */
 
 import type { Ev } from "../src/core/bridge";
-import { Cnt, EvKind, Ptr, Src, Str, Tag } from "../src/core/ops";
+import { Campo, Cnt, EvKind, Ptr, Src, Str, Tag } from "../src/core/ops";
 import { Player } from "../src/core/player";
 import { aplicar } from "../src/model/aplicar";
 import {
@@ -524,6 +524,49 @@ CASO("liberar um nó desfaz as arestas que apontavam para ele");
   igual(m.nos.size, 1, "sobrou a raiz");
   igual(m.nos.get(1)?.arestas.get(0) ?? -1, 0, "e o filho esquerdo virou NULL");
   igual(alturaDaArvore(m, 1), 1, "com a altura caindo junto");
+}
+
+CASO("o FB entra por EV_NODE_SET, no campo dele, e não vira valor");
+{
+  const m = reproduzir([
+    ...noArvore(1, 50),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_FB, 2),
+  ]);
+  igual(m.nos.get(1)?.fb ?? null, 2, "o FB chegou");
+  igual(m.nos.get(1)?.valor ?? -1, 50, "e a chave não foi tocada");
+}
+
+CASO("quem não é AVL não tem FB, e desenhar zero seria mentira");
+{
+  const m = reproduzir([...noArvore(1, 50)]);
+  igual(m.nos.get(1)?.fb ?? "sem", "sem", "nulo, e não zero");
+}
+
+CASO("a rotação religa as arestas, e a altura cai junto");
+{
+  /* 30, 20, 10 na AVL: caso esquerda-esquerda. Depois da rotação à direita,
+   * o 20 é a raiz e os outros dois são folhas. */
+  const m = reproduzir([
+    ...noArvore(1, 30),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+    ...noArvore(2, 20),
+    ev(EvKind.EV_EDGE_SET, 1, 0, 2),
+    ...noArvore(3, 10),
+    ev(EvKind.EV_EDGE_SET, 2, 0, 3),
+    /* a rotação: 20 sobe, 30 vira filho direito dele */
+    ev(EvKind.EV_EDGE_SET, 1, 0, 0),
+    ev(EvKind.EV_EDGE_SET, 2, 1, 1),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 2),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_FB, 0),
+    ev(EvKind.EV_NODE_SET, 2, Campo.CAMPO_FB, 0),
+  ]);
+
+  igual(alvoDe(m, Ptr.PTR_RAIZ), 2, "o 20 virou raiz");
+  igual(alturaDaArvore(m, 2), 2, "e a altura caiu de três para dois");
+  igual(m.nos.get(2)?.arestas.get(0) ?? -1, 3, "10 à esquerda");
+  igual(m.nos.get(2)?.arestas.get(1) ?? -1, 1, "30 à direita");
+  igual(m.nos.get(1)?.arestas.get(0) ?? -1, 0, "e o 30 soltou o filho");
 }
 
 if (falhas.length > 0) {

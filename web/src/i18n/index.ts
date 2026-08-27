@@ -175,7 +175,9 @@ export type ChaveUI =
   | "metrica.alturaIdeal"
   | "log.raiz"
   | "log.esquerda"
-  | "log.direita";
+  | "log.direita"
+  | "estrutura.avl"
+  | "metrica.rotacoes";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

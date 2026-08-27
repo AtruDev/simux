@@ -236,6 +236,18 @@ const pt: Dicionario = {
   "log.esquerda": "esquerda →",
   "log.direita": "direita →",
 
+  "estrutura.avl": "Árvore AVL",
+  "metrica.rotacoes": "rotações",
+
+  STR_DESBALANCEOU: "o fator de balanceamento estourou: |FB| > 1",
+  STR_ROT_DIR: "caso esquerda-esquerda: uma rotação à direita resolve",
+  STR_ROT_ESQ: "caso direita-direita: uma rotação à esquerda resolve",
+  STR_ROT_ESQ_DIR:
+    "caso esquerda-direita: rotação dupla — à esquerda no filho, depois à direita aqui",
+  STR_ROT_DIR_ESQ:
+    "caso direita-esquerda: rotação dupla — à direita no filho, depois à esquerda aqui",
+  STR_REEQUILIBRADA: "a subárvore voltou a caber na promessa",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

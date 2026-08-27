@@ -18,7 +18,7 @@ import {
 } from "react";
 
 import { chamar, selecionarSlot, sessaoNova, tamanho } from "../core/bridge";
-import { Op, Percurso, Status } from "../core/ops";
+import { Op, Percurso, Status, Tipo } from "../core/ops";
 import { Player, type Operacao } from "../core/player";
 import { ERR_CHAVES } from "../core/ops";
 import { t, type Chave } from "../i18n";
@@ -456,6 +456,7 @@ export function AbaEstruturas() {
             i={foto.i}
             total={foto.total}
             titulo={trilhas.length > 1 ? t(faixa.nome) : undefined}
+            rotativa={faixa.tipo === Tipo.TIPO_AVL}
           />
         ))}
       </aside>

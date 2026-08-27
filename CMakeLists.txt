@@ -122,6 +122,7 @@ add_library(core STATIC
     core/ds/lista_dupla.c
     core/ds/lista_circular.c
     core/arvore/abb.c
+    core/arvore/avl.c
     core/busca/vetor_ord.c
     core/sort/medida.c
     core/sort/ordenacao.c

@@ -852,9 +852,10 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [x] Layout Reingold–Tilford, com um desvio deliberado: nó de filho único
       fica meio passo para o lado, senão a árvore degenerada desenharia uma
       linha vertical e esconderia a degeneração que a aba existe para mostrar
-- [ ] AVL com rotações destacadas e FB por nó
+- [x] AVL com rotações destacadas e FB por nó — e no modo comparar, ao lado
+      da ABB, o que era "mostra depois" virou "mostra ao mesmo tempo"
 - [ ] Hash encadeado e hash aberto (três sondagens)
-- [ ] Invariantes + fuzz de ABB/AVL
+- [x] Invariantes + fuzz de ABB/AVL
 - **Pronto quando:** inserir uma sequência crescente na ABB e depois na AVL mostra visualmente por que a AVL existe.
 
 ### Fase 5 — Memória secundária · ~2 semanas

@@ -6,6 +6,7 @@
 
 import fonteAbb from "../../../core/arvore/abb.c?raw";
 import fonteApi from "../../../core/api/api.c?raw";
+import fonteAvl from "../../../core/arvore/avl.c?raw";
 import fonteVetorOrd from "../../../core/busca/vetor_ord.c?raw";
 import fonteBolha from "../../../core/sort/bolha.c?raw";
 import fonteCena from "../../../core/sort/cena.c?raw";
@@ -57,6 +58,7 @@ const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_MERGE]: { arquivo: "core/sort/merge.c", texto: fonteMerge },
   [Src.SRC_CENA]: { arquivo: "core/sort/cena.c", texto: fonteCena },
   [Src.SRC_ABB]: { arquivo: "core/arvore/abb.c", texto: fonteAbb },
+  [Src.SRC_AVL]: { arquivo: "core/arvore/avl.c", texto: fonteAvl },
   [Src.SRC_VETOR_ORD]: {
     arquivo: "core/busca/vetor_ord.c",
     texto: fonteVetorOrd,

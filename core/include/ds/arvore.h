@@ -60,4 +60,49 @@ int  abb_ordenada(const Abb *a);
  * referência sem o teste conhecer a estrutura por dentro. */
 int  abb_em_ordem(const Abb *a, elem_t *saida, int max);
 
+/* ---- AVL ---------------------------------------------------------------
+ *
+ * A mesma ABB com uma promessa a mais: para todo nó, |FB| <= 1, onde o fator
+ * de balanceamento é a altura da subárvore esquerda menos a da direita. Manter
+ * essa promessa custa uma rotação de vez em quando, e dá em troca a altura
+ * O(log n) garantida — que é a única coisa que a ABB não consegue prometer.
+ *
+ * A interface é idêntica à da ABB, de propósito: as duas entram pela mesma
+ * família do vtable, e o modo comparar roda a mesma sequência nas duas. Inserir
+ * 1, 2, 3, 4… lado a lado é o argumento inteiro de a AVL existir, e não precisa
+ * de uma palavra de texto para ser feito.                                   */
+
+typedef struct Avl Avl;
+
+Avl *avl_criar(void);
+void avl_destruir(Avl *a);
+
+int  avl_inserir(Avl *a, elem_t valor);
+int  avl_remover(Avl *a, elem_t valor);
+int  avl_remover_menor(Avl *a, elem_t *saida);
+int  avl_menor(const Avl *a, elem_t *saida);
+int  avl_buscar(const Avl *a, elem_t valor, int *profundidade);
+int  avl_percurso(const Avl *a, int ordem);
+
+void avl_limpar(Avl *a);
+int  avl_tamanho(const Avl *a);
+int  avl_altura(const Avl *a);
+
+/* Quantas rotações a árvore já fez. É o preço do equilíbrio, e é a métrica que
+ * a ABB não tem — nela o número seria sempre zero. */
+int  avl_rotacoes(const Avl *a);
+
+/* ---- invariantes, para os testes. Não instrumentam. -------------------- */
+
+int  avl_ordenada(const Avl *a);
+int  avl_em_ordem(const Avl *a, elem_t *saida, int max);
+
+/* A promessa da AVL: |FB| <= 1 em TODO nó, e a altura guardada em cada nó
+ * batendo com a altura real da subárvore dele.
+ *
+ * As duas juntas, porque a segunda é onde o bug mora: uma rotação que esquece
+ * de atualizar a altura deixa a árvore equilibrada de fato e mentindo sobre
+ * si mesma, e o desequilíbrio só aparece dezenas de inserções depois. */
+int  avl_equilibrada(const Avl *a);
+
 #endif /* DS_ARVORE_H */

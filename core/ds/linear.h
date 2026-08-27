@@ -80,5 +80,6 @@ extern const TAD_Linear BUSCA_SEQ;
 extern const TAD_Linear BUSCA_BIN;
 
 extern const TAD_Linear ABB;
+extern const TAD_Linear AVL;
 
 #endif /* DS_LINEAR_H */

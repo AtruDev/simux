@@ -109,6 +109,7 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_BUSCA_SEQ: return &BUSCA_SEQ;
     case TIPO_BUSCA_BIN: return &BUSCA_BIN;
     case TIPO_ABB:       return &ABB;
+    case TIPO_AVL:       return &AVL;
     default:             return NULL;
     }
 }

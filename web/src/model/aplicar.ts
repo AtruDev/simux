@@ -5,13 +5,13 @@
  * scripts/testar-modelo.ts. */
 
 import type { Ev } from "../core/bridge";
-import { EvKind, Tag } from "../core/ops";
+import { Campo, EvKind, Tag } from "../core/ops";
 import type { Modelo } from "./modelo";
 
 function garantirNo(m: Modelo, id: number) {
   let no = m.nos.get(id);
   if (!no) {
-    no = { id, valor: 0, arestas: new Map() };
+    no = { id, valor: 0, arestas: new Map(), fb: null };
     m.nos.set(id, no);
     m.ordem.push(id);
   }
@@ -54,10 +54,15 @@ export function aplicar(m: Modelo, ev: Ev): void {
       }
       break;
 
-    case EvKind.EV_NODE_SET:
-      /* slot da chave em b; por ora só o slot 0 existe. */
-      if (ev.b === 0) garantirNo(m, ev.a).valor = ev.c;
+    case EvKind.EV_NODE_SET: {
+      /* `b` diz QUAL campo do nó está sendo escrito: a chave, ou o fator de
+       * balanceamento da AVL. Um evento novo para o FB seria o mesmo evento
+       * com outro nome. */
+      const no = garantirNo(m, ev.a);
+      if (ev.b === Campo.CAMPO_VALOR) no.valor = ev.c;
+      else if (ev.b === Campo.CAMPO_FB) no.fb = ev.c;
       break;
+    }
 
     case EvKind.EV_EDGE_SET:
       garantirNo(m, ev.a).arestas.set(ev.b, ev.c);

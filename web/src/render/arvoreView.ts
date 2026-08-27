@@ -27,11 +27,15 @@ import { Tela } from "./tela";
 const SLOT_ESQ = 0;
 const SLOT_DIR = 1;
 
-const RAIO_NO = 19;
+const RAIO_MAX = 19;
+/* Abaixo disto o número dentro do nó deixa de ser legível, e é melhor a
+ * árvore transbordar do que virar bolinhas mudas. */
+const RAIO_MIN = 9;
 const MARGEM_TOPO = 54;
+const MARGEM_BAIXO = 18;
 const MARGEM_X = 28;
-/* Distância vertical entre um nível e o seguinte. */
-const NIVEL = 62;
+/* Distância vertical entre um nível e o seguinte, quando há espaço. */
+const NIVEL_MAX = 62;
 
 /* Afastamento mínimo entre dois nós no mesmo nível, em unidades de layout.
  * O layout é calculado nessas unidades e escalado depois, para a árvore caber
@@ -48,6 +52,14 @@ interface Disposto {
 }
 
 export class ArvoreView extends Tela {
+  /* O tamanho do nó e o passo entre níveis são calculados por quadro, a partir
+   * do que a árvore virou. Uma ABB degenerada tem altura n e uma AVL tem
+   * altura log n; com um passo fixo, a primeira sairia pela borda de baixo — e
+   * é justamente ela que precisa ser vista inteira, porque a degeneração é o
+   * argumento. */
+  private raio = RAIO_MAX;
+  private passoY = NIVEL_MAX;
+
   desenhar(m: Modelo): void {
     const raiz = alvoDe(m, Ptr.PTR_RAIZ);
     const disposto = this.dispor(m, raiz, new Set());
@@ -58,11 +70,24 @@ export class ArvoreView extends Tela {
     if (disposto) this.achatar(disposto, 0, 0, alvos);
 
     const orfaos = this.orfaos(m, alvos);
+
+    let niveis = 1;
+    for (const pos of alvos.values()) {
+      niveis = Math.max(niveis, pos.nivel + 1);
+    }
+
+    const alturaUtil = this.alturaCss - MARGEM_TOPO - MARGEM_BAIXO;
+    this.passoY = Math.min(NIVEL_MAX, alturaUtil / Math.max(1, niveis - 1));
+    this.raio = Math.max(
+      RAIO_MIN,
+      Math.min(RAIO_MAX, this.passoY * 0.32),
+    );
+
     const escala = this.escalar(alvos);
 
     for (const [id, pos] of alvos) {
       const x = this.larguraCss / 2 + pos.x * escala;
-      const y = MARGEM_TOPO + pos.nivel * NIVEL;
+      const y = MARGEM_TOPO + pos.nivel * this.passoY;
 
       /* Nasce onde vai ficar, mas transparente e um pouco acima: o nó novo
        * desce até o lugar em vez de aparecer pronto. */
@@ -80,8 +105,8 @@ export class ArvoreView extends Tela {
      * entre EV_NODE_NEW e EV_EDGE_SET. Escondê-lo tornaria um bug de trace
      * invisível; desenhá-lo fora da árvore diz exatamente o que ele é. */
     orfaos.forEach((id, k) => {
-      const x = MARGEM_X + RAIO_NO + k * (RAIO_NO * 2 + 16);
-      const y = this.alturaCss - RAIO_NO - 12;
+      const x = MARGEM_X + this.raio + k * (this.raio * 2 + 16);
+      const y = this.alturaCss - this.raio - 6;
 
       this.mirar(id, x, y, {
         x,
@@ -198,7 +223,7 @@ export class ArvoreView extends Tela {
    * bolas gigantes, e por baixo pelo diâmetro do nó — abaixo disso os nós se
    * tocariam, e é melhor a árvore transbordar do que mentir sobre a forma. */
   private escalar(alvos: Map<number, { x: number; nivel: number }>): number {
-    if (alvos.size === 0) return RAIO_NO * 2.6;
+    if (alvos.size === 0) return this.raio * 2.6;
 
     let menor = 0;
     let maior = 0;
@@ -208,10 +233,10 @@ export class ArvoreView extends Tela {
     }
 
     const largura = maior - menor;
-    const util = this.larguraCss - 2 * (MARGEM_X + RAIO_NO);
+    const util = this.larguraCss - 2 * (MARGEM_X + this.raio);
     const cabe = largura > 0 ? util / largura : Infinity;
 
-    return Math.max(RAIO_NO * 2.15, Math.min(RAIO_NO * 2.9, cabe));
+    return Math.max(this.raio * 2.15, Math.min(this.raio * 2.9, cabe));
   }
 
   /* ---- desenho --------------------------------------------------------- */
@@ -237,8 +262,8 @@ export class ArvoreView extends Tela {
         ctx.strokeStyle = p.linha2;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(pose.x, pose.y + RAIO_NO);
-        ctx.lineTo(poseDestino.x, poseDestino.y - RAIO_NO);
+        ctx.moveTo(pose.x, pose.y + this.raio);
+        ctx.lineTo(poseDestino.x, poseDestino.y - this.raio);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
@@ -253,7 +278,7 @@ export class ArvoreView extends Tela {
       ctx.globalAlpha = pose.alfa;
 
       ctx.beginPath();
-      ctx.arc(pose.x, pose.y, RAIO_NO, 0, Math.PI * 2);
+      ctx.arc(pose.x, pose.y, this.raio, 0, Math.PI * 2);
       ctx.fillStyle = p.bg2;
       ctx.fill();
 
@@ -263,11 +288,35 @@ export class ArvoreView extends Tela {
       ctx.lineWidth = visitado ? 2 : 1;
       ctx.stroke();
 
+      /* A fonte acompanha o nó: com a árvore alta o raio encolhe, e um 14px
+       * dentro de um círculo de 9 vazaria por todos os lados. */
+      const corpo = Math.max(8, Math.round(this.raio * 0.74));
+
       ctx.fillStyle = p.fg;
-      ctx.font = `600 14px ${p.mono}`;
+      ctx.font = `600 ${corpo}px ${p.mono}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(String(no.valor), pose.x, pose.y);
+
+      /* O fator de balanceamento, quando a estrutura tem um.
+       *
+       * Fica fora do círculo, de propósito: ele não é a chave, é uma medida
+       * sobre o nó. E acende quando estoura — o instante em que |FB| passa de
+       * 1 é a única explicação de por que a rotação vai acontecer NAQUELE nó
+       * e não em outro. Sem esse número, ela parece mágica. */
+      if (no.fb !== null) {
+        const estourou = no.fb > 1 || no.fb < -1;
+
+        ctx.fillStyle = estourou ? p.stSwap : p.fg3;
+        ctx.font = `600 ${Math.max(8, corpo - 3)}px ${p.mono}`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          no.fb > 0 ? `+${no.fb}` : String(no.fb),
+          pose.x + this.raio + 4,
+          pose.y - this.raio + 4,
+        );
+      }
 
       ctx.globalAlpha = 1;
     }
@@ -293,14 +342,14 @@ export class ArvoreView extends Tela {
     }
 
     ctx.fillStyle = p.acento;
-    ctx.fillText("raiz", pose.x, pose.y - RAIO_NO - 16);
+    ctx.fillText("raiz", pose.x, pose.y - this.raio - 16);
 
     ctx.strokeStyle = p.acento;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(pose.x, pose.y - RAIO_NO - 9);
-    ctx.lineTo(pose.x, pose.y - RAIO_NO - 2);
+    ctx.moveTo(pose.x, pose.y - this.raio - 9);
+    ctx.lineTo(pose.x, pose.y - this.raio - 2);
     ctx.stroke();
-    this.setaBaixo(pose.x, pose.y - RAIO_NO, p.acento);
+    this.setaBaixo(pose.x, pose.y - this.raio, p.acento);
   }
 }

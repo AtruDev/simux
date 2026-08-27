@@ -156,6 +156,20 @@ export const ESTRUTURAS: Estrutura[] = [
     buscavel: true,
     arvore: true,
   },
+  /* Mesma família da ABB, e é isso que faz o modo comparar existir para elas:
+   * a mesma sequência crescente nas duas, lado a lado, é o argumento inteiro
+   * de a AVL existir — e não precisa de uma palavra de texto. */
+  {
+    tipo: Tipo.TIPO_AVL,
+    nome: "estrutura.avl",
+    mundo: "arvore",
+    familia: "arvore",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerMenor",
+    rotuloConsultar: "op.menor",
+    buscavel: true,
+    arvore: true,
+  },
 ];
 
 export function estruturaDe(tipo: number): Estrutura {

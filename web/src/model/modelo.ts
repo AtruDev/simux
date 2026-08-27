@@ -13,6 +13,12 @@ export interface NoModelo {
   valor: number;
   /** slot -> id do destino. 0 é NULL, que é o que o C manda para ponteiro nulo. */
   arestas: Map<number, number>;
+  /** Fator de balanceamento, só na AVL. null em quem não tem.
+   *
+   * Não é dado da estrutura no sentido em que a chave é — ele é derivado das
+   * alturas —, mas é o número que a aula da AVL gira em torno: sem ele na
+   * tela, a rotação parece acontecer sem motivo. */
+  fb: number | null;
 }
 
 /* O mundo "vetor": ordenação, busca e as implementações com arranjo.

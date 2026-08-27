@@ -15,6 +15,8 @@ interface PropsMetricas {
   /* No modo comparar, o nome da implementação vira o título — senão os dois
    * painéis dizem "MÉTRICAS" e não dá para saber qual é qual. */
   titulo?: string;
+  /* A estrutura rebalanceia. Só quem rebalanceia mostra a linha de rotações. */
+  rotativa?: boolean;
 }
 
 export function PainelMetricas({
@@ -23,6 +25,7 @@ export function PainelMetricas({
   i,
   total,
   titulo,
+  rotativa,
 }: PropsMetricas) {
   const tamanho = contador(modelo, Cnt.CNT_TAMANHO);
 
@@ -59,6 +62,14 @@ export function PainelMetricas({
       t("metrica.alocacoes"),
       String(contador(modelo, Cnt.CNT_ALOCACOES)),
     ]);
+    /* Rotações é o preço do equilíbrio, e a linha só aparece em quem paga: na
+     * ABB o número seria sempre zero, e um zero permanente não informa nada. */
+    if (contador(modelo, Cnt.CNT_ROTACOES) > 0 || rotativa) {
+      linhas.push([
+        t("metrica.rotacoes"),
+        String(contador(modelo, Cnt.CNT_ROTACOES)),
+      ]);
+    }
   } else if (mundo === "busca") {
     /* Comparações primeiro, e isso é a tela inteira: no modo comparar, o
      * número da sequencial e o da binária lado a lado são o argumento. As
@@ -147,6 +158,7 @@ const NOME_CONTADOR: Partial<Record<number, Chave>> = {
   [Cnt.CNT_ALOCACOES]: "metrica.alocacoes",
   [Cnt.CNT_ESCRITAS]: "metrica.escritas",
   [Cnt.CNT_COMPARACOES]: "metrica.comparacoes",
+  [Cnt.CNT_ROTACOES]: "metrica.rotacoes",
 };
 
 const NOME_PONTEIRO: Partial<Record<number, Chave>> = {

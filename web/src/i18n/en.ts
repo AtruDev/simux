@@ -235,6 +235,18 @@ const en: Dicionario = {
   "log.esquerda": "left →",
   "log.direita": "right →",
 
+  "estrutura.avl": "AVL tree",
+  "metrica.rotacoes": "rotations",
+
+  STR_DESBALANCEOU: "the balance factor overflowed: |BF| > 1",
+  STR_ROT_DIR: "left-left case: a single right rotation fixes it",
+  STR_ROT_ESQ: "right-right case: a single left rotation fixes it",
+  STR_ROT_ESQ_DIR:
+    "left-right case: double rotation — left on the child, then right here",
+  STR_ROT_DIR_ESQ:
+    "right-left case: double rotation — right on the child, then left here",
+  STR_REEQUILIBRADA: "the subtree fits the promise again",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

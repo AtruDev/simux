@@ -240,7 +240,7 @@ int abb_remover(Abb *a, elem_t valor)
          * porque ele é o menor dos maiores. O que sobra para remover é o
          * sucessor, e ele tem no máximo um filho — o direito. */
         atual->valor = sucessor->valor;
-        TR(EV_NODE_SET, .a = id_de(atual), .b = 0, .c = sucessor->valor);
+        TR(EV_NODE_SET, .a = id_de(atual), .b = CAMPO_VALOR, .c = sucessor->valor);
         TR(EV_UNVISIT, .a = id_de(atual));
 
         atual = sucessor;
