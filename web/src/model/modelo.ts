@@ -134,6 +134,53 @@ export function alturaDaArvore(m: Modelo, raiz: number): number {
 }
 
 /**
+ * A maior cadeia de um hash encadeado, medida no desenho.
+ *
+ * Pelo mesmo motivo da altura da árvore: o número do painel tem que descrever
+ * a tabela que está na tela, e não a de depois que a operação terminou. É a
+ * medida de qualidade da função hash — numa tabela bem espalhada ele fica
+ * perto de n/m, e numa mal escolhida ele denuncia o balde que virou lista.
+ *
+ * A célula do balde guarda o ID do nó da cabeça, e 0 é balde vazio: é o mesmo
+ * significado que o 0 tem em toda aresta do projeto.
+ */
+export function maiorCadeia(m: Modelo): number {
+  if (!m.vetor) return 0;
+
+  let maior = 0;
+
+  for (let b = 0; b < m.vetor.capacidade; b++) {
+    const visto = new Set<number>();
+    let id = m.vetor.valores[b] ?? 0;
+    let quantos = 0;
+
+    /* `visto` protege contra um ciclo vindo de um trace defeituoso: uma cadeia
+     * não tem ciclos, mas um EV_EDGE_SET errado, sim. */
+    while (id !== 0 && m.nos.has(id) && !visto.has(id)) {
+      visto.add(id);
+      quantos++;
+      id = m.nos.get(id)?.arestas.get(0) ?? 0;
+    }
+
+    if (quantos > maior) maior = quantos;
+  }
+
+  return maior;
+}
+
+/**
+ * Quantas células estão marcadas como túmulo num hash aberto.
+ *
+ * É a dívida que a remoção deixa: a célula saiu da tabela mas a sondagem
+ * continua tendo que atravessá-la. É o número que explica por que uma tabela
+ * aberta piora com o uso mesmo sem crescer.
+ */
+export function tumulos(m: Modelo, tagLivre: number): number {
+  if (!m.vetor) return 0;
+  return m.vetor.marcas.reduce((n, marca) => n + (marca === tagLivre ? 1 : 0), 0);
+}
+
+/**
  * A ordem lógica de uma fila circular: os índices físicos, a partir da frente,
  * dando a volta.
  *

@@ -23,14 +23,16 @@ export type Mundo =
   | "lista"
   | "ordenacao"
   | "busca"
-  | "arvore";
+  | "arvore"
+  | "hashEnc"
+  | "hashAbe";
 
 export interface Estrutura {
   tipo: number;
   nome: Chave;
   mundo: Mundo;
   /* Famílias iguais aparecem juntas no seletor de implementação. */
-  familia: "pilha" | "fila" | "lista" | "busca" | "arvore";
+  familia: "pilha" | "fila" | "lista" | "busca" | "arvore" | "hash";
   rotuloInserir: Chave;
   rotuloRemover: Chave;
   rotuloConsultar: Chave;
@@ -43,6 +45,14 @@ export interface Estrutura {
    * vtable. Numa árvore a posição não existe, e é a remoção por valor que traz
    * os três casos. */
   arvore?: boolean;
+  /* Remove por valor, mas SEM percurso: a tabela hash não tem ordem para
+   * percorrer. */
+  porValor?: boolean;
+  /* Não tem operação sem argumento. Numa tabela hash não existe "o primeiro"
+   * nem "o menor" — a ordem dos elementos é acidente da função hash, e os dois
+   * ponteiros ficam nulos no vtable. A interface esconde os botões em vez de
+   * mostrá-los e recusar. */
+  semExtremos?: boolean;
 }
 
 export const ESTRUTURAS: Estrutura[] = [
@@ -169,6 +179,57 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloConsultar: "op.menor",
     buscavel: true,
     arvore: true,
+  },
+  /* As quatro tabelas hash, todas na mesma família: o modo comparar as põe
+   * lado a lado, e é ali que o agrupamento das três sondagens abertas fica
+   * visível de uma vez. */
+  {
+    tipo: Tipo.TIPO_HASH_ENC,
+    nome: "estrutura.hashEnc",
+    mundo: "hashEnc",
+    familia: "hash",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    semExtremos: true,
+  },
+  {
+    tipo: Tipo.TIPO_HASH_LINEAR,
+    nome: "estrutura.hashLinear",
+    mundo: "hashAbe",
+    familia: "hash",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    semExtremos: true,
+  },
+  {
+    tipo: Tipo.TIPO_HASH_QUAD,
+    nome: "estrutura.hashQuad",
+    mundo: "hashAbe",
+    familia: "hash",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    semExtremos: true,
+  },
+  {
+    tipo: Tipo.TIPO_HASH_DUPLO,
+    nome: "estrutura.hashDuplo",
+    mundo: "hashAbe",
+    familia: "hash",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    semExtremos: true,
   },
 ];
 

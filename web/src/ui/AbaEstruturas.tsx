@@ -24,6 +24,7 @@ import { ERR_CHAVES } from "../core/ops";
 import { t, type Chave } from "../i18n";
 import { ArvoreView } from "../render/arvoreView";
 import { GrafoView } from "../render/grafoView";
+import { HashView } from "../render/hashView";
 import { ListaView } from "../render/listaView";
 import { VetorView } from "../render/vetorView";
 import {
@@ -67,6 +68,15 @@ export function AbaEstruturas() {
     () => (comparar ? parDaFamilia(estrutura.familia) : [estrutura]),
     [comparar, estrutura],
   );
+
+  /* Quais trilhas ganham painel de código. Com duas, os dois lado a lado são
+   * o argumento; com quatro, cada um viraria duas linhas. */
+  const paineisDeCodigo = useMemo(() => {
+    const todos = trilhas.map((faixa, k) => ({ faixa, k }));
+    if (todos.length <= 2) return todos;
+    const escolhido = todos.find((x) => x.faixa.tipo === tipo);
+    return escolhido ? [escolhido] : todos.slice(0, 1);
+  }, [trilhas, tipo]);
 
   const refCanvas = useRef<Array<HTMLCanvasElement | null>>([]);
 
@@ -114,9 +124,14 @@ export function AbaEstruturas() {
     const views = trilhas.map((t_, k) => {
       const canvas = refCanvas.current[k];
       if (!canvas) return null;
-      if (t_.mundo === "vetor" || t_.mundo === "busca") {
+      if (
+        t_.mundo === "vetor" ||
+        t_.mundo === "busca" ||
+        t_.mundo === "hashAbe"
+      ) {
         return new VetorView(canvas, t_.tipo);
       }
+      if (t_.mundo === "hashEnc") return new HashView(canvas);
       if (t_.mundo === "lista") return new ListaView(canvas, t_.tipo);
       if (t_.mundo === "arvore") return new ArvoreView(canvas);
       return new GrafoView(canvas, t_.tipo);
@@ -287,9 +302,22 @@ export function AbaEstruturas() {
             </div>
           )}
 
-          {trilhas.some((x) => x.mundo === "vetor") && (
+          {/* O mesmo campo serve às duas coisas, e o rótulo muda: numa
+              estrutura com vetor ele é a capacidade; numa tabela hash ele é o
+              `m`, e trocar 8 por 7 muda o desenho inteiro sem trocar uma linha
+              de código — é metade da lição do hash. */}
+          {trilhas.some(
+            (x) =>
+              x.mundo === "vetor" ||
+              x.mundo === "hashEnc" ||
+              x.mundo === "hashAbe",
+          ) && (
             <div className="campo campo-capacidade">
-              <label htmlFor="cap">{t("op.capacidade")}</label>
+              <label htmlFor="cap">
+                {trilhas.some((x) => x.familia === "hash")
+                  ? t("metrica.baldes")
+                  : t("op.capacidade")}
+              </label>
               <input
                 id="cap"
                 className="mono"
@@ -338,20 +366,28 @@ export function AbaEstruturas() {
             >
               {t(estrutura.rotuloInserir)}
             </button>
-            <button
-              type="button"
-              className="secundario"
-                onClick={() => rodar(Op.OP_POP)}
-            >
-              {t(estrutura.rotuloRemover)}
-            </button>
-            <button
-              type="button"
-              className="secundario"
-                onClick={() => rodar(Op.OP_TOPO)}
-            >
-              {t(estrutura.rotuloConsultar)}
-            </button>
+            {/* Remover e consultar SEM argumento não existem em toda
+                estrutura: numa tabela hash não há "o primeiro" nem "o menor".
+                O ponteiro nulo no vtable é a verdade, e a interface a espelha
+                escondendo o botão — mostrar e recusar seria pior. */}
+            {!estrutura.semExtremos && (
+              <>
+                <button
+                  type="button"
+                  className="secundario"
+                  onClick={() => rodar(Op.OP_POP)}
+                >
+                  {t(estrutura.rotuloRemover)}
+                </button>
+                <button
+                  type="button"
+                  className="secundario"
+                  onClick={() => rodar(Op.OP_TOPO)}
+                >
+                  {t(estrutura.rotuloConsultar)}
+                </button>
+              </>
+            )}
             {estrutura.posicoes && (
               <>
                 <button
@@ -388,7 +424,7 @@ export function AbaEstruturas() {
             {/* Remover por valor e percorrer são da árvore. Numa árvore a
                 posição não existe, e é a remoção por valor que traz os três
                 casos — o botão é a porta de entrada da aula inteira. */}
-            {estrutura.arvore && (
+            {(estrutura.arvore || estrutura.porValor) && (
               <>
                 <button
                   type="button"
@@ -397,16 +433,19 @@ export function AbaEstruturas() {
                 >
                   {t("op.removerValor")}
                 </button>
-                {PERCURSOS.map(([perc, chave]) => (
-                  <button
-                    key={perc}
-                    type="button"
-                    className="secundario"
-                    onClick={() => rodar(Op.OP_PERCURSO, perc)}
-                  >
-                    {t(chave)}
-                  </button>
-                ))}
+                {/* Percurso é só de quem tem ordem. A tabela hash remove por
+                    valor e não percorre — a ordem dela é acidente. */}
+                {estrutura.arvore &&
+                  PERCURSOS.map(([perc, chave]) => (
+                    <button
+                      key={perc}
+                      type="button"
+                      className="secundario"
+                      onClick={() => rodar(Op.OP_PERCURSO, perc)}
+                    >
+                      {t(chave)}
+                    </button>
+                  ))}
               </>
             )}
 
@@ -487,7 +526,11 @@ export function AbaEstruturas() {
       </main>
 
       <aside className="coluna direita">
-        {trilhas.map((faixa, k) => {
+        {/* Com mais de duas trilhas, cada painel de código caberia em duas
+            linhas e deixaria de servir para o que existe: acompanhar a linha
+            que está executando. Acima disso, só a estrutura selecionada — que
+            é a que o seletor da esquerda continua apontando. */}
+        {paineisDeCodigo.map(({ faixa, k }) => {
           const daTrilha = player.estadoDe(k).fonte;
           return (
             <PainelCodigo

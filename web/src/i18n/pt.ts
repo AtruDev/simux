@@ -248,6 +248,26 @@ const pt: Dicionario = {
     "caso direita-esquerda: rotação dupla — à direita no filho, depois à esquerda aqui",
   STR_REEQUILIBRADA: "a subárvore voltou a caber na promessa",
 
+  "estrutura.hashEnc": "Hash encadeado",
+  "estrutura.hashLinear": "Hash aberto — sondagem linear",
+  "estrutura.hashQuad": "Hash aberto — sondagem quadrática",
+  "estrutura.hashDuplo": "Hash aberto — sondagem dupla",
+
+  "metrica.carga": "fator de carga",
+  "metrica.colisoes": "colisões",
+  "metrica.maiorCadeia": "maior cadeia",
+  "metrica.sondagens": "sondagens",
+  "metrica.tumulos": "túmulos",
+  "metrica.baldes": "baldes",
+
+  "log.balde": "balde",
+
+  STR_BALDE: "h(k) = k mod m caiu neste balde",
+  STR_COLISAO: "colisão: o balde já está ocupado por outra chave",
+  STR_SONDANDO: "ocupada por outra chave: sonda a próxima",
+  STR_TUMULO: "túmulo — célula removida, que a sondagem atravessa",
+  STR_TABELA_CHEIA: "a tabela está cheia: a sondagem deu a volta sem achar lugar",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

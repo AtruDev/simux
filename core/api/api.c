@@ -19,6 +19,7 @@
 
 #include "ds/arvore.h"
 #include "ds/busca.h"
+#include "ds/hash.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -42,7 +43,19 @@
 #define API
 #endif
 
-enum { SESSOES = 2 };
+/* Quantas sessões vivem ao mesmo tempo.
+ *
+ * Era 2, do tempo em que o modo comparar era só pilha e fila — duas
+ * implementações do mesmo TAD. Foram ficando famílias maiores: a lista tem
+ * três implementações e a família hash tem quatro, e cada trilha em cena
+ * precisa da SUA sessão viva o tempo todo, porque as operações chegam uma a
+ * uma e todas as trilhas recebem cada uma delas.
+ *
+ * A aba de ordenação é o caso contrário e por isso não conta: lá o trace
+ * inteiro sai de uma vez, e as seis trilhas se revezam num slot só.
+ *
+ * O custo de um slot vazio é um ponteiro nulo. */
+enum { SESSOES = 4 };
 
 /* Teto do vetor da aba de ordenação. O plano pede 5 a 200 no modo animado; a
  * folga existe para o modo corrida e para quem digitar um número maior no
@@ -110,6 +123,10 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_BUSCA_BIN: return &BUSCA_BIN;
     case TIPO_ABB:       return &ABB;
     case TIPO_AVL:       return &AVL;
+    case TIPO_HASH_ENC:    return &HASH_ENC;
+    case TIPO_HASH_LINEAR: return &HASH_LINEAR;
+    case TIPO_HASH_QUAD:   return &HASH_QUAD;
+    case TIPO_HASH_DUPLO:  return &HASH_DUPLO;
     default:             return NULL;
     }
 }
@@ -328,13 +345,26 @@ API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
     case OP_PUSH:
         return concluir(ATIVA.tad->inserir(ATIVA.estrutura, a));
 
+    /* Remover e consultar SEM argumento não existem em toda estrutura. Numa
+     * tabela hash não há "o primeiro" nem "o menor" — a ordem dos elementos é
+     * acidente da função hash, e devolver um deles seria inventar semântica.
+     * O ponteiro nulo no vtable é a resposta, como sempre. */
     case OP_POP:
+        if (ATIVA.tad->remover == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
         return concluir(ATIVA.tad->remover(ATIVA.estrutura, &descartado));
 
     case OP_TOPO:
+        if (ATIVA.tad->consultar == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
         return concluir(ATIVA.tad->consultar(ATIVA.estrutura, &descartado));
 
     case OP_LIMPAR:
+        if (ATIVA.tad->limpar == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
         ATIVA.tad->limpar(ATIVA.estrutura);
         return OK;
 

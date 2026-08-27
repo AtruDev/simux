@@ -854,7 +854,12 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       linha vertical e esconderia a degeneração que a aba existe para mostrar
 - [x] AVL com rotações destacadas e FB por nó — e no modo comparar, ao lado
       da ABB, o que era "mostra depois" virou "mostra ao mesmo tempo"
-- [ ] Hash encadeado e hash aberto (três sondagens)
+- [x] Hash encadeado e hash aberto (três sondagens) — as quatro na mesma
+      família, e o modo comparar as põe lado a lado de uma vez
+- [ ] Trocar a função hash por um seletor. Hoje ela é `k mod m` nas quatro,
+      e o controle é o `m`: trocar 8 por 7 muda o desenho inteiro sem trocar
+      uma linha de código, que é a metade da lição que importa. Um segundo
+      seletor multiplicaria os TIPO_* por dois
 - [x] Invariantes + fuzz de ABB/AVL
 - **Pronto quando:** inserir uma sequência crescente na ABB e depois na AVL mostra visualmente por que a AVL existe.
 

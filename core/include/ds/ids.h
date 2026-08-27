@@ -81,6 +81,8 @@ typedef enum {
     SRC_VETOR_ORD,
     SRC_ABB,
     SRC_AVL,
+    SRC_HASH_ENC,
+    SRC_HASH_ABE,
     SRC_COUNT
 } ds_src;
 
@@ -137,6 +139,13 @@ typedef enum {
     STR_ROT_ESQ_DIR,    /* caso esquerda-direita: rotação dupla              */
     STR_ROT_DIR_ESQ,
     STR_REEQUILIBRADA,
+
+    /* hash */
+    STR_BALDE,          /* h(k) = k mod m deu neste balde                    */
+    STR_COLISAO,
+    STR_SONDANDO,
+    STR_TUMULO,         /* célula removida, que a sondagem tem que atravessar */
+    STR_TABELA_CHEIA,
     STR_COUNT
 } ds_str;
 
@@ -166,6 +175,7 @@ typedef enum {
     PTR_J,
     PTR_MIN,
     PTR_RAIZ,
+    PTR_BALDE,          /* o balde que h(k) escolheu, antes de sondar        */
     PTR_COUNT
 } ds_ptr;
 
@@ -178,6 +188,8 @@ typedef enum {
     CNT_ESCRITAS,
     CNT_ALOCACOES,
     CNT_ROTACOES,
+    CNT_COLISOES,
+    CNT_SONDAGENS,
     CNT_COUNT
 } ds_cnt;
 
@@ -230,6 +242,15 @@ typedef enum {
     TIPO_BUSCA_BIN,
     TIPO_ABB,
     TIPO_AVL,
+
+    /* As quatro tabelas hash. A encadeada é uma; as três de endereçamento
+     * aberto são a mesma tabela com sondagens diferentes — o mesmo arranjo que
+     * as duas buscas usam, e pelo mesmo motivo: lado a lado, o que muda entre
+     * elas é o agrupamento, e é ele que a aula quer mostrar. */
+    TIPO_HASH_ENC,
+    TIPO_HASH_LINEAR,
+    TIPO_HASH_QUAD,
+    TIPO_HASH_DUPLO,
     TIPO_COUNT
 } ds_tipo;
 

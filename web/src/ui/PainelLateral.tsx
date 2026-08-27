@@ -3,7 +3,14 @@
 
 import { EvKind, Cnt, Ptr, Tag, STR_CHAVES } from "../core/ops";
 import type { Ev } from "../core/bridge";
-import { alturaDaArvore, alvoDe, contador, type Modelo } from "../model/modelo";
+import {
+  alturaDaArvore,
+  alvoDe,
+  contador,
+  maiorCadeia,
+  tumulos,
+  type Modelo,
+} from "../model/modelo";
 import { t, type Chave } from "../i18n";
 import type { Mundo } from "./Estruturas";
 
@@ -39,7 +46,46 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "arvore") {
+  if (mundo === "hashEnc" || mundo === "hashAbe") {
+    /* O fator de carga primeiro: é o número que resume a tabela inteira, e é
+     * dele que sai tudo o que se pode prever sobre ela.
+     *
+     * Depois, o que cada família tem de próprio. A encadeada mostra a maior
+     * cadeia, que é a medida de qualidade do `m` escolhido; a aberta mostra
+     * sondagens e túmulos, que são o preço de não alocar nada. */
+    const baldes = modelo.vetor?.capacidade ?? 0;
+
+    linhas.length = 0;
+    linhas.push([t("metrica.tamanho"), String(tamanho)]);
+    linhas.push([t("metrica.baldes"), String(baldes)]);
+    linhas.push([
+      t("metrica.carga"),
+      baldes > 0 ? (tamanho / baldes).toFixed(2) : "—",
+    ]);
+    linhas.push([
+      t("metrica.colisoes"),
+      String(contador(modelo, Cnt.CNT_COLISOES)),
+    ]);
+
+    if (mundo === "hashEnc") {
+      linhas.push([t("metrica.maiorCadeia"), String(maiorCadeia(modelo))]);
+      linhas.push([
+        t("metrica.alocacoes"),
+        String(contador(modelo, Cnt.CNT_ALOCACOES)),
+      ]);
+    } else {
+      linhas.push([
+        t("metrica.sondagens"),
+        String(contador(modelo, Cnt.CNT_SONDAGENS)),
+      ]);
+      linhas.push([t("metrica.tumulos"), String(tumulos(modelo, Tag.TAG_LIVRE))]);
+    }
+
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+  } else if (mundo === "arvore") {
     /* Altura contra altura mínima é o painel inteiro desta estrutura.
      *
      * A mínima é ⌈log₂(n+1)⌉ — a altura que uma árvore com esses n nós teria
@@ -159,6 +205,8 @@ const NOME_CONTADOR: Partial<Record<number, Chave>> = {
   [Cnt.CNT_ESCRITAS]: "metrica.escritas",
   [Cnt.CNT_COMPARACOES]: "metrica.comparacoes",
   [Cnt.CNT_ROTACOES]: "metrica.rotacoes",
+  [Cnt.CNT_COLISOES]: "metrica.colisoes",
+  [Cnt.CNT_SONDAGENS]: "metrica.sondagens",
 };
 
 const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
@@ -168,6 +216,7 @@ const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
   [Ptr.PTR_INICIO]: "log.inicio",
   [Ptr.PTR_CURSOR]: "log.cursor",
   [Ptr.PTR_RAIZ]: "log.raiz",
+  [Ptr.PTR_BALDE]: "log.balde",
 };
 
 /* O mesmo EV_PTR_SET carrega coisas diferentes conforme o mundo, e sem saber
@@ -175,7 +224,13 @@ const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
  * encadeado, 0 é NULL. Foi por pouco que isto não virou um log mentindo
  * "NULO" para a célula zero. */
 function alvoPonteiro(valor: number, mundo: Mundo): string {
-  if (mundo === "vetor" || mundo === "ordenacao" || mundo === "busca") {
+  if (
+    mundo === "vetor" ||
+    mundo === "ordenacao" ||
+    mundo === "busca" ||
+    mundo === "hashAbe" ||
+    mundo === "hashEnc"
+  ) {
     return valor < 0 ? "—" : `[${valor}]`;
   }
   return valor === 0 ? t("log.nulo") : `#${valor}`;

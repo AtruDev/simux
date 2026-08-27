@@ -49,7 +49,12 @@ void suite_api(void)
         ASSERT_EQ(ds_sessao_slot(-1), -1);
         ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
         ASSERT_EQ(ds_sessao_slot(ds_sessao_slots()), -1);
-        ASSERT_TRUE(ds_sessao_slots() >= 2);
+
+        /* Quatro, e não dois: cada trilha do modo comparar precisa da sua
+         * sessão viva ao mesmo tempo, e a maior família — a do hash — tem
+         * quatro implementações. Com dois, comparar as três listas já falhava
+         * com ERR_ARG_INVALIDO na abertura da terceira. */
+        ASSERT_TRUE(ds_sessao_slots() >= 4);
     }
 
     CASO("cada slot guarda a sua própria estrutura");
@@ -278,6 +283,69 @@ void suite_api(void)
         ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
         ASSERT_EQ(ds_bench(ALG_BOLHA, 0, DIST_ALEATORIO, 1), -1);
         ASSERT_EQ(ds_erro(), ERR_ARG_INVALIDO);
+
+        ds_sessao_fim();
+    }
+    /* O defeito que ficou escondido até a família hash chegar.
+     *
+     * Cada trilha do modo comparar abre a SUA sessão e todas ficam vivas ao
+     * mesmo tempo, porque as operações chegam uma a uma e todas as trilhas
+     * recebem cada uma delas. Com dois slots, comparar as três listas já
+     * falhava na abertura da terceira — e ninguém tinha comparado listas. */
+    CASO("uma família inteira em cena, cada trilha no seu slot");
+    {
+        static const int32_t FAMILIA[4] = {
+            TIPO_HASH_ENC, TIPO_HASH_LINEAR, TIPO_HASH_QUAD, TIPO_HASH_DUPLO
+        };
+        int32_t slot;
+
+        ASSERT_TRUE(ds_sessao_slots() >= 4);
+
+        for (slot = 0; slot < 4; slot++) {
+            ASSERT_EQ(ds_sessao_slot(slot), OK);
+            ASSERT_EQ(ds_sessao_nova(FAMILIA[slot], 8), OK);
+        }
+
+        /* Abrir a quarta não pode ter fechado as três primeiras. */
+        for (slot = 0; slot < 4; slot++) {
+            ASSERT_EQ(ds_sessao_slot(slot), OK);
+            ASSERT_EQ(ds_tipo_sessao(), FAMILIA[slot]);
+        }
+
+        /* E a mesma operação corre em todas, que é o que o modo comparar faz. */
+        for (slot = 0; slot < 4; slot++) {
+            ASSERT_EQ(ds_sessao_slot(slot), OK);
+            ASSERT_EQ(ds_call(OP_PUSH, 8, 0, 0), OK);
+            ASSERT_EQ(ds_call(OP_PUSH, 16, 0, 0), OK);
+            ASSERT_EQ(ds_tamanho(), 2);
+        }
+
+        for (slot = 0; slot < 4; slot++) {
+            ASSERT_EQ(ds_sessao_slot(slot), OK);
+            ds_sessao_fim();
+        }
+    }
+
+    /* A tabela hash não tem "o primeiro" nem "o menor", e o ponteiro nulo no
+     * vtable é quem responde por isso. */
+    CASO("hash recusa as operações sem argumento");
+    {
+        ASSERT_EQ(ds_sessao_slot(0), OK);
+        ASSERT_EQ(ds_sessao_nova(TIPO_HASH_ENC, 8), OK);
+
+        ASSERT_EQ(ds_call(OP_POP, 0, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+        ASSERT_EQ(ds_call(OP_TOPO, 0, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+        ASSERT_EQ(ds_call(OP_PERCURSO, 0, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_OP_DESCONHECIDA);
+
+        /* Mas as que ela tem funcionam. */
+        ASSERT_EQ(ds_call(OP_PUSH, 42, 0, 0), OK);
+        ASSERT_EQ(ds_call(OP_BUSCAR, 42, 0, 0), OK);
+        ASSERT_EQ(ds_call(OP_REMOVER_VALOR, 42, 0, 0), OK);
+        ASSERT_EQ(ds_call(OP_BUSCAR, 42, 0, 0), -1);
+        ASSERT_EQ(ds_erro(), ERR_NAO_ENCONTRADO);
 
         ds_sessao_fim();
     }

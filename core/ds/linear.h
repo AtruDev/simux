@@ -82,4 +82,13 @@ extern const TAD_Linear BUSCA_BIN;
 extern const TAD_Linear ABB;
 extern const TAD_Linear AVL;
 
+/* As quatro tabelas hash. As três abertas são o mesmo código com uma sondagem
+ * diferente, decidida em `criar` — e `remover` e `consultar` sem argumento
+ * ficam nulos nas quatro: numa tabela hash não existe "o primeiro" nem "o
+ * menor", porque a ordem dos elementos é acidente da função hash. */
+extern const TAD_Linear HASH_ENC;
+extern const TAD_Linear HASH_LINEAR;
+extern const TAD_Linear HASH_QUAD;
+extern const TAD_Linear HASH_DUPLO;
+
 #endif /* DS_LINEAR_H */

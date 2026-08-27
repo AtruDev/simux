@@ -247,6 +247,26 @@ const en: Dicionario = {
     "right-left case: double rotation — right on the child, then left here",
   STR_REEQUILIBRADA: "the subtree fits the promise again",
 
+  "estrutura.hashEnc": "Chained hash",
+  "estrutura.hashLinear": "Open hash — linear probing",
+  "estrutura.hashQuad": "Open hash — quadratic probing",
+  "estrutura.hashDuplo": "Open hash — double hashing",
+
+  "metrica.carga": "load factor",
+  "metrica.colisoes": "collisions",
+  "metrica.maiorCadeia": "longest chain",
+  "metrica.sondagens": "probes",
+  "metrica.tumulos": "tombstones",
+  "metrica.baldes": "buckets",
+
+  "log.balde": "bucket",
+
+  STR_BALDE: "h(k) = k mod m landed on this bucket",
+  STR_COLISAO: "collision: the bucket already holds another key",
+  STR_SONDANDO: "taken by another key: probe the next one",
+  STR_TUMULO: "tombstone — a removed cell the probe has to cross",
+  STR_TABELA_CHEIA: "the table is full: the probe wrapped around without a slot",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

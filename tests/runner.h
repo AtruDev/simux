@@ -30,5 +30,6 @@ void suite_lista(void);
 void suite_ordenacao(void);
 void suite_busca(void);
 void suite_arvore(void);
+void suite_hash(void);
 
 #endif /* RUNNER_H */

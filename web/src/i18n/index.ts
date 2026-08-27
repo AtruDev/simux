@@ -177,7 +177,18 @@ export type ChaveUI =
   | "log.esquerda"
   | "log.direita"
   | "estrutura.avl"
-  | "metrica.rotacoes";
+  | "metrica.rotacoes"
+  | "estrutura.hashEnc"
+  | "estrutura.hashLinear"
+  | "estrutura.hashQuad"
+  | "estrutura.hashDuplo"
+  | "metrica.carga"
+  | "metrica.colisoes"
+  | "metrica.maiorCadeia"
+  | "metrica.sondagens"
+  | "metrica.tumulos"
+  | "metrica.baldes"
+  | "log.balde";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 
