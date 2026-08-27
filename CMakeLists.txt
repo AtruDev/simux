@@ -159,7 +159,7 @@ if(EMSCRIPTEN)
         # UTF8ToString ficou de fora de propósito: nenhuma string atravessa a
         # fronteira, e exportá-la só convidaria alguém a mandar texto do C.
         -sEXPORTED_RUNTIME_METHODS=HEAP32,HEAPU8
-        -sEXPORTED_FUNCTIONS=_ds_sessao_nova,_ds_sessao_fim,_ds_sessao_slot,_ds_sessao_slots,_ds_tipo_sessao,_ds_capacidade,_ds_call,_ds_erro,_ds_trace_ptr,_ds_trace_len,_ds_trace_truncado,_malloc,_free)
+        -sEXPORTED_FUNCTIONS=_ds_sessao_nova,_ds_sessao_fim,_ds_sessao_slot,_ds_sessao_slots,_ds_tipo_sessao,_ds_tamanho,_ds_capacidade,_ds_call,_ds_erro,_ds_trace_ptr,_ds_trace_len,_ds_trace_truncado,_malloc,_free)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Release")
         target_compile_options(simux PRIVATE -flto)

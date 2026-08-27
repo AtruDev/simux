@@ -12,6 +12,7 @@ declare module "*/wasm/simux.js" {
     _ds_sessao_slot(slot: number): number;
     _ds_sessao_slots(): number;
     _ds_tipo_sessao(): number;
+    _ds_tamanho(): number;
     _ds_capacidade(): number;
     _ds_call(op: number, a: number, b: number, c: number): number;
     _ds_erro(): number;

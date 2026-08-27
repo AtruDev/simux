@@ -816,7 +816,7 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [x] Wrap-around desenhado, com a ordem lógica por cima das células
 - [x] Seletor de implementação na barra lateral: `encadeada | vetor | comparar`
 - [x] **Modo comparar**: duas sessões, dois traces, um `Player` só
-- [ ] Lista simples, dupla, circular
+- [x] Lista simples, dupla, circular
 - [x] Modo script de operações
 - [x] Testes das quatro + fuzz diferencial (as duas implementações do mesmo TAD contra o mesmo modelo de referência — se divergirem, uma está errada)
 - **Pronto quando:** a mesma sequência de operações roda nas duas implementações lado a lado, e os contadores de `malloc` e de escritas contam histórias diferentes.

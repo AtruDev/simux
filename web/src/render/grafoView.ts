@@ -7,63 +7,21 @@
 
 import { Ptr, Tipo } from "../core/ops";
 import { alvoDe, type Modelo } from "../model/modelo";
-import { lerPaleta, type Paleta } from "./tokens";
+import { Tela } from "./tela";
 
 const LARGURA_NO = 118;
 const ALTURA_NO = 46;
 const ESPACO = 34; /* vão entre um nó e o seguinte */
 const MARGEM_TOPO = 52;
 const RAIO = 8;
-const SUAVIZACAO = 0.2; /* atual += (alvo - atual) * isto, por quadro */
 
-interface Pose {
-  x: number;
-  y: number;
-  alvoX: number;
-  alvoY: number;
-  alfa: number;
-  alvoAlfa: number;
-}
-
-export class GrafoView {
-  private ctx: CanvasRenderingContext2D;
-  private paleta: Paleta;
-  private poses = new Map<number, Pose>();
-  private larguraCss = 0;
-  private alturaCss = 0;
-  private observador: ResizeObserver;
-  private semMovimento: boolean;
-
+/** Pilha e fila encadeadas: a cadeia desce, e a estrutura cresce para cima. */
+export class GrafoView extends Tela {
   constructor(
-    private canvas: HTMLCanvasElement,
+    canvas: HTMLCanvasElement,
     private tipo: number,
   ) {
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("canvas 2d indisponível");
-    this.ctx = ctx;
-    this.paleta = lerPaleta(document.documentElement);
-    this.semMovimento = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    this.observador = new ResizeObserver(() => this.redimensionar());
-    this.observador.observe(canvas);
-    this.redimensionar();
-  }
-
-  destruir(): void {
-    this.observador.disconnect();
-  }
-
-  /** Em tela de alta densidade, sem isto o desenho sai borrado. */
-  private redimensionar(): void {
-    const dpr = window.devicePixelRatio || 1;
-    const r = this.canvas.getBoundingClientRect();
-    this.larguraCss = r.width;
-    this.alturaCss = r.height;
-    this.canvas.width = Math.round(r.width * dpr);
-    this.canvas.height = Math.round(r.height * dpr);
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    super(canvas);
   }
 
   /* ---- layout --------------------------------------------------------- */
@@ -116,36 +74,23 @@ export class GrafoView {
   desenhar(m: Modelo): void {
     const ordem = this.cadeia(m);
     const cx = this.larguraCss / 2;
-    const k = this.semMovimento ? 1 : SUAVIZACAO;
 
     ordem.forEach((id, indice) => {
       const alvoY = MARGEM_TOPO + indice * (ALTURA_NO + ESPACO);
-      let pose = this.poses.get(id);
-      if (!pose) {
-        /* Nasce um pouco acima e transparente: o push entra deslizando de
-         * cima, que é de onde a pilha cresce. */
-        pose = { x: cx, y: alvoY - 28, alvoX: cx, alvoY, alfa: 0, alvoAlfa: 1 };
-        this.poses.set(id, pose);
-      }
-      pose.alvoX = cx;
-      pose.alvoY = alvoY;
-      pose.alvoAlfa = 1;
+
+      /* Nasce um pouco acima e transparente: o push entra deslizando de cima,
+       * que é de onde a pilha cresce. */
+      this.mirar(id, cx, alvoY, {
+        x: cx,
+        y: alvoY - 28,
+        alvoX: cx,
+        alvoY,
+        alfa: 0,
+        alvoAlfa: 1,
+      });
     });
 
-    /* Quem saiu do modelo desaparece; a pose só é descartada quando some. */
-    for (const [id, pose] of this.poses) {
-      if (!m.nos.has(id)) {
-        pose.alvoAlfa = 0;
-        if (pose.alfa < 0.02) this.poses.delete(id);
-      }
-    }
-
-    for (const pose of this.poses.values()) {
-      pose.x += (pose.alvoX - pose.x) * k;
-      pose.y += (pose.alvoY - pose.y) * k;
-      pose.alfa += (pose.alvoAlfa - pose.alfa) * k;
-    }
-
+    this.animar((id) => m.nos.has(id));
     this.pintar(m, ordem);
   }
 
@@ -153,7 +98,7 @@ export class GrafoView {
     const ctx = this.ctx;
     const p = this.paleta;
 
-    ctx.clearRect(0, 0, this.larguraCss, this.alturaCss);
+    this.limpar();
 
     /* Arestas primeiro, para o nó cobrir a ponta da seta. */
     for (const id of ordem) {
@@ -307,36 +252,4 @@ export class GrafoView {
     }
   }
 
-  private retangulo(x: number, y: number, w: number, h: number, r: number) {
-    const ctx = this.ctx;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-
-  private setaBaixo(x: number, y: number, cor: string) {
-    const ctx = this.ctx;
-    ctx.fillStyle = cor;
-    ctx.beginPath();
-    ctx.moveTo(x, y + 2);
-    ctx.lineTo(x - 5, y - 6);
-    ctx.lineTo(x + 5, y - 6);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  private setaDireita(x: number, y: number, cor: string) {
-    const ctx = this.ctx;
-    ctx.fillStyle = cor;
-    ctx.beginPath();
-    ctx.moveTo(x + 2, y);
-    ctx.lineTo(x - 6, y - 5);
-    ctx.lineTo(x - 6, y + 5);
-    ctx.closePath();
-    ctx.fill();
-  }
 }

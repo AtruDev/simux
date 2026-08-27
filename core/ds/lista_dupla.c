@@ -73,6 +73,7 @@ static No *andar_ate(const ListaDupla *l, int pos)
         for (i = 0; i < pos && atual != NULL; i++) {
             TR(EV_VISIT, .a = id_de(atual));
             TR(EV_COUNT, .a = CNT_COMPARACOES, .b = +1);
+            TR(EV_UNVISIT, .a = id_de(atual));
             atual = atual->prox;
             TR(EV_PTR_SET, .a = PTR_CURSOR, .b = id_de(atual));
         }
@@ -81,6 +82,7 @@ static No *andar_ate(const ListaDupla *l, int pos)
         for (i = l->n - 1; i > pos && atual != NULL; i--) {
             TR(EV_VISIT, .a = id_de(atual));
             TR(EV_COUNT, .a = CNT_COMPARACOES, .b = +1);
+            TR(EV_UNVISIT, .a = id_de(atual));
             atual = atual->ant;
             TR(EV_PTR_SET, .a = PTR_CURSOR, .b = id_de(atual));
         }

@@ -34,6 +34,12 @@ int32_t     ds_tipo_sessao(void);
 int32_t     ds_sessao_slot(int32_t slot);
 int32_t     ds_sessao_slots(void);
 
+/* Quantos elementos a estrutura da sessão tem agora.
+ *
+ * O modelo do frontend também sabe um tamanho, mas o dele é o do instante em
+ * que a animação está. Este é o de verdade. */
+int32_t     ds_tamanho(void);
+
 /* Capacidade da estrutura da sessão, ou -1 quando não há limite. */
 int32_t     ds_capacidade(void);
 

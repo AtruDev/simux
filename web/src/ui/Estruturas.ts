@@ -3,22 +3,28 @@
  * Pilha e fila compartilham as mesmas quatro operações do vtable — inserir,
  * remover, consultar, limpar. O que muda é o nome de cada uma e o
  * renderizador. Manter isto numa tabela evita um `if (é fila)` espalhado pela
- * interface. */
+ * interface.
+ *
+ * A lista acrescentou uma terceira coluna a essa tabela: `posicoes`. Quem tem
+ * posição ganha o campo e os botões de inserir/remover em posição e de buscar;
+ * quem não tem, nem vê que eles existem. */
 
 import { Tipo } from "../core/ops";
 import type { Chave } from "../i18n";
 
-export type Mundo = "encadeada" | "vetor";
+export type Mundo = "encadeada" | "vetor" | "lista";
 
 export interface Estrutura {
   tipo: number;
   nome: Chave;
   mundo: Mundo;
   /* Famílias iguais aparecem juntas no seletor de implementação. */
-  familia: "pilha" | "fila";
+  familia: "pilha" | "fila" | "lista";
   rotuloInserir: Chave;
   rotuloRemover: Chave;
   rotuloConsultar: Chave;
+  /* A posição é argumento das operações desta estrutura. */
+  posicoes?: boolean;
 }
 
 export const ESTRUTURAS: Estrutura[] = [
@@ -58,20 +64,48 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloRemover: "op.desenfileirar",
     rotuloConsultar: "op.frente",
   },
+  {
+    tipo: Tipo.TIPO_LISTA_SIMPLES,
+    nome: "estrutura.listaSimples",
+    mundo: "lista",
+    familia: "lista",
+    rotuloInserir: "op.inserirInicio",
+    rotuloRemover: "op.removerInicio",
+    rotuloConsultar: "op.primeiro",
+    posicoes: true,
+  },
+  {
+    tipo: Tipo.TIPO_LISTA_DUPLA,
+    nome: "estrutura.listaDupla",
+    mundo: "lista",
+    familia: "lista",
+    rotuloInserir: "op.inserirInicio",
+    rotuloRemover: "op.removerInicio",
+    rotuloConsultar: "op.primeiro",
+    posicoes: true,
+  },
+  {
+    tipo: Tipo.TIPO_LISTA_CIRCULAR,
+    nome: "estrutura.listaCircular",
+    mundo: "lista",
+    familia: "lista",
+    rotuloInserir: "op.inserirInicio",
+    rotuloRemover: "op.removerInicio",
+    rotuloConsultar: "op.primeiro",
+    posicoes: true,
+  },
 ];
 
 export function estruturaDe(tipo: number): Estrutura {
   return ESTRUTURAS.find((e) => e.tipo === tipo) ?? ESTRUTURAS[0]!;
 }
 
-/** As duas implementações de uma família, sempre encadeada antes de vetor.
+/** Todas as implementações de uma família, na ordem em que aparecem no menu.
  *
- * É o par que o modo comparar põe lado a lado. A ordem é fixa para a faixa de
- * cima não trocar de lugar ao mudar de pilha para fila. */
+ * É o conjunto que o modo comparar põe lado a lado. São duas para pilha e
+ * fila, e três para lista — o Player já aceita quantas trilhas forem. A ordem
+ * é a do catálogo, para a faixa de cima não trocar de lugar ao mudar de
+ * família. */
 export function parDaFamilia(familia: Estrutura["familia"]): Estrutura[] {
-  const daFamilia = ESTRUTURAS.filter((e) => e.familia === familia);
-  const encadeada = daFamilia.find((e) => e.mundo === "encadeada");
-  const vetor = daFamilia.find((e) => e.mundo === "vetor");
-
-  return encadeada && vetor ? [encadeada, vetor] : daFamilia;
+  return ESTRUTURAS.filter((e) => e.familia === familia);
 }

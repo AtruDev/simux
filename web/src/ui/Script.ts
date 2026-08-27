@@ -13,6 +13,16 @@
  *   inserir 1, 2, 3      i 1 2 3          i1 i2 i3
  *   desempilhar          pop              r             d
  *   # comentário
+ *
+ * Nas listas a posição entra com uma preposição, e não como mais um número:
+ *
+ *   inserir 7 em 2       insert 7 at 2
+ *   remover em 2         remove at 2
+ *   buscar 7             search 7
+ *
+ * Exigir o "em" é o que desfaz a ambiguidade: sem ele, `remover 2` tanto pode
+ * ser a posição 2 quanto o valor 2, e adivinhar errado executa o que ninguém
+ * pediu.
  */
 
 import { Op } from "../core/ops";
@@ -20,6 +30,8 @@ import { Op } from "../core/ops";
 export interface Passo {
   op: Op;
   valor: number;
+  /** 0 nas operações que não têm posição; o C ignora o argumento. */
+  posicao: number;
 }
 
 /** Uma linha que o interpretador não entendeu, com o texto original. */
@@ -66,7 +78,39 @@ const VERBOS: Array<{ nomes: string[]; op: Op; precisaValor: boolean }> = [
     op: Op.OP_LIMPAR,
     precisaValor: false,
   },
+  {
+    nomes: ["buscar", "busca", "search", "find", "procurar", "b"],
+    op: Op.OP_BUSCAR,
+    precisaValor: true,
+  },
 ];
+
+/* A preposição que introduz a posição, e o par com posição de cada verbo. */
+/* Curta de propósito: "no" e "na" são palavras comuns demais, e "inserir no
+ * início" viraria uma posição que não existe. */
+const PREPOSICOES = ["em", "at", "@", "pos"];
+
+const COM_POSICAO: Partial<Record<Op, Op>> = {
+  [Op.OP_PUSH]: Op.OP_INSERIR_EM,
+  [Op.OP_POP]: Op.OP_REMOVER_EM,
+};
+
+/** Separa um `em N` do fim do comando, devolvendo o resto e a posição. */
+function separarPosicao(partes: string[]): {
+  resto: string[];
+  posicao: number | null;
+} {
+  const i = partes.findIndex((x) => PREPOSICOES.includes(x));
+  if (i < 0) return { resto: partes, posicao: null };
+
+  const numero = Number(partes[i + 1]);
+  if (partes.length !== i + 2 || !Number.isFinite(numero)) {
+    /* "em" sem número, ou com sobra depois — devolve NaN para o chamador
+     * recusar a linha inteira em vez de executar metade dela. */
+    return { resto: partes, posicao: NaN };
+  }
+  return { resto: partes.slice(0, i), posicao: Math.trunc(numero) };
+}
 
 function acharVerbo(palavra: string) {
   return VERBOS.find((v) => v.nomes.includes(palavra));
@@ -111,8 +155,18 @@ export function interpretar(texto: string): Resultado {
      * grudados, que é como se escreve à mão. */
     const normalizado = bruto
       .toLowerCase()
-      .replace(/^([a-zà-ú]+)\s*(-?\d)/u, "$1 $2");
-    const partes = normalizado.split(/\s+/);
+      .replace(/^([a-zà-ú]+)\s*(-?\d)/u, "$1 $2")
+      /* "i7@2" é a forma mais curta de escrever posição, e sem isto o @ ficava
+       * grudado no número e ninguém achava a preposição. */
+      .replace(/@/g, " @ ");
+    const todas = normalizado.split(/\s+/);
+    const { resto: partes, posicao } = separarPosicao(todas);
+
+    if (posicao !== null && Number.isNaN(posicao)) {
+      erros.push({ linha, texto: bruto });
+      continue;
+    }
+
     const explicito = acharVerbo(partes[0] ?? "");
 
     const verbo = explicito ?? herdado;
@@ -126,6 +180,36 @@ export function interpretar(texto: string): Resultado {
       herdado = explicito.precisaValor ? explicito : null;
     }
 
+    /* Com posição, o verbo troca de operação: empilhar vira inserir_em. Um
+     * verbo que não tem par com posição — limpar, buscar — recusa. */
+    if (posicao !== null) {
+      const comPosicao = COM_POSICAO[verbo.op];
+      if (comPosicao === undefined) {
+        erros.push({ linha, texto: bruto });
+        continue;
+      }
+
+      const valores = resto.map(Number);
+      const precisa = verbo.op === Op.OP_PUSH;
+
+      if (precisa && (valores.length !== 1 || !Number.isFinite(valores[0]!))) {
+        erros.push({ linha, texto: bruto });
+        continue;
+      }
+      if (!precisa && valores.length > 0) {
+        erros.push({ linha, texto: bruto });
+        continue;
+      }
+
+      passos.push({
+        op: comPosicao,
+        valor: precisa ? Math.trunc(valores[0]!) : 0,
+        posicao,
+      });
+      herdado = null;
+      continue;
+    }
+
     if (!verbo.precisaValor) {
       /* Palavra sobrando é prosa e passa: "consultar topo", "remover do
        * topo", "desenfileirar da frente" — é assim que a operação se chama
@@ -136,7 +220,7 @@ export function interpretar(texto: string): Resultado {
       if (resto.some((token) => Number.isFinite(Number(token)))) {
         erros.push({ linha, texto: bruto });
       } else {
-        passos.push({ op: verbo.op, valor: 0 });
+        passos.push({ op: verbo.op, valor: 0, posicao: 0 });
       }
       continue;
     }
@@ -153,7 +237,7 @@ export function interpretar(texto: string): Resultado {
       continue;
     }
     for (const v of valores) {
-      passos.push({ op: verbo.op, valor: Math.trunc(v) });
+      passos.push({ op: verbo.op, valor: Math.trunc(v), posicao: 0 });
     }
   }
 

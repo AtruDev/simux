@@ -33,9 +33,19 @@ function resumo(texto: string): string {
     [Op.OP_POP]: "POP",
     [Op.OP_TOPO]: "TOPO",
     [Op.OP_LIMPAR]: "LIMPAR",
+    [Op.OP_INSERIR_EM]: "INSERIR",
+    [Op.OP_REMOVER_EM]: "REMOVER",
+    [Op.OP_BUSCAR]: "BUSCAR",
   };
   return passos
-    .map((p) => (p.op === Op.OP_PUSH ? `${nome[p.op]} ${p.valor}` : nome[p.op]))
+    .map((p) => {
+      if (p.op === Op.OP_INSERIR_EM) return `INSERIR ${p.valor}@${p.posicao}`;
+      if (p.op === Op.OP_REMOVER_EM) return `REMOVER @${p.posicao}`;
+      if (p.op === Op.OP_PUSH || p.op === Op.OP_BUSCAR) {
+        return `${nome[p.op]} ${p.valor}`;
+      }
+      return nome[p.op];
+    })
     .join(", ");
 }
 
@@ -116,6 +126,44 @@ CASO("a linha do erro é a linha de verdade");
 igual(erros("i 1, i 2\nxyz"), "2:xyz", "vírgula não adianta o contador");
 igual(erros("i 1\n\n\nxyz"), "4:xyz", "linha em branco conta");
 igual(erros("# nota\nxyz"), "2:xyz", "comentário conta");
+
+/* ---- posição e busca, que só as listas têm ----------------------------- */
+
+CASO("a posição entra por preposição");
+igual(resumo("inserir 7 em 2"), "INSERIR 7@2", "em");
+igual(resumo("insert 7 at 2"), "INSERIR 7@2", "at");
+igual(resumo("i 7 @ 2"), "INSERIR 7@2", "@ solto");
+igual(resumo("i7@2"), "INSERIR 7@2", "@ grudado, a forma mais curta");
+igual(resumo("remover em 0"), "REMOVER @0", "remover em posição");
+igual(resumo("remove at 3"), "REMOVER @3", "em inglês");
+
+CASO("buscar");
+igual(resumo("buscar 7"), "BUSCAR 7", "por extenso");
+igual(resumo("b 7"), "BUSCAR 7", "pela inicial");
+igual(resumo("search -3"), "BUSCAR -3", "valor negativo");
+igual(erros("buscar"), "1:buscar", "sem valor recusa");
+
+CASO("posição em verbo que não tem posição");
+igual(erros("limpar em 2"), "1:limpar em 2", "limpar");
+igual(erros("buscar 7 em 2"), "1:buscar 7 em 2", "buscar");
+
+CASO("preposição sem número recusa a linha inteira");
+igual(erros("inserir 7 em"), "1:inserir 7 em", "sem número");
+igual(erros("inserir 7 em abc"), "1:inserir 7 em abc", "não é número");
+igual(resumo("inserir 7 em"), "", "e não executa nada");
+
+/* "no" e "na" ficaram fora das preposições justamente por isto: são palavras
+ * comuns demais, e a frase mais natural do mundo viraria erro. */
+CASO("prosa com 'no' não vira posição");
+igual(resumo("inserir 7"), "PUSH 7", "inserir 7");
+igual(resumo("remover do início"), "POP", "remover do início");
+
+CASO("sem posição, o passo carrega posição 0");
+{
+  const { passos } = interpretar("i 5\nr");
+  igual(passos[0]?.posicao, 0, "insere com posição 0");
+  igual(passos[1]?.posicao, 0, "remove com posição 0");
+}
 
 /* ------------------------------------------------------------------------ */
 

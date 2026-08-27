@@ -78,7 +78,21 @@ export type ChaveUI =
   | "script.ajuda"
   | "script.rodar"
   | "script.linha"
-  | "estrutura.comparar";
+  | "estrutura.comparar"
+  | "estrutura.listaSimples"
+  | "estrutura.listaDupla"
+  | "estrutura.listaCircular"
+  | "op.inserirInicio"
+  | "op.inserirFim"
+  | "op.inserirEm"
+  | "op.removerEm"
+  | "op.removerInicio"
+  | "op.buscar"
+  | "op.posicao"
+  | "op.primeiro"
+  | "metrica.comparacoes"
+  | "log.cursor"
+  | "log.inicio";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 

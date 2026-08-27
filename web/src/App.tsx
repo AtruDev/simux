@@ -15,12 +15,19 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import { chamar, iniciar, selecionarSlot, sessaoNova } from "./core/bridge";
+import {
+  chamar,
+  iniciar,
+  selecionarSlot,
+  sessaoNova,
+  tamanho,
+} from "./core/bridge";
 import { Op, Status } from "./core/ops";
 import { Player, type Operacao } from "./core/player";
 import { ERR_CHAVES } from "./core/ops";
 import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
 import { GrafoView } from "./render/grafoView";
+import { ListaView } from "./render/listaView";
 import { VetorView } from "./render/vetorView";
 import {
   ESTRUTURAS,
@@ -45,6 +52,7 @@ export function App() {
   const [tipo, setTipo] = useState<number>(ESTRUTURAS[0]!.tipo);
   const [capacidade, setCapacidade] = useState(8);
   const [comparar, setComparar] = useState(false);
+  const [posicao, setPosicao] = useState("0");
 
   const estrutura = estruturaDe(tipo);
 
@@ -120,9 +128,9 @@ export function App() {
     const views = trilhas.map((t_, k) => {
       const canvas = refCanvas.current[k];
       if (!canvas) return null;
-      return t_.mundo === "vetor"
-        ? new VetorView(canvas, t_.tipo)
-        : new GrafoView(canvas, t_.tipo);
+      if (t_.mundo === "vetor") return new VetorView(canvas, t_.tipo);
+      if (t_.mundo === "lista") return new ListaView(canvas, t_.tipo);
+      return new GrafoView(canvas, t_.tipo);
     });
 
     const solta = player.aoQuadro(() => {
@@ -145,13 +153,13 @@ export function App() {
    * recusam pelo mesmo motivo, e quando divergem é a de vetor que enche
    * primeiro, o que o painel dela já mostra. */
   const executar = useCallback(
-    (op: Op, a: number): { operacao: Operacao; erro: number } => {
+    (op: Op, a: number, b: number): { operacao: Operacao; erro: number } => {
       const operacao: Operacao = [];
       let erroDaPrimeira = Status.OK;
 
       trilhas.forEach((_, slot) => {
         selecionarSlot(slot);
-        const saida = chamar(op, a);
+        const saida = chamar(op, a, b);
         operacao.push(saida.eventos);
         if (slot === 0) erroDaPrimeira = saida.erro;
       });
@@ -162,8 +170,8 @@ export function App() {
   );
 
   const rodar = useCallback(
-    (op: Op, a = 0) => {
-      const { operacao, erro: codigo } = executar(op, a);
+    (op: Op, a = 0, b = 0) => {
+      const { operacao, erro: codigo } = executar(op, a, b);
       player.anexarTrilhas([operacao]);
       setErro(textoDoErro(codigo));
     },
@@ -184,7 +192,7 @@ export function App() {
         /* Uma operação recusada no meio do script não interrompe o resto: a
          * estrutura fica intacta, e a recusa é justamente o que o exercício
          * costuma querer mostrar. */
-        operacoes.push(executar(passo.op, passo.valor).operacao);
+        operacoes.push(executar(passo.op, passo.valor, passo.posicao).operacao);
       }
 
       /* E ela não vai para o aviso de erro no alto.
@@ -291,6 +299,20 @@ export function App() {
               <span>{t("estrutura.comparar")}</span>
             </label>
 
+            {trilhas.some((x) => x.posicoes) && (
+              <div className="campo campo-capacidade">
+                <label htmlFor="pos">{t("op.posicao")}</label>
+                <input
+                  id="pos"
+                  className="mono"
+                  type="number"
+                  min={0}
+                  value={posicao}
+                  onChange={(ev) => setPosicao(ev.target.value)}
+                />
+              </div>
+            )}
+
             {trilhas.some((x) => x.mundo === "vetor") && (
               <div className="campo campo-capacidade">
                 <label htmlFor="cap">{t("op.capacidade")}</label>
@@ -359,6 +381,50 @@ export function App() {
               >
                 {t(estrutura.rotuloConsultar)}
               </button>
+              {estrutura.posicoes && (
+                <>
+                  <button
+                    type="button"
+                    className="secundario"
+                    disabled={!carregado}
+                    onClick={() =>
+                      rodar(Op.OP_INSERIR_EM, Number(valor) | 0, Number(posicao) | 0)
+                    }
+                  >
+                    {t("op.inserirEm")}
+                  </button>
+                  <button
+                    type="button"
+                    className="secundario"
+                    disabled={!carregado}
+                    onClick={() =>
+                      /* O tamanho vem do C, não do modelo: o do modelo é o do
+                         instante da animação, e inserir "no fim" enquanto a
+                         animação anterior ainda roda cairia no meio. */
+                      rodar(Op.OP_INSERIR_EM, Number(valor) | 0, tamanho())
+                    }
+                  >
+                    {t("op.inserirFim")}
+                  </button>
+                  <button
+                    type="button"
+                    className="secundario"
+                    disabled={!carregado}
+                    onClick={() => rodar(Op.OP_REMOVER_EM, 0, Number(posicao) | 0)}
+                  >
+                    {t("op.removerEm")}
+                  </button>
+                  <button
+                    type="button"
+                    className="secundario"
+                    disabled={!carregado}
+                    onClick={() => rodar(Op.OP_BUSCAR, Number(valor) | 0)}
+                  >
+                    {t("op.buscar")}
+                  </button>
+                </>
+              )}
+
               <button
                 type="button"
                 className="secundario"
@@ -391,6 +457,7 @@ export function App() {
             <PainelMetricas
               key={faixa.tipo}
               modelo={player.estadoDe(k)}
+              mundo={faixa.mundo}
               i={foto.i}
               total={foto.total}
               titulo={trilhas.length > 1 ? t(faixa.nome) : undefined}

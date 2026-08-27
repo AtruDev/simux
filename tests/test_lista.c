@@ -145,6 +145,38 @@ static void bateria(const TAD_Linear *tad)
     tad->destruir(l);
 }
 
+/** Quantos nós continuam acesos ao fim do último trace.
+ *
+ * Um nó liberado sai da conta: o frontend também o tira dos visitados quando
+ * recebe EV_NODE_FREE, senão sobraria um destaque em nó que não existe. */
+static int acesos_no_trace(void)
+{
+    const ev_t *evs = trace_ptr();
+    int32_t     n = trace_len();
+    int32_t     i, j;
+    int32_t     acesos[64];
+    int         quantos = 0;
+
+    for (i = 0; i < n; i++) {
+        int32_t id = evs[i].a;
+
+        if (evs[i].kind == EV_VISIT) {
+            if (quantos < (int) (sizeof acesos / sizeof acesos[0])) {
+                acesos[quantos++] = id;
+            }
+        } else if (evs[i].kind == EV_UNVISIT || evs[i].kind == EV_NODE_FREE) {
+            for (j = 0; j < quantos; j++) {
+                if (acesos[j] == id) {
+                    acesos[j] = acesos[--quantos];
+                    break;
+                }
+            }
+        }
+    }
+
+    return quantos;
+}
+
 /* ---- invariantes específicos ------------------------------------------- *
  * Estes olham por dentro, então usam as funções concretas.                  */
 
@@ -213,6 +245,48 @@ void suite_lista(void)
         ASSERT_EQ(lista_circular_tamanho(l), 4);
 
         lista_circular_destruir(l);
+    }
+
+    /* A caminhada acende cada nó por onde passa. Se ela não apagar depois, o
+     * prefixo inteiro da lista fica destacado na tela para sempre — foi o que
+     * aconteceu, e só apareceu no navegador. O trace é a fonte da verdade:
+     * inserir e remover não podem deixar nó nenhum aceso. */
+    CASO("a caminhada apaga o que acendeu");
+    {
+        const TAD_Linear *tads[] = { &LISTA_SIMPLES, &LISTA_DUPLA,
+                                     &LISTA_CIRCULAR };
+        size_t k;
+
+        for (k = 0; k < sizeof tads / sizeof tads[0]; k++) {
+            void  *l = tads[k]->criar(0);
+            elem_t v = 0;
+            int    i;
+
+            for (i = 0; i < 8; i++) {
+                ASSERT_EQ(tads[k]->inserir_em(l, i, (elem_t) i), OK);
+            }
+
+            trace_reset();
+            ASSERT_EQ(tads[k]->inserir_em(l, 5, 99), OK);
+            ASSERT_EQ(acesos_no_trace(), 0);
+
+            trace_reset();
+            ASSERT_EQ(tads[k]->remover_em(l, 5, &v), OK);
+            ASSERT_EQ(v, 99);
+            ASSERT_EQ(acesos_no_trace(), 0);
+
+            /* A busca é a exceção: o nó encontrado FICA aceso, porque ele é o
+             * resultado. Um só, e é o último visitado. */
+            trace_reset();
+            ASSERT_EQ(tads[k]->buscar(l, 6, &i), OK);
+            ASSERT_EQ(acesos_no_trace(), 1);
+
+            trace_reset();
+            ASSERT_EQ(tads[k]->buscar(l, 999, &i), ERR_NAO_ENCONTRADO);
+            ASSERT_EQ(acesos_no_trace(), 0);
+
+            tads[k]->destruir(l);
+        }
     }
 
     CASO("tamanho bate com a contagem por travessia");

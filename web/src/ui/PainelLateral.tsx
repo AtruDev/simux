@@ -9,6 +9,7 @@ import type { Mundo } from "./Estruturas";
 
 interface PropsMetricas {
   modelo: Modelo;
+  mundo: Mundo;
   i: number;
   total: number;
   /* No modo comparar, o nome da implementação vira o título — senão os dois
@@ -16,7 +17,13 @@ interface PropsMetricas {
   titulo?: string;
 }
 
-export function PainelMetricas({ modelo, i, total, titulo }: PropsMetricas) {
+export function PainelMetricas({
+  modelo,
+  mundo,
+  i,
+  total,
+  titulo,
+}: PropsMetricas) {
   const tamanho = contador(modelo, Cnt.CNT_TAMANHO);
 
   /* As duas implementações contam histórias diferentes de propósito: a
@@ -26,7 +33,20 @@ export function PainelMetricas({ modelo, i, total, titulo }: PropsMetricas) {
     [t("metrica.tamanho"), String(tamanho)],
   ];
 
-  if (modelo.vetor) {
+  /* A lista mede o que a caminhada custa: é o número que fica diferente entre
+   * a simples e a dupla na mesma operação, e o argumento inteiro de existir
+   * mais de uma implementação. */
+  if (mundo === "lista") {
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+    linhas.push([
+      t("metrica.alocacoes"),
+      String(contador(modelo, Cnt.CNT_ALOCACOES)),
+    ]);
+    linhas.push([t("metrica.nos"), String(modelo.nos.size)]);
+  } else if (modelo.vetor) {
     const cap = modelo.vetor.capacidade;
     linhas.push([t("metrica.capacidade"), String(cap)]);
     linhas.push([t("metrica.escritas"), String(contador(modelo, Cnt.CNT_ESCRITAS))]);
@@ -65,12 +85,15 @@ const NOME_CONTADOR: Partial<Record<number, Chave>> = {
   [Cnt.CNT_TAMANHO]: "metrica.tamanho",
   [Cnt.CNT_ALOCACOES]: "metrica.alocacoes",
   [Cnt.CNT_ESCRITAS]: "metrica.escritas",
+  [Cnt.CNT_COMPARACOES]: "metrica.comparacoes",
 };
 
 const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
   [Ptr.PTR_TOPO]: "log.ponteiro",
   [Ptr.PTR_FRENTE]: "log.frente",
   [Ptr.PTR_FIM]: "log.fim",
+  [Ptr.PTR_INICIO]: "log.inicio",
+  [Ptr.PTR_CURSOR]: "log.cursor",
 };
 
 /* O mesmo EV_PTR_SET carrega coisas diferentes conforme o mundo, e sem saber

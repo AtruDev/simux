@@ -64,6 +64,15 @@ export function sessaoNova(tipo: Tipo, capacidade = 8): Ev[] {
   return lerTrace(m);
 }
 
+/** Quantos elementos a estrutura tem agora, no C.
+ *
+ * Diferente do tamanho do modelo, que é o do instante da animação: inserir
+ * "no fim" precisa do de verdade, senão operar antes de a animação terminar
+ * inseriria no meio. */
+export function tamanho(): number {
+  return modulo ? modulo._ds_tamanho() : 0;
+}
+
 /** Capacidade da sessão, ou -1 quando não há limite. */
 export function capacidade(): number {
   return modulo ? modulo._ds_capacidade() : -1;

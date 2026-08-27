@@ -7,6 +7,9 @@
 import fonteApi from "../../../core/api/api.c?raw";
 import fonteFilaEnc from "../../../core/ds/fila_enc.c?raw";
 import fonteFilaVet from "../../../core/ds/fila_vet.c?raw";
+import fonteListaCircular from "../../../core/ds/lista_circular.c?raw";
+import fonteListaDupla from "../../../core/ds/lista_dupla.c?raw";
+import fonteListaSimples from "../../../core/ds/lista_simples.c?raw";
 import fontePilhaEnc from "../../../core/ds/pilha_enc.c?raw";
 import fontePilhaVet from "../../../core/ds/pilha_vet.c?raw";
 import { Src } from "../core/ops";
@@ -22,6 +25,18 @@ const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_PILHA_VET]: { arquivo: "core/ds/pilha_vet.c", texto: fontePilhaVet },
   [Src.SRC_FILA_ENC]: { arquivo: "core/ds/fila_enc.c", texto: fonteFilaEnc },
   [Src.SRC_FILA_VET]: { arquivo: "core/ds/fila_vet.c", texto: fonteFilaVet },
+  [Src.SRC_LISTA_SIMPLES]: {
+    arquivo: "core/ds/lista_simples.c",
+    texto: fonteListaSimples,
+  },
+  [Src.SRC_LISTA_DUPLA]: {
+    arquivo: "core/ds/lista_dupla.c",
+    texto: fonteListaDupla,
+  },
+  [Src.SRC_LISTA_CIRCULAR]: {
+    arquivo: "core/ds/lista_circular.c",
+    texto: fonteListaCircular,
+  },
 };
 
 const cache = new Map<number, Fonte>();

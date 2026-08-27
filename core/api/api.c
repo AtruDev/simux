@@ -154,6 +154,14 @@ API int32_t ds_tipo_sessao(void)
     return ATIVA.tipo;
 }
 
+/* Tamanho de verdade da estrutura, que não é o do modelo do frontend: aquele
+ * reflete onde a animação está, e este reflete tudo o que já foi executado.
+ * Quem precisa inserir "no fim" precisa deste. */
+API int32_t ds_tamanho(void)
+{
+    return (ATIVA.tad != NULL) ? ATIVA.tad->tamanho(ATIVA.estrutura) : 0;
+}
+
 API int32_t ds_capacidade(void)
 {
     return (ATIVA.tad != NULL) ? ATIVA.tad->capacidade(ATIVA.estrutura) : -1;

@@ -69,6 +69,24 @@ const pt: Dicionario = {
   "log.fim": "fim passa a ser",
   "log.nulo": "NULO",
 
+  "estrutura.listaSimples": "Lista simples",
+  "estrutura.listaDupla": "Lista dupla",
+  "estrutura.listaCircular": "Lista circular",
+
+  "op.inserirInicio": "inserir no início",
+  "op.inserirFim": "inserir no fim",
+  "op.inserirEm": "inserir na posição",
+  "op.removerEm": "remover da posição",
+  "op.removerInicio": "remover do início",
+  "op.buscar": "buscar",
+  "op.posicao": "posição",
+  "op.primeiro": "consultar o primeiro",
+
+  "metrica.comparacoes": "comparações",
+
+  "log.cursor": "cursor passa a ser",
+  "log.inicio": "início passa a ser",
+
   "estrutura.comparar": "comparar as duas implementações",
 
   "painel.script": "Script de operações",
@@ -86,6 +104,11 @@ const pt: Dicionario = {
   STR_FILA_VAZIA: "a fila está vazia",
   STR_FILA_CHEIA: "a fila está cheia — n == capacidade",
   STR_DEU_VOLTA: "o índice deu a volta",
+  STR_LISTA_VAZIA: "a lista está vazia",
+  STR_POSICAO_INVALIDA: "posição fora da lista",
+  STR_ACHOU: "encontrado",
+  STR_NAO_ACHOU: "não está na lista",
+  STR_ANDANDO: "andando até a posição",
 
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",

@@ -67,6 +67,24 @@ const en: Dicionario = {
   "log.fim": "rear becomes",
   "log.nulo": "NULL",
 
+  "estrutura.listaSimples": "Singly linked list",
+  "estrutura.listaDupla": "Doubly linked list",
+  "estrutura.listaCircular": "Circular list",
+
+  "op.inserirInicio": "insert at head",
+  "op.inserirFim": "insert at tail",
+  "op.inserirEm": "insert at position",
+  "op.removerEm": "remove at position",
+  "op.removerInicio": "remove from head",
+  "op.buscar": "search",
+  "op.posicao": "position",
+  "op.primeiro": "peek first",
+
+  "metrica.comparacoes": "comparisons",
+
+  "log.cursor": "cursor becomes",
+  "log.inicio": "head becomes",
+
   "estrutura.comparar": "compare both implementations",
 
   "painel.script": "Operation script",
@@ -83,6 +101,11 @@ const en: Dicionario = {
   STR_FILA_VAZIA: "the queue is empty",
   STR_FILA_CHEIA: "the queue is full — n == capacity",
   STR_DEU_VOLTA: "the index wrapped around",
+  STR_LISTA_VAZIA: "the list is empty",
+  STR_POSICAO_INVALIDA: "position outside the list",
+  STR_ACHOU: "found",
+  STR_NAO_ACHOU: "not in the list",
+  STR_ANDANDO: "walking to the position",
 
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",

@@ -73,6 +73,7 @@ static No *andar(const ListaCircular *l, int passos)
     for (i = 0; i < passos; i++) {
         TR(EV_VISIT, .a = id_de(atual));
         TR(EV_COUNT, .a = CNT_COMPARACOES, .b = +1);
+        TR(EV_UNVISIT, .a = id_de(atual));
         atual = atual->prox;
         TR(EV_PTR_SET, .a = PTR_CURSOR, .b = id_de(atual));
     }
