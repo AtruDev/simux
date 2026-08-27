@@ -23,6 +23,7 @@
 #include "ds/fila.h"
 #include "ds/ids.h"
 #include "ds/idmap.h"
+#include "ds/lista.h"
 #include "ds/pilha.h"
 #include "ds/tipos.h"
 #include "ds/trace.h"
@@ -68,6 +69,9 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_PILHA_VET: return &PILHA_VET;
     case TIPO_FILA_ENC:  return &FILA_ENC;
     case TIPO_FILA_VET:  return &FILA_VET;
+    case TIPO_LISTA_SIMPLES:  return &LISTA_SIMPLES;
+    case TIPO_LISTA_DUPLA:    return &LISTA_DUPLA;
+    case TIPO_LISTA_CIRCULAR: return &LISTA_CIRCULAR;
     default:             return NULL;
     }
 }
@@ -158,8 +162,8 @@ API int32_t ds_capacidade(void)
 API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
 {
     elem_t descartado;
+    int    posicao = 0;
 
-    (void) b;
     (void) c;
 
     trace_reset();
@@ -187,6 +191,27 @@ API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
     case OP_LIMPAR:
         ATIVA.tad->limpar(ATIVA.estrutura);
         return OK;
+
+    /* As três com posição existem só em quem tem posição. O ponteiro nulo no
+     * vtable é a resposta: pedir isso a uma pilha é operação desconhecida, não
+     * argumento inválido. */
+    case OP_INSERIR_EM:
+        if (ATIVA.tad->inserir_em == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
+        return concluir(ATIVA.tad->inserir_em(ATIVA.estrutura, b, a));
+
+    case OP_REMOVER_EM:
+        if (ATIVA.tad->remover_em == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
+        return concluir(ATIVA.tad->remover_em(ATIVA.estrutura, b, &descartado));
+
+    case OP_BUSCAR:
+        if (ATIVA.tad->buscar == NULL) {
+            return concluir(ERR_OP_DESCONHECIDA);
+        }
+        return concluir(ATIVA.tad->buscar(ATIVA.estrutura, a, &posicao));
 
     default:
         return concluir(ERR_OP_DESCONHECIDA);

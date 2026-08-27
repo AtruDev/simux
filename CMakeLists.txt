@@ -118,6 +118,9 @@ add_library(core STATIC
     core/ds/pilha_vet.c
     core/ds/fila_enc.c
     core/ds/fila_vet.c
+    core/ds/lista_simples.c
+    core/ds/lista_dupla.c
+    core/ds/lista_circular.c
     core/util/aleatorio.c)
 
 target_include_directories(core PUBLIC core/include)
@@ -184,6 +187,7 @@ if(NOT EMSCRIPTEN)
         tests/test_pilha.c
         tests/test_fila.c
         tests/test_fuzz.c
+        tests/test_lista.c
         tests/test_api.c)
     target_include_directories(testes PRIVATE tests core/ds)
     target_link_libraries(testes PRIVATE core)

@@ -63,6 +63,9 @@ typedef enum {
     SRC_PILHA_VET,
     SRC_FILA_ENC,
     SRC_FILA_VET,
+    SRC_LISTA_SIMPLES,
+    SRC_LISTA_DUPLA,
+    SRC_LISTA_CIRCULAR,
     SRC_COUNT
 } ds_src;
 
@@ -78,6 +81,11 @@ typedef enum {
     STR_FILA_VAZIA,
     STR_FILA_CHEIA,
     STR_DEU_VOLTA,
+    STR_LISTA_VAZIA,
+    STR_POSICAO_INVALIDA,
+    STR_ACHOU,
+    STR_NAO_ACHOU,
+    STR_ANDANDO,        /* percorrendo a lista até a posição pedida         */
     STR_COUNT
 } ds_str;
 
@@ -97,6 +105,8 @@ typedef enum {
     PTR_TOPO,
     PTR_FRENTE,
     PTR_FIM,
+    PTR_INICIO,
+    PTR_CURSOR,         /* onde a travessia está agora                      */
     PTR_COUNT
 } ds_ptr;
 
@@ -131,6 +141,9 @@ typedef enum {
     OP_POP,
     OP_TOPO,
     OP_LIMPAR,
+    OP_INSERIR_EM,      /* a = valor, b = posição                            */
+    OP_REMOVER_EM,      /* b = posição                                       */
+    OP_BUSCAR,          /* a = valor                                         */
     OP_COUNT
 } ds_op;
 
@@ -145,6 +158,9 @@ typedef enum {
     TIPO_PILHA_VET,
     TIPO_FILA_ENC,
     TIPO_FILA_VET,      /* a com vetor é a circular                         */
+    TIPO_LISTA_SIMPLES,
+    TIPO_LISTA_DUPLA,
+    TIPO_LISTA_CIRCULAR,
     TIPO_COUNT
 } ds_tipo;
 

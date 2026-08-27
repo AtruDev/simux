@@ -184,7 +184,14 @@ static int vt_capacidade(const void *s)
 }
 
 const TAD_Linear PILHA_VET = {
-    vt_criar, vt_destruir,
-    vt_inserir, vt_remover, vt_consultar, vt_limpar,
-    vt_tamanho, vt_capacidade,
+    .criar = vt_criar,
+    .destruir = vt_destruir,
+    .inserir = vt_inserir,
+    .remover = vt_remover,
+    .consultar = vt_consultar,
+    .limpar = vt_limpar,
+    .tamanho = vt_tamanho,
+    .capacidade = vt_capacidade,
+    /* sem posição: os três de baixo ficam nulos, e api.c devolve
+       ERR_OP_DESCONHECIDA para quem pedir */
 };
