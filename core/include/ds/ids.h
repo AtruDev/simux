@@ -78,6 +78,7 @@ typedef enum {
     SRC_QUICK,
     SRC_MERGE,
     SRC_CENA,
+    SRC_VETOR_ORD,
     SRC_COUNT
 } ds_src;
 
@@ -110,6 +111,11 @@ typedef enum {
     STR_PARTICIONANDO,
     STR_DIVIDINDO,
     STR_INTERCALANDO,
+
+    /* busca */
+    STR_VETOR_CHEIO,
+    STR_DESCARTA_ESQ,   /* a busca binária joga fora a metade de baixo      */
+    STR_DESCARTA_DIR,
     STR_COUNT
 } ds_str;
 
@@ -195,6 +201,8 @@ typedef enum {
     TIPO_LISTA_DUPLA,
     TIPO_LISTA_CIRCULAR,
     TIPO_ORDENACAO,     /* a sessão é um vetor a ordenar, não um TAD        */
+    TIPO_BUSCA_SEQ,
+    TIPO_BUSCA_BIN,
     TIPO_COUNT
 } ds_tipo;
 

@@ -196,6 +196,19 @@ const en: Dicionario = {
   STR_DIVIDINDO: "splitting",
   STR_INTERCALANDO: "merging",
 
+  "estrutura.buscaSeq": "Sequential search",
+  "estrutura.buscaBin": "Binary search",
+  "op.inserirOrdenado": "insert in order",
+  "op.removerMenor": "remove the smallest",
+  "op.menor": "peek at the smallest",
+  "legenda.chave": "key being searched for",
+  "legenda.faixaViva": "range that can still hold the key",
+  "legenda.achado": "found",
+
+  STR_VETOR_CHEIO: "the array is full â n == capacity",
+  STR_DESCARTA_ESQ: "the key is larger: the bottom half goes",
+  STR_DESCARTA_DIR: "the key is smaller: the top half goes",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

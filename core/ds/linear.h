@@ -55,4 +55,11 @@ extern const TAD_Linear LISTA_SIMPLES;
 extern const TAD_Linear LISTA_DUPLA;
 extern const TAD_Linear LISTA_CIRCULAR;
 
+/* As duas buscas sobre o MESMO vetor ordenado. Todos os ponteiros das duas
+ * tabelas são iguais menos `buscar`, e esse um é a aula inteira: no modo
+ * comparar, a mesma sequência roda nas duas e o contador de comparações mostra
+ * O(n) contra O(log n). */
+extern const TAD_Linear BUSCA_SEQ;
+extern const TAD_Linear BUSCA_BIN;
+
 #endif /* DS_LINEAR_H */

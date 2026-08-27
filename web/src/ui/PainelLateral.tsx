@@ -36,7 +36,26 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "ordenacao") {
+  if (mundo === "busca") {
+    /* Comparações primeiro, e isso é a tela inteira: no modo comparar, o
+     * número da sequencial e o da binária lado a lado são o argumento. As
+     * escritas vêm logo depois porque a inserção ordenada é o preço pago pela
+     * busca barata, e ela também está sendo medida. */
+    linhas.length = 0;
+    linhas.push([
+      t("metrica.comparacoes"),
+      String(contador(modelo, Cnt.CNT_COMPARACOES)),
+    ]);
+    linhas.push([t("metrica.tamanho"), String(tamanho)]);
+    linhas.push([
+      t("metrica.escritas"),
+      String(contador(modelo, Cnt.CNT_ESCRITAS)),
+    ]);
+    linhas.push([
+      t("metrica.capacidade"),
+      String(modelo.vetor?.capacidade ?? 0),
+    ]);
+  } else if (mundo === "ordenacao") {
     /* Comparações e escritas são o que descreve um algoritmo de ordenação, e
      * os dois juntos são o que separa a seleção da bolha: as duas fazem O(n²)
      * comparações, e só uma faz O(n) escritas. Tamanho e ocupação não dizem
@@ -120,7 +139,7 @@ const NOME_PONTEIRO: Partial<Record<number, Chave>> = {
  * encadeado, 0 é NULL. Foi por pouco que isto não virou um log mentindo
  * "NULO" para a célula zero. */
 function alvoPonteiro(valor: number, mundo: Mundo): string {
-  if (mundo === "vetor" || mundo === "ordenacao") {
+  if (mundo === "vetor" || mundo === "ordenacao" || mundo === "busca") {
     return valor < 0 ? "—" : `[${valor}]`;
   }
   return valor === 0 ? t("log.nulo") : `#${valor}`;
@@ -173,7 +192,13 @@ export function descrever(ev: Ev, mundo: Mundo): string {
         case Tag.TAG_ORDENADO:
           return `[${ev.a}] ${t("log.marcaOrdenado")}`;
         case Tag.TAG_PIVO:
-          return `[${ev.a}] ${t("log.marcaPivo")}`;
+          /* A mesma marca quer dizer coisas diferentes conforme o mundo: no
+           * quicksort ela é o pivô, na busca é a célula que continha a chave.
+           * O evento é um só de propósito — inventar TAG_ACHADO seria criar
+           * vocabulário para uma diferença que é de leitura, não de dado. */
+          return mundo === "busca"
+            ? `[${ev.a}] ${t("legenda.achado")}`
+            : `[${ev.a}] ${t("log.marcaPivo")}`;
         default:
           return `[${ev.a}]`;
       }

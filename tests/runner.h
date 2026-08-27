@@ -28,5 +28,6 @@ void suite_fuzz(void);
 void suite_api(void);
 void suite_lista(void);
 void suite_ordenacao(void);
+void suite_busca(void);
 
 #endif /* RUNNER_H */

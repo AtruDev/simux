@@ -10,6 +10,7 @@
  *   cli ordenacao 12 g0 o4       quicksort sobre doze valores aleatórios
  *
  *   i<valor>  inserir      r  remover      c  consultar      l  limpar
+ *   b<valor>  buscar
  *   g<dist>   gerar a cena da aba de ordenação (semente 1)
  *   o<alg>    ordenar com ALG_<alg>
  */
@@ -44,6 +45,8 @@ static const struct Nomeado TIPOS[] = {
     { "lista_dupla",    TIPO_LISTA_DUPLA    },
     { "lista_circular", TIPO_LISTA_CIRCULAR },
     { "ordenacao", TIPO_ORDENACAO },
+    { "busca_seq", TIPO_BUSCA_SEQ },
+    { "busca_bin", TIPO_BUSCA_BIN },
 };
 
 static int32_t tipo_por_nome(const char *nome)
@@ -96,6 +99,10 @@ static void executar(const char *passo)
         break;
     case 'l':
         despejar("limpar", ds_call(OP_LIMPAR, 0, 0, 0));
+        break;
+    case 'b':
+        snprintf(rotulo, sizeof rotulo, "buscar %s", passo + 1);
+        despejar(rotulo, ds_call(OP_BUSCAR, atoi(passo + 1), 0, 0));
         break;
     case 'g':
         /* O tamanho é a capacidade da sessão: gerar menos que o vetor inteiro

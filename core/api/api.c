@@ -17,6 +17,8 @@
 
 #include "ds/api.h"
 
+#include "ds/busca.h"
+
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -103,6 +105,8 @@ static const TAD_Linear *tad_de(int32_t tipo)
     case TIPO_LISTA_SIMPLES:  return &LISTA_SIMPLES;
     case TIPO_LISTA_DUPLA:    return &LISTA_DUPLA;
     case TIPO_LISTA_CIRCULAR: return &LISTA_CIRCULAR;
+    case TIPO_BUSCA_SEQ: return &BUSCA_SEQ;
+    case TIPO_BUSCA_BIN: return &BUSCA_BIN;
     default:             return NULL;
     }
 }

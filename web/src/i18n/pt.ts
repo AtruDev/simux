@@ -198,6 +198,19 @@ const pt: Dicionario = {
   STR_DIVIDINDO: "dividindo",
   STR_INTERCALANDO: "intercalando",
 
+  "estrutura.buscaSeq": "Busca sequencial",
+  "estrutura.buscaBin": "Busca binária",
+  "op.inserirOrdenado": "inserir em ordem",
+  "op.removerMenor": "remover o menor",
+  "op.menor": "consultar o menor",
+  "legenda.chave": "chave procurada",
+  "legenda.faixaViva": "trecho que ainda pode conter a chave",
+  "legenda.achado": "encontrado",
+
+  STR_VETOR_CHEIO: "o vetor está cheio — n == capacidade",
+  STR_DESCARTA_ESQ: "o procurado é maior: a metade de baixo sai",
+  STR_DESCARTA_DIR: "o procurado é menor: a metade de cima sai",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

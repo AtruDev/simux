@@ -17,19 +17,22 @@ import type { Chave } from "../i18n";
  * "ordenacao" não tem entrada em ESTRUTURAS: a aba 2 não escolhe estrutura,
  * escolhe algoritmo. Ela está aqui porque o painel de métricas e o log são os
  * mesmos das duas abas, e é o mundo que diz a eles como ler o modelo. */
-export type Mundo = "encadeada" | "vetor" | "lista" | "ordenacao";
+export type Mundo = "encadeada" | "vetor" | "lista" | "ordenacao" | "busca";
 
 export interface Estrutura {
   tipo: number;
   nome: Chave;
   mundo: Mundo;
   /* Famílias iguais aparecem juntas no seletor de implementação. */
-  familia: "pilha" | "fila" | "lista";
+  familia: "pilha" | "fila" | "lista" | "busca";
   rotuloInserir: Chave;
   rotuloRemover: Chave;
   rotuloConsultar: Chave;
   /* A posição é argumento das operações desta estrutura. */
   posicoes?: boolean;
+  /* O vtable dela tem `buscar`. Não é o mesmo que ter posição: no vetor
+   * ordenado a posição é consequência do valor, e só a busca existe. */
+  buscavel?: boolean;
 }
 
 export const ESTRUTURAS: Estrutura[] = [
@@ -78,6 +81,7 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloRemover: "op.removerInicio",
     rotuloConsultar: "op.primeiro",
     posicoes: true,
+    buscavel: true,
   },
   {
     tipo: Tipo.TIPO_LISTA_DUPLA,
@@ -88,6 +92,7 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloRemover: "op.removerInicio",
     rotuloConsultar: "op.primeiro",
     posicoes: true,
+    buscavel: true,
   },
   {
     tipo: Tipo.TIPO_LISTA_CIRCULAR,
@@ -98,6 +103,33 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloRemover: "op.removerInicio",
     rotuloConsultar: "op.primeiro",
     posicoes: true,
+    buscavel: true,
+  },
+  /* As duas buscas são o caso mais puro do argumento do projeto: um TAD, duas
+   * implementações, e a diferença entre elas é UMA função. Todo o resto — o
+   * vetor ordenado, a inserção que desloca, a remoção — é o mesmo código, e é
+   * isso que faz o contador de comparações medir só o que interessa.
+   *
+   * O modo comparar não precisou de nada novo para elas. */
+  {
+    tipo: Tipo.TIPO_BUSCA_SEQ,
+    nome: "estrutura.buscaSeq",
+    mundo: "busca",
+    familia: "busca",
+    rotuloInserir: "op.inserirOrdenado",
+    rotuloRemover: "op.removerMenor",
+    rotuloConsultar: "op.menor",
+    buscavel: true,
+  },
+  {
+    tipo: Tipo.TIPO_BUSCA_BIN,
+    nome: "estrutura.buscaBin",
+    mundo: "busca",
+    familia: "busca",
+    rotuloInserir: "op.inserirOrdenado",
+    rotuloRemover: "op.removerMenor",
+    rotuloConsultar: "op.menor",
+    buscavel: true,
   },
 ];
 

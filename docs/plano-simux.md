@@ -845,7 +845,9 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 
 ### Fase 4 — Busca em memória primária · ~2–3 semanas
 
-- [ ] Busca sequencial e binária (reusam a `ArrayView`)
+- [x] Busca sequencial e binária — reusaram o `ArrayView` de fato, como o plano
+      previa: elas entraram como **duas implementações do mesmo TAD**, e o modo
+      comparar da Fase 2 as põe lado a lado sem uma linha de interface nova
 - [ ] ABB: inserir, buscar, remover (os três casos), percursos
 - [ ] Layout Reingold–Tilford
 - [ ] AVL com rotações destacadas e FB por nó

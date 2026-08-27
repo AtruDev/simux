@@ -5,6 +5,7 @@
  * confiada — ela vem do __LINE__ que a macro TR gravou. */
 
 import fonteApi from "../../../core/api/api.c?raw";
+import fonteVetorOrd from "../../../core/busca/vetor_ord.c?raw";
 import fonteBolha from "../../../core/sort/bolha.c?raw";
 import fonteCena from "../../../core/sort/cena.c?raw";
 import fonteFilaEnc from "../../../core/ds/fila_enc.c?raw";
@@ -54,6 +55,10 @@ const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_QUICK]: { arquivo: "core/sort/quick.c", texto: fonteQuick },
   [Src.SRC_MERGE]: { arquivo: "core/sort/merge.c", texto: fonteMerge },
   [Src.SRC_CENA]: { arquivo: "core/sort/cena.c", texto: fonteCena },
+  [Src.SRC_VETOR_ORD]: {
+    arquivo: "core/busca/vetor_ord.c",
+    texto: fonteVetorOrd,
+  },
 };
 
 const cache = new Map<number, Fonte>();

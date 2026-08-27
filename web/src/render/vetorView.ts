@@ -7,7 +7,13 @@
  * O desenho tem duas leituras sobrepostas, e é isso que resolve a fila
  * circular: o índice FÍSICO no canto de cada célula, e a ordem LÓGICA acima
  * dela. Com frente = 5 e fim = 2 num vetor de 8, a fila parece invertida — e
- * só as duas leituras juntas explicam o que se está vendo. */
+ * só as duas leituras juntas explicam o que se está vendo.
+ *
+ * A Fase 4 acrescentou o que a busca precisa, e o plano tinha razão em prever
+ * o reúso: a faixa viva, a comparação e a chave em mãos. São os mesmos eventos
+ * da ordenação, e aqui eles ganham a leitura que faltava — na busca binária
+ * importa QUAL valor está em QUAL índice, que é justamente o que as células
+ * mostram e as barras não. */
 
 import { Cnt, Ptr, Tag, Tipo } from "../core/ops";
 import { alvoDe, contador, ordemLogica, type Modelo } from "../model/modelo";
@@ -73,7 +79,24 @@ export class VetorView {
     return this.tipo === Tipo.TIPO_FILA_VET;
   }
 
+  private ehBusca(): boolean {
+    return (
+      this.tipo === Tipo.TIPO_BUSCA_SEQ || this.tipo === Tipo.TIPO_BUSCA_BIN
+    );
+  }
+
+  /* Os rótulos são os identificadores do laço em C, e não texto de interface:
+   * `lo`, `hi` e `meio` são o que o painel de código está exibindo ao lado, e
+   * traduzi-los faria a tela falar de variáveis que não existem no arquivo. É
+   * a mesma decisão de `topo` e `frente`. */
   private rotulos(): Rotulo[] {
+    if (this.ehBusca()) {
+      return [
+        { ptr: Ptr.PTR_CURSOR, texto: this.tipo === Tipo.TIPO_BUSCA_BIN ? "meio" : "i" },
+        { ptr: Ptr.PTR_I, texto: "lo" },
+        { ptr: Ptr.PTR_J, texto: "hi" },
+      ];
+    }
     return this.ehFila()
       ? [
           { ptr: Ptr.PTR_FRENTE, texto: "frente" },
@@ -126,6 +149,13 @@ export class VetorView {
     const posicaoLogica = new Map<number, number>();
     logicos.forEach((fisico, ordem) => posicaoLogica.set(fisico, ordem + 1));
 
+    /* A faixa viva da busca binária. Fora dela a célula apaga — é o desenho
+     * do algoritmo jogando metade fora, e é a razão de EV_ARR_RANGE existir
+     * no vocabulário desde a Fase 0. */
+    const faixa = this.ehBusca() ? m.vetor.faixa : null;
+    const naFaixa = (i: number) =>
+      faixa === null || (i >= faixa[0] && i <= faixa[1]);
+
     for (let i = 0; i < cap; i++) {
       const x = x0 + i * (largura + VAO);
       const valor = m.vetor.valores[i] ?? null;
@@ -134,9 +164,18 @@ export class VetorView {
       const dentro = this.ehFila()
         ? posicaoLogica.has(i)
         : i < quantidade;
+      const viva = dentro && naFaixa(i);
+      const comparando =
+        m.vetor.comparando !== null && m.vetor.comparando[0] === i;
+      const achada = marca === Tag.TAG_PIVO;
+
+      /* O que saiu da faixa perde presença. Além da cor: é a leitura que
+       * sobrevive a não distinguir matiz. */
+      ctx.save();
+      if (dentro && !viva) ctx.globalAlpha = 0.3;
 
       this.retangulo(x, y, largura, ALTURA_CELULA, RAIO);
-      ctx.fillStyle = p.bg2;
+      ctx.fillStyle = achada ? p.stPivot : comparando ? p.stCompare : p.bg2;
       ctx.fill();
 
       /* Traço sólido para o que a estrutura ocupa, tracejado para a célula
@@ -156,7 +195,7 @@ export class VetorView {
       ctx.stroke();
       ctx.restore();
 
-      const aceso = this.brilho.get(i) ?? 0;
+      const aceso = comparando || achada ? 0 : (this.brilho.get(i) ?? 0);
       if (aceso > 0) {
         ctx.save();
         ctx.globalAlpha = aceso * 0.5;
@@ -167,7 +206,7 @@ export class VetorView {
       }
 
       if (valor !== null) {
-        ctx.fillStyle = dentro ? p.fg : p.fg3;
+        ctx.fillStyle = dentro || comparando ? p.fg : p.fg3;
         ctx.font = `600 15px ${p.mono}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -192,9 +231,52 @@ export class VetorView {
         ctx.textBaseline = "bottom";
         ctx.fillText(`${ordem}º`, x + largura / 2, y - 24);
       }
+
+      ctx.restore();
     }
 
     this.ponteiros(m, x0, largura, y);
+    if (this.ehBusca()) this.chave(m, x0, y);
+  }
+
+  /** A chave procurada, na célula auxiliar que o C emite antes de buscar.
+   *
+   * Toda comparação da busca é contra ela — é o `.c = 1` do EV_ARR_COMPARE.
+   * Sem desenhá-la, o destaque da célula comparada não diria contra o quê. */
+  private chave(m: Modelo, x0: number, y: number): void {
+    const ctx = this.ctx;
+    const p = this.paleta;
+    const valor = m.vetor?.aux?.[0] ?? null;
+    if (valor === null) return;
+
+    const largura = 74;
+    const altura = 34;
+    const x = x0;
+    const topo = y - 74;
+
+    this.retangulo(x, topo, largura, altura, RAIO);
+    ctx.fillStyle = p.bg3;
+    ctx.fill();
+
+    /* Tracejado, como toda memória temporária desta interface: é a mesma
+     * convenção da célula liberada e do auxiliar do merge. */
+    ctx.save();
+    ctx.strokeStyle = p.stAux;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = p.fg;
+    ctx.font = `600 15px ${p.mono}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(valor), x + largura / 2, topo + altura / 2);
+
+    ctx.fillStyle = p.fg3;
+    ctx.font = `500 10px ${p.mono}`;
+    ctx.textBaseline = "bottom";
+    ctx.fillText("chave", x + largura / 2, topo - 4);
   }
 
   /** Os rótulos nomeados, apontando para a célula de baixo para cima. */

@@ -305,7 +305,7 @@ export function AbaEstruturas() {
               value={valor}
               inputMode="numeric"
               onChange={(e) => setValor(e.target.value)}
-              onKeyDown={(e) => {
+                onKeyDown={(e) => {
                 if (e.key === "Enter") rodar(Op.OP_PUSH, Number(valor) | 0);
               }}
             />
@@ -313,7 +313,7 @@ export function AbaEstruturas() {
               type="button"
               className="secundario"
               title={t("op.aleatorio")}
-              onClick={() => setValor(String(Math.floor(Math.random() * 100)))}
+                onClick={() => setValor(String(Math.floor(Math.random() * 100)))}
             >
               ⚄
             </button>
@@ -322,21 +322,21 @@ export function AbaEstruturas() {
           <div className="operacoes">
             <button
               type="button"
-                            onClick={() => rodar(Op.OP_PUSH, Number(valor) | 0)}
+                onClick={() => rodar(Op.OP_PUSH, Number(valor) | 0)}
             >
               {t(estrutura.rotuloInserir)}
             </button>
             <button
               type="button"
               className="secundario"
-                            onClick={() => rodar(Op.OP_POP)}
+                onClick={() => rodar(Op.OP_POP)}
             >
               {t(estrutura.rotuloRemover)}
             </button>
             <button
               type="button"
               className="secundario"
-                            onClick={() => rodar(Op.OP_TOPO)}
+                onClick={() => rodar(Op.OP_TOPO)}
             >
               {t(estrutura.rotuloConsultar)}
             </button>
@@ -345,7 +345,7 @@ export function AbaEstruturas() {
                 <button
                   type="button"
                   className="secundario"
-                                    onClick={() =>
+                onClick={() =>
                     rodar(Op.OP_INSERIR_EM, Number(valor) | 0, Number(posicao) | 0)
                   }
                 >
@@ -354,7 +354,7 @@ export function AbaEstruturas() {
                 <button
                   type="button"
                   className="secundario"
-                                    onClick={() =>
+                onClick={() =>
                     /* O tamanho vem do C, não do modelo: o do modelo é o do
                        instante da animação, e inserir "no fim" enquanto a
                        animação anterior ainda roda cairia no meio. */
@@ -366,31 +366,37 @@ export function AbaEstruturas() {
                 <button
                   type="button"
                   className="secundario"
-                                    onClick={() => rodar(Op.OP_REMOVER_EM, 0, Number(posicao) | 0)}
+                onClick={() => rodar(Op.OP_REMOVER_EM, 0, Number(posicao) | 0)}
                 >
                   {t("op.removerEm")}
                 </button>
-                <button
-                  type="button"
-                  className="secundario"
-                                    onClick={() => rodar(Op.OP_BUSCAR, Number(valor) | 0)}
-                >
-                  {t("op.buscar")}
-                </button>
               </>
+            )}
+
+            {/* Buscar não é operação de quem tem posição — é de quem tem
+                `buscar` no vtable. A lista tem os dois; o vetor ordenado tem
+                só este, porque nele a posição é consequência do valor. */}
+            {estrutura.buscavel && (
+              <button
+                type="button"
+                className="secundario"
+                onClick={() => rodar(Op.OP_BUSCAR, Number(valor) | 0)}
+              >
+                {t("op.buscar")}
+              </button>
             )}
 
             <button
               type="button"
               className="secundario"
-                            onClick={() => rodar(Op.OP_LIMPAR)}
+                onClick={() => rodar(Op.OP_LIMPAR)}
             >
               {t("op.limpar")}
             </button>
             <button
               type="button"
               className="secundario"
-                            onClick={reiniciar}
+                onClick={reiniciar}
             >
               ⟲
             </button>

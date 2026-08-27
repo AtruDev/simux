@@ -155,7 +155,15 @@ export type ChaveUI =
   | "log.auxEscreve"
   | "log.fase"
   | "log.marcaOrdenado"
-  | "log.marcaPivo";
+  | "log.marcaPivo"
+  | "estrutura.buscaSeq"
+  | "estrutura.buscaBin"
+  | "op.inserirOrdenado"
+  | "op.removerMenor"
+  | "op.menor"
+  | "legenda.chave"
+  | "legenda.faixaViva"
+  | "legenda.achado";
 
 export type Chave = ChaveUI | StrChave | ErrChave;
 
