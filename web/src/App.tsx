@@ -1,4 +1,4 @@
-/* A moldura: o cabeçalho, o idioma e as duas abas.
+/* A moldura: o cabeçalho, o idioma e as três abas.
  *
  * Ela nasceu quando a aba de ordenação chegou. Antes, App.tsx ERA a tela das
  * estruturas; agora ele é só o que as duas dividem, e cada aba mora no seu
@@ -17,15 +17,20 @@
 import { useEffect, useState } from "react";
 
 import { iniciar } from "./core/bridge";
-import { definirIdioma, idiomaAtual, t, type Idioma } from "./i18n";
+import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
 import { AbaEstruturas } from "./ui/AbaEstruturas";
+import { AbaComoFunciona } from "./ui/AbaComoFunciona";
 import { AbaOrdenacao } from "./ui/AbaOrdenacao";
 
-type Aba = "estruturas" | "ordenacao";
+type Aba = "estruturas" | "ordenacao" | "como";
 
-const ABAS: Array<{ id: Aba; nome: "aba.estruturas" | "aba.ordenacao" }> = [
+const ABAS: Array<{ id: Aba; nome: Chave }> = [
   { id: "estruturas", nome: "aba.estruturas" },
   { id: "ordenacao", nome: "aba.ordenacao" },
+  /* A terceira não é uma aba de simulação: é a explicação do que as outras
+   * duas estão fazendo por baixo. Fica por último porque é onde se vai depois
+   * de ver a coisa funcionar, e não antes. */
+  { id: "como", nome: "aba.comoFunciona" },
 ];
 
 export function App() {
@@ -88,8 +93,10 @@ export function App() {
         <p className="vazio">{t("app.carregando")}</p>
       ) : aba === "estruturas" ? (
         <AbaEstruturas />
-      ) : (
+      ) : aba === "ordenacao" ? (
         <AbaOrdenacao />
+      ) : (
+        <AbaComoFunciona />
       )}
     </div>
   );

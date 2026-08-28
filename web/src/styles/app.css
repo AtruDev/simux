@@ -802,3 +802,206 @@ button.icone.principal {
   outline: 2px solid var(--accent);
   outline-offset: -1px;
 }
+
+/* ---- a aba "como funciona" ---------------------------------------------- *
+ *
+ * A única tela do projeto que é um documento, e não um painel: uma coluna que
+ * rola, com medida de linha limitada. As outras duas travam a altura na
+ * janela porque o transporte precisa estar sempre visível; aqui não há
+ * transporte, e prender o texto na altura da janela só criaria uma segunda
+ * barra de rolagem dentro da primeira.                                      */
+
+.como {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.como-texto {
+  max-width: 62ch;
+  margin: 0 auto;
+  color: var(--fg-2);
+  line-height: 1.65;
+}
+
+.como-texto h2 {
+  font-family: var(--fonte-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0 0 0.8rem;
+}
+
+.como-texto h3 {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  margin: 2.6rem 0 0.8rem;
+}
+
+.como-texto p {
+  margin: 0 0 1rem;
+}
+
+.como-tese {
+  font-size: 1.02rem;
+  color: var(--fg);
+}
+
+.como-legenda {
+  font-size: 0.85rem;
+  color: var(--fg-3);
+}
+
+/* O caminho da operação: uma lista numerada em que o número é o passo, e não
+ * um marcador — daí ele ser desenhado à mão em vez de vir do list-style. */
+.como-pipeline {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.como-pipeline li {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.como-passo {
+  font-family: var(--fonte-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  text-align: center;
+  line-height: 1.5rem;
+  height: 1.6rem;
+}
+
+/* A tabela de eventos. Números à direita, como todo número do projeto. */
+.como-trace {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0 0 1rem;
+}
+
+.como-trace th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  border-bottom: 1px solid var(--line);
+  padding: 0 0.5rem 0.4rem 0;
+}
+
+.como-trace td {
+  padding: 0.3rem 0.5rem 0.3rem 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.como-trace th:last-child,
+.como-trace td:last-child {
+  padding-right: 0;
+}
+
+.como-trace .numero {
+  text-align: right;
+  color: var(--fg-3);
+  width: 3.5rem;
+}
+
+.como-origem {
+  color: var(--fg-3);
+}
+
+.como-bruto,
+.como-codigo {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.8rem 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--fg-2);
+  overflow-x: auto;
+  margin: 0 0 1rem;
+}
+
+.como-bruto {
+  color: var(--accent-hi);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.como-decisoes {
+  margin: 0;
+}
+
+.como-decisoes > div + div {
+  margin-top: 1.3rem;
+}
+
+.como-decisoes dt {
+  color: var(--fg);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.como-decisoes dd {
+  margin: 0;
+}
+
+/* Os números do projeto. O valor grande e o rótulo pequeno, porque é o valor
+ * que se lê primeiro. */
+.como-numeros {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+}
+
+.como-numeros li {
+  display: grid;
+  gap: 0.15rem;
+  align-content: start;
+}
+
+.como-numeros strong {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--fg);
+  line-height: 1.1;
+}
+
+.como-numeros span {
+  font-size: 0.8rem;
+  color: var(--fg-3);
+}
+
+.como-rodape {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+
+.como-rodape a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.como-rodape a:hover {
+  text-decoration: underline;
+}

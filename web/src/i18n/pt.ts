@@ -308,6 +308,105 @@ const pt: Dicionario = {
   STR_VARRENDO:
     "varrendo pela corrente de folhas: uma página por folha, e nenhum nó interno",
 
+  /* ---- a aba "como funciona" ------------------------------------------- *
+   * A página que o plano põe acima de qualquer estrutura extra: quem abre o
+   * link vê a animação, e não tem como saber o que está por baixo dela.     */
+  "aba.comoFunciona": "Como funciona",
+
+  "como.titulo": "Como isto funciona",
+  "como.tese":
+    "O núcleo em C não desenha nada. Ele executa a operação de verdade — a " +
+    "mesma pilha, a mesma rotação de AVL, a mesma divisão de página que a " +
+    "matéria ensina — e vai contando o que fez, num fluxo de eventos de " +
+    "tamanho fixo. Quem anima é a página, e ela anima na velocidade que você " +
+    "escolher, para a frente e para trás. Tudo o que você vê aqui é " +
+    "consequência dessa separação.",
+
+  "como.pipelineTitulo": "O caminho de uma operação",
+  "como.p1": "Você clica em «empilhar 42».",
+  "como.p2":
+    "A página chama ds_call(op, a, b, c) — quatro inteiros, e nada mais " +
+    "atravessa nesse sentido.",
+  "como.p3":
+    "O algoritmo em C roda inteiro, do começo ao fim, emitindo um evento a " +
+    "cada passo que valha a pena assistir.",
+  "como.p4":
+    "Os eventos ficam num buffer plano dentro da heap do WebAssembly. O C " +
+    "devolve o ponteiro e a quantidade.",
+  "como.p5":
+    "O JavaScript lê esse buffer como um Int32Array sobre a mesma memória: " +
+    "sem cópia, sem parse, sem texto.",
+  "como.p6":
+    "O Player aplica os eventos um a um ao modelo visual, e o canvas desenha " +
+    "o modelo. Voltar no tempo é reaplicar do zero.",
+
+  "como.traceTitulo": "Os eventos, agora",
+  "como.traceTexto":
+    "A tabela abaixo não é um exemplo escrito à mão. Ela foi gerada nesta " +
+    "página, há um instante: uma pilha encadeada foi criada, o 42 foi " +
+    "empilhado, e estes são os eventos que o segundo empilhar emitiu. A " +
+    "coluna do meio é o arquivo e a linha do C que emitiu cada um — é a " +
+    "mesma informação que faz o painel de código destacar a linha certa " +
+    "enquanto a animação roda.",
+  "como.evento": "evento",
+  "como.origem": "origem",
+  "como.brutoTexto":
+    "E estes são os três primeiros eventos como o JavaScript os enxerga: " +
+    "seis inteiros cada um, lidos direto da heap do wasm.",
+
+  "como.fronteiraTitulo": "A fronteira inteira",
+  "como.fronteiraTexto":
+    "São duas declarações. Uma função de quatro inteiros para dentro, e uma " +
+    "struct sem ponteiro e sem string para fora. Não existe JSON em lugar " +
+    "nenhum, e o C nunca devolve texto: uma mensagem é um id, e a frase que " +
+    "você está lendo mora no dicionário do frontend.",
+  "como.cKind": "que evento é",
+  "como.cSrc": "qual .c emitiu",
+  "como.cLine": "__LINE__ dentro dele",
+  "como.cAbc": "operandos; o significado depende do kind",
+
+  "como.decisoesTitulo": "Cinco decisões que definem o resto",
+  "como.d1": "O C emite um trace, e não um estado",
+  "como.d1Texto":
+    "O caminho óbvio seria o C devolver a estrutura depois de cada operação " +
+    "e a página redesenhar. Isso dá uma fotografia, não uma animação — os " +
+    "passos intermediários somem, e são eles o conteúdo. Em troca, o C " +
+    "continua sendo o C da matéria, com uma macro espalhada nos pontos onde " +
+    "a aula pararia para explicar.",
+  "como.d2": "Zero parser de JSON no C",
+  "como.d2Texto":
+    "Escrever um parser de JSON em C teria sido a parte mais chata e mais " +
+    "bugada do projeto, e não compraria nada. Quatro inteiros para um lado, " +
+    "um buffer binário para o outro.",
+  "como.d3": "O C nunca devolve texto",
+  "como.d3Texto":
+    "É o que deixa a interface ser bilíngue sem o núcleo saber que idioma " +
+    "existe. E é verificado no CI: toda mensagem nova no enum precisa de " +
+    "tradução nos dois dicionários, senão o build reclama.",
+  "como.d4": "Voltar no tempo é reexecutar",
+  "como.d4Texto":
+    "Para chegar ao passo k, o modelo é zerado e os eventos 0..k são " +
+    "aplicados de novo. Implementar o inverso de cada evento seria o dobro " +
+    "do código e uma fonte permanente de divergência entre ir e voltar.",
+  "como.d5": "Os enums são gerados, não mantidos",
+  "como.d5Texto":
+    "Um script lê o ids.h e escreve o TypeScript. Duas listas mantidas à " +
+    "mão dos dois lados de uma fronteira dessincronizam mais cedo ou mais " +
+    "tarde, e o sintoma é mudo: a animação passa a fazer a coisa errada e " +
+    "nada quebra.",
+
+  "como.numerosTitulo": "O tamanho das coisas",
+  "como.numEventos": "tipos de evento no vocabulário inteiro",
+  "como.numMensagens": "mensagens, todas traduzidas nos dois idiomas",
+  "como.numEstruturas": "estruturas de dados",
+  "como.numAlgoritmos": "algoritmos de ordenação",
+  "como.numerosTexto":
+    "O vocabulário de eventos é pequeno de propósito, e é ele que sustenta " +
+    "todas as estruturas: o mesmo evento que diz «o topo aponta para o nó " +
+    "7» diz «início vale 5» na fila com vetor. Estes números saem dos enums " +
+    "do C, e não de uma lista que alguém teria que lembrar de atualizar.",
+  "como.repositorio": "O código, os testes e o plano completo no GitHub →",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

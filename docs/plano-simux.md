@@ -905,7 +905,15 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       repositório faz — sem isso o job falha com "Pages site not found"
 - [x] Link do demo no topo do README, e a seção de decisões de arquitetura que
       a §13 põe em segundo lugar de retorno sobre esforço
-- [ ] Página "como funciona" explicando o trace e o WASM ← *isto vale mais que qualquer estrutura extra*
+- [x] Página "como funciona" explicando o trace e o WASM — virou a terceira
+      aba, e a parte que vale não é o texto: a tabela de eventos é gerada NA
+      HORA, chamando o núcleo de verdade. Uma pilha é criada, o 42 é
+      empilhado, e o que a página mostra são os eventos que o segundo empilhar
+      emitiu, com o arquivo e a linha do C ao lado. Embaixo, os mesmos eventos
+      como o JavaScript os lê — seis inteiros cada um. Um exemplo escrito à
+      mão envelheceria na primeira mudança de `pilha_enc.c`; este não
+- [x] Os números do projeto na mesma página, tirados dos enums gerados do
+      ids.h: 21 tipos de evento, 54 mensagens, 17 estruturas, 7 algoritmos
 
 **Total:** ~10 a 13 semanas em ritmo de estudante com outras matérias. As fases 0–3 já entregam um projeto respeitável e publicável; 4–6 são o que o transformam em peça de portfólio.
 

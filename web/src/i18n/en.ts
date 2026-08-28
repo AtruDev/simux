@@ -305,6 +305,99 @@ const en: Dicionario = {
   STR_VARRENDO:
     "scanning along the leaf chain: one page per leaf, and no internal node touched",
 
+  "aba.comoFunciona": "How it works",
+
+  "como.titulo": "How this works",
+  "como.tese":
+    "The C core draws nothing. It runs the real operation — the same stack, " +
+    "the same AVL rotation, the same page split the course teaches — and " +
+    "reports what it did, as a stream of fixed-size events. The page is what " +
+    "animates, at whatever speed you pick, forwards or backwards. " +
+    "Everything you see here follows from that separation.",
+
+  "como.pipelineTitulo": "The path of one operation",
+  "como.p1": "You click on \"push 42\".",
+  "como.p2":
+    "The page calls ds_call(op, a, b, c) — four integers, and nothing else " +
+    "crosses in that direction.",
+  "como.p3":
+    "The C algorithm runs start to finish, emitting one event for every " +
+    "step worth watching.",
+  "como.p4":
+    "The events land in a flat buffer inside the WebAssembly heap. C returns " +
+    "the pointer and the count.",
+  "como.p5":
+    "JavaScript reads that buffer as an Int32Array over the same memory: no " +
+    "copy, no parse, no text.",
+  "como.p6":
+    "The player applies the events one by one to the visual model, and the " +
+    "canvas draws the model. Going back in time means replaying from zero.",
+
+  "como.traceTitulo": "The events, right now",
+  "como.traceTexto":
+    "The table below is not a hand-written example. It was generated on this " +
+    "page a moment ago: a linked stack was created, 42 was pushed, and these " +
+    "are the events the second push emitted. The middle column is the C file " +
+    "and line that produced each one — the same information that makes the " +
+    "code panel highlight the right line while the animation runs.",
+  "como.evento": "event",
+  "como.origem": "from",
+  "como.brutoTexto":
+    "And here are the first three events as JavaScript sees them: six " +
+    "integers each, read straight out of the wasm heap.",
+
+  "como.fronteiraTitulo": "The entire boundary",
+  "como.fronteiraTexto":
+    "Two declarations. A four-integer function going in, and a struct with " +
+    "no pointers and no strings coming out. There is no JSON anywhere, and " +
+    "C never returns text: a message is an id, and the sentence you are " +
+    "reading lives in the frontend's dictionary.",
+  "como.cKind": "which event",
+  "como.cSrc": "which .c emitted it",
+  "como.cLine": "__LINE__ inside it",
+  "como.cAbc": "operands; meaning depends on kind",
+
+  "como.decisoesTitulo": "Five decisions that shape the rest",
+  "como.d1": "C emits a trace, not a state",
+  "como.d1Texto":
+    "The obvious route would be for C to return the structure after each " +
+    "operation and let the page redraw. That gives you a photograph, not an " +
+    "animation — the intermediate steps vanish, and the intermediate steps " +
+    "are the content. In exchange, the C stays the C the course teaches, " +
+    "with one macro sprinkled where a lecture would pause to explain.",
+  "como.d2": "No JSON parser in C",
+  "como.d2Texto":
+    "Writing a JSON parser in C would have been the dullest, buggiest part " +
+    "of the project, and it would have bought nothing. Four integers one " +
+    "way, a binary buffer the other.",
+  "como.d3": "C never returns text",
+  "como.d3Texto":
+    "That is what lets the interface be bilingual without the core knowing a " +
+    "language exists. And it is checked in CI: every new message in the enum " +
+    "needs a translation in both dictionaries or the build complains.",
+  "como.d4": "Going back in time means re-running",
+  "como.d4Texto":
+    "To reach step k, the model is cleared and events 0..k are applied " +
+    "again. Implementing the inverse of each event would have been twice the " +
+    "code and a permanent source of drift between forwards and backwards.",
+  "como.d5": "The enums are generated, not maintained",
+  "como.d5Texto":
+    "A script reads ids.h and writes the TypeScript. Two hand-kept lists on " +
+    "either side of a boundary drift eventually, and the symptom is silent: " +
+    "the animation starts doing the wrong thing and nothing breaks.",
+
+  "como.numerosTitulo": "The size of things",
+  "como.numEventos": "event types in the whole vocabulary",
+  "como.numMensagens": "messages, all translated in both languages",
+  "como.numEstruturas": "data structures",
+  "como.numAlgoritmos": "sorting algorithms",
+  "como.numerosTexto":
+    "The event vocabulary is deliberately small, and it is what carries " +
+    "every structure: the same event that says \"top points at node 7\" says " +
+    "\"head is 5\" in the array-backed queue. These numbers come from the C " +
+    "enums, not from a list somebody would have to remember to update.",
+  "como.repositorio": "The code, the tests and the full plan on GitHub →",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",
