@@ -1013,3 +1013,91 @@ button.icone.principal {
   gap: 0.4rem;
   align-items: center;
 }
+
+/* ---- o painel "sobre esta estrutura" ------------------------------------ *
+ *
+ * Aberto por padrão, ao contrário do de script: é conteúdo, e conteúdo
+ * dobrado não é lido.                                                       */
+
+.painel-sobre > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.painel-sobre > summary::-webkit-details-marker {
+  display: none;
+}
+
+.painel-sobre > summary h2 {
+  margin-bottom: 0;
+}
+
+.painel-sobre[open] > summary h2 {
+  margin-bottom: 0.7rem;
+}
+
+.tabela-custos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.tabela-custos th {
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+  padding: 0 0.4rem 0.3rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+/* As duas colunas de custo não quebram linha: `O(log n)` partido em duas
+ * linhas deixa de parecer uma complexidade e passa a parecer um erro. O
+ * rótulo da operação é que cede espaço, e ele pode quebrar à vontade. */
+.tabela-custos th:not(:first-child),
+.tabela-custos td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+  width: 1%;
+  padding-left: 0.5rem;
+}
+
+.tabela-custos td:not(:first-child) {
+  font-size: 0.76rem;
+}
+
+.tabela-custos td {
+  padding: 0.28rem 0.4rem 0.28rem 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--fg-2);
+}
+
+.tabela-custos th:last-child,
+.tabela-custos td:last-child {
+  padding-right: 0;
+}
+
+/* O pior caso só ganha cor quando é PIOR que o médio: é ali que mora a lição
+ * da estrutura, e pintar os dois iguais gastaria o destaque à toa. */
+.custo-pior {
+  color: var(--st-compare);
+}
+
+.sobre-bloco {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--fg-2);
+  margin: 0 0 0.7rem;
+}
+
+.sobre-bloco:last-child {
+  margin-bottom: 0;
+}
+
+.sobre-bloco strong {
+  color: var(--fg);
+  font-weight: 600;
+}

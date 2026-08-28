@@ -37,6 +37,7 @@ import {
 } from "./Estruturas";
 import { PainelCodigo } from "./PainelCodigo";
 import { PainelScript } from "./PainelScript";
+import { PainelSobre } from "./PainelSobre";
 import { estruturasDaUrl, gravarEstruturas } from "./Url";
 import { PainelLog, PainelMetricas } from "./PainelLateral";
 import { interpretar, type Passo } from "./Script";
@@ -558,6 +559,8 @@ export function AbaEstruturas() {
             </p>
           )}
               </section>
+
+        <PainelSobre estrutura={estrutura} />
 
         <PainelScript
           desativado={false}

@@ -400,6 +400,155 @@ const en: Dicionario = {
     "enums, not from a list somebody would have to remember to update.",
   "como.repositorio": "The code, the tests and the full plan on GitHub →",
 
+  "sobre.titulo": "About",
+  "sobre.operacao": "operation",
+  "sobre.medio": "average",
+  "sobre.pior": "worst",
+  "sobre.quando": "When to use it.",
+  "sobre.pega": "The catch.",
+
+  "sobre.pilhaEnc.quando":
+    "When only the last thing in matters: undo, matching brackets, a " +
+    "program's call stack. It grows until memory runs out.",
+  "sobre.pilhaEnc.pega":
+    "Every element costs a malloc and a pointer on top of the data — 16 " +
+    "bytes to store 4. That is the price of having no fixed capacity, and " +
+    "it is what the array version does not pay.",
+
+  "sobre.pilhaVet.quando":
+    "The same stack, when the maximum size is known: the array is reserved " +
+    "once, and pushing becomes writing to a slot.",
+  "sobre.pilhaVet.pega":
+    "It fills up. Overflow is not an implementation slip: it is the " +
+    "consequence of trading allocation for contiguous memory, and it is " +
+    "the mistake the linked version cannot make.",
+
+  "sobre.filaEnc.quando":
+    "When arrival order is service order: a print queue, messages, the " +
+    "breadth-first search of a graph.",
+  "sobre.filaEnc.pega":
+    "Dequeuing without freeing the node leaks memory on every operation. " +
+    "The queue keeps working, which is exactly why the leak takes so long " +
+    "to show up.",
+
+  "sobre.filaVet.quando":
+    "The same queue with a fixed capacity, allocating nothing while in " +
+    "use — which is why the tail wraps around past the head.",
+  "sobre.filaVet.pega":
+    "Once the array wraps, \"tail equals head\" means full and empty at the " +
+    "same time. Only the counter tells them apart, and that is why it is " +
+    "always on screen.",
+
+  "sobre.listaSimples.quando":
+    "When the element count changes a lot and access is sequential: " +
+    "inserting or removing anywhere shifts nothing.",
+  "sobre.listaSimples.pega":
+    "Reaching position k costs k steps. A list has no index — the position " +
+    "is a walk, and the comparison counter shows what it costs.",
+
+  "sobre.listaDupla.quando":
+    "When you walk in both directions, or remove a node you already hold: " +
+    "with a backward pointer there is no need to hunt for the previous one.",
+  "sobre.listaDupla.pega":
+    "One more pointer per node, and two relinks per operation instead of " +
+    "one. Forget one of them and you get a list that walks correctly " +
+    "forwards and lies backwards.",
+
+  "sobre.listaCircular.quando":
+    "When there is no end: turn rotation, a playback buffer, a round of a " +
+    "game. Getting from the last to the first needs no special case.",
+  "sobre.listaCircular.pega":
+    "Traversing without a stop condition is an infinite loop. The end is " +
+    "no longer NULL, it is \"I am back where I started\" — and forgetting " +
+    "that freezes the page.",
+
+  "sobre.buscaSeq.quando":
+    "When the array is small, or when it is not sorted. It asks for " +
+    "nothing in return — it is the only one that works on any array.",
+  "sobre.buscaSeq.pega":
+    "It grows with n. A thousand elements means up to a thousand " +
+    "comparisons, and it is that number next to binary search's that makes " +
+    "the whole argument.",
+
+  "sobre.buscaBin.quando":
+    "When the array is sorted and will be searched many times: every " +
+    "comparison throws away half of what was left.",
+  "sobre.buscaBin.pega":
+    "It demands the ordering, and keeping the ordering costs: every insert " +
+    "shifts half the array. The search gets cheap, the writing does not — " +
+    "and the panel shows both.",
+
+  "sobre.abb.quando":
+    "When you want search, insert and remove while keeping the ordering, " +
+    "and the keys arrive shuffled. In-order traversal comes out sorted for " +
+    "free.",
+  "sobre.abb.pega":
+    "Inserting in increasing order degenerates the tree into a list, and " +
+    "search is O(n) again. Try it: insert 1 2 3 4 5 and watch the height. " +
+    "That case is why the AVL exists.",
+
+  "sobre.avl.quando":
+    "When the worst case matters: it guarantees logarithmic height " +
+    "whatever the input order happens to be.",
+  "sobre.avl.pega":
+    "The balance is paid for in rotations on every insert and remove. If " +
+    "writes are many and searches few, the guarantee may not be worth the " +
+    "price — and the rotation counter is where that shows.",
+
+  "sobre.hashEnc.quando":
+    "When all you need is \"is it there or not\" and order does not " +
+    "matter. It is the fastest structure here for that, and the only one " +
+    "with no ordering at all.",
+  "sobre.hashEnc.pega":
+    "The O(1) is average, not guaranteed: with a badly chosen m, every key " +
+    "lands in the same bucket and the table becomes a list. Change m from " +
+    "8 to 7 and watch the longest chain.",
+
+  "sobre.hashLinear.quando":
+    "When you want to allocate nothing per element: everything lives " +
+    "inside the array, and what is left is the cost of finding the next " +
+    "free cell.",
+  "sobre.hashLinear.pega":
+    "Neighbouring keys form clusters, and every probe that lands in a " +
+    "cluster has to cross the whole thing. That is primary clustering, and " +
+    "it gets worse fast as the load factor climbs.",
+
+  "sobre.hashQuad.quando":
+    "When linear probing is clustering too much: the jumps grow " +
+    "quadratically and spread the clusters out.",
+  "sobre.hashQuad.pega":
+    "Two keys landing in the same bucket still follow exactly the same " +
+    "sequence of jumps — secondary clustering. And probing can refuse an " +
+    "element while the table still has free cells.",
+
+  "sobre.hashDuplo.quando":
+    "When the load factor is high and both probes above are already " +
+    "clustering: the step depends on the key, so two keys in the same " +
+    "bucket take different paths.",
+  "sobre.hashDuplo.pega":
+    "The second hash must be coprime with the table size, or probing never " +
+    "visits every cell. What fails is the insert, not the search — the " +
+    "kind of defect that takes a long time to be noticed.",
+
+  "sobre.arvoreB.quando":
+    "When the data lives on disk. Many keys per page and few levels: every " +
+    "level saved is one access saved, and one access costs millions of " +
+    "times more than a comparison.",
+  "sobre.arvoreB.pega":
+    "Reading everything in order goes up and down, re-reading the parent " +
+    "page on every return. The order of growth matches the B+ tree, the " +
+    "constant does not: with t = 3 and 500 keys it is 413 pages against " +
+    "166.",
+
+  "sobre.arvoreBMais.quando":
+    "When queries return RANGES rather than a single row. Find the first " +
+    "key and the rest is following the link between leaves — which is why " +
+    "almost every database index is a B+ tree.",
+  "sobre.arvoreBMais.pega":
+    "A point lookup always descends to a leaf, even when the key appears " +
+    "in an internal node: up there it is routing, not data. The best case " +
+    "of the search was traded for a cheap scan.",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

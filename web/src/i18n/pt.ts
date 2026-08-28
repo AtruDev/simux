@@ -409,6 +409,152 @@ const pt: Dicionario = {
     "do C, e não de uma lista que alguém teria que lembrar de atualizar.",
   "como.repositorio": "O código, os testes e o plano completo no GitHub →",
 
+  /* ---- o painel que explica a estrutura na tela ------------------------ *
+   * Nem definição nem fórmula: para que serve, e o que ela cobra por isso. */
+  "sobre.titulo": "Sobre",
+  "sobre.operacao": "operação",
+  "sobre.medio": "médio",
+  "sobre.pior": "pior",
+  "sobre.quando": "Quando usar.",
+  "sobre.pega": "A pega.",
+
+  "sobre.pilhaEnc.quando":
+    "Quando só o último a entrar interessa: desfazer, casar parênteses, a " +
+    "pilha de chamadas de um programa. Cresce até a memória acabar.",
+  "sobre.pilhaEnc.pega":
+    "Cada elemento custa um malloc e um ponteiro além do dado — 16 bytes " +
+    "para guardar 4. É o preço de não ter capacidade fixa, e é o que a " +
+    "versão com vetor não paga.",
+
+  "sobre.pilhaVet.quando":
+    "A mesma pilha, quando o tamanho máximo é conhecido: o vetor é " +
+    "reservado de uma vez, e empilhar vira escrever numa posição.",
+  "sobre.pilhaVet.pega":
+    "Ela enche. O overflow não é falha de implementação: é a consequência " +
+    "de trocar alocação por memória contígua, e é o erro que a encadeada " +
+    "não comete.",
+
+  "sobre.filaEnc.quando":
+    "Quando a ordem de chegada é a ordem de atendimento: fila de impressão, " +
+    "mensagens, a busca em largura de um grafo.",
+  "sobre.filaEnc.pega":
+    "Desenfileirar sem liberar o nó vaza memória a cada operação. A fila " +
+    "continua funcionando, e é isso que faz o vazamento demorar a aparecer.",
+
+  "sobre.filaVet.quando":
+    "A mesma fila com capacidade fixa, sem alocar nada durante o uso — e é " +
+    "por isso que o fim dá a volta por cima do começo.",
+  "sobre.filaVet.pega":
+    "Com o vetor dando a volta, «fim igual a início» quer dizer cheia e " +
+    "vazia ao mesmo tempo. Só o contador separa as duas, e é por isso que " +
+    "ele está sempre na tela.",
+
+  "sobre.listaSimples.quando":
+    "Quando o número de elementos muda muito e o acesso é sequencial: " +
+    "inserir e remover em qualquer ponto não desloca nada.",
+  "sobre.listaSimples.pega":
+    "Chegar à posição k custa k passos. A lista não tem índice — a posição " +
+    "é uma caminhada, e o contador de comparações mostra o preço dela.",
+
+  "sobre.listaDupla.quando":
+    "Quando se anda nos dois sentidos, ou quando se remove um nó que já se " +
+    "tem em mãos: com o ponteiro para trás, não é preciso procurar o " +
+    "anterior.",
+  "sobre.listaDupla.pega":
+    "Um ponteiro a mais por nó, e duas religações por operação em vez de " +
+    "uma. Esquecer uma delas dá uma lista que anda certo para a frente e " +
+    "mente para trás.",
+
+  "sobre.listaCircular.quando":
+    "Quando não há fim: rodízio de turnos, buffer de reprodução, a rodada " +
+    "de um jogo. Do último se chega ao primeiro sem caso especial.",
+  "sobre.listaCircular.pega":
+    "Percorrer sem uma condição de parada é laço infinito. O fim deixou de " +
+    "ser NULL e passou a ser «voltei ao começo», e quem esquece isso trava " +
+    "a página.",
+
+  "sobre.buscaSeq.quando":
+    "Quando o vetor é pequeno, ou quando ele não está ordenado. Ela não " +
+    "exige nada em troca — é a única que funciona em qualquer vetor.",
+  "sobre.buscaSeq.pega":
+    "Cresce com n. Em mil elementos são até mil comparações, e é esse " +
+    "número ao lado do da busca binária que faz o argumento inteiro.",
+
+  "sobre.buscaBin.quando":
+    "Quando o vetor está ordenado e vai ser buscado muitas vezes: cada " +
+    "comparação joga fora metade do que restava.",
+  "sobre.buscaBin.pega":
+    "Ela exige a ordem, e manter a ordem custa: cada inserção desloca " +
+    "metade do vetor. A busca fica barata, a escrita não — e o painel " +
+    "mostra as duas.",
+
+  "sobre.abb.quando":
+    "Quando se quer buscar, inserir e remover mantendo a ordem, e as " +
+    "chaves chegam embaralhadas. O percurso em ordem sai crescente de graça.",
+  "sobre.abb.pega":
+    "Inserir em ordem crescente degenera a árvore numa lista, e a busca " +
+    "volta a ser O(n). Experimente: insira 1 2 3 4 5 e olhe a altura. É " +
+    "esse caso que a AVL existe para consertar.",
+
+  "sobre.avl.quando":
+    "Quando o pior caso importa: ela garante altura logarítmica aconteça o " +
+    "que acontecer com a ordem de entrada.",
+  "sobre.avl.pega":
+    "O equilíbrio é pago em rotações a cada inserção e remoção. Se as " +
+    "escritas são muitas e as buscas poucas, a garantia pode não valer o " +
+    "preço — e o contador de rotações é onde ele aparece.",
+
+  "sobre.hashEnc.quando":
+    "Quando só interessa «está lá ou não» e a ordem não importa. É a " +
+    "estrutura mais rápida do quadro para isso, e a única sem ordem nenhuma.",
+  "sobre.hashEnc.pega":
+    "O O(1) é médio, não garantido: com um m mal escolhido, todas as " +
+    "chaves caem no mesmo balde e a tabela vira uma lista. Troque o m de 8 " +
+    "para 7 e olhe a maior cadeia.",
+
+  "sobre.hashLinear.quando":
+    "Quando não se quer alocar nada por elemento: tudo mora dentro do " +
+    "vetor, e o que sobra é o custo de achar a próxima célula livre.",
+  "sobre.hashLinear.pega":
+    "Chaves vizinhas formam blocos, e cada sondagem que cai num bloco " +
+    "precisa atravessá-lo inteiro. É o agrupamento primário, e ele piora " +
+    "rápido conforme o fator de carga sobe.",
+
+  "sobre.hashQuad.quando":
+    "Quando a sondagem linear está agrupando demais: os saltos crescem ao " +
+    "quadrado e espalham os blocos.",
+  "sobre.hashQuad.pega":
+    "Duas chaves que caem no mesmo balde ainda seguem exatamente a mesma " +
+    "sequência de saltos — o agrupamento secundário. E a sondagem pode " +
+    "recusar um elemento com a tabela ainda tendo espaço livre.",
+
+  "sobre.hashDuplo.quando":
+    "Quando o fator de carga é alto e as duas sondagens acima já " +
+    "agrupam: o passo do salto passa a depender da chave, então duas " +
+    "chaves no mesmo balde tomam caminhos diferentes.",
+  "sobre.hashDuplo.pega":
+    "O segundo hash tem que ser primo com o tamanho da tabela, senão a " +
+    "sondagem não visita todas as células. O que falha é a inserção, e não " +
+    "a busca — que é o tipo de defeito que demora a ser notado.",
+
+  "sobre.arvoreB.quando":
+    "Quando os dados estão em disco. Muitas chaves por página e poucos " +
+    "níveis: cada nível a menos é um acesso a menos, e um acesso custa " +
+    "milhões de vezes mais que uma comparação.",
+  "sobre.arvoreB.pega":
+    "Ler tudo em ordem sobe e desce, e relê a página do pai a cada volta. " +
+    "A ordem de grandeza é a mesma da B+, mas a constante não: com t = 3 e " +
+    "500 chaves são 413 páginas contra 166.",
+
+  "sobre.arvoreBMais.quando":
+    "Quando as consultas devolvem FAIXAS, e não uma linha só. Achou a " +
+    "primeira chave, o resto é seguir o elo entre as folhas — e é por isso " +
+    "que quase todo índice de banco de dados é B+.",
+  "sobre.arvoreBMais.pega":
+    "A busca pontual desce sempre até a folha, mesmo quando a chave " +
+    "aparece num nó interno: ali é roteiro, não dado. Trocou-se o melhor " +
+    "caso da busca por uma varredura barata.",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

@@ -891,7 +891,16 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 
 - [ ] Dark mode, responsivo, `prefers-reduced-motion`
 - [ ] Revisão final do inglês (o esqueleto já existe desde a Fase 0)
-- [ ] Textos explicativos por estrutura (complexidades, quando usar), nos dois idiomas
+- [x] Textos explicativos por estrutura, nos dois idiomas — três coisas por
+      estrutura, e nenhuma delas é a definição: a tabela de complexidade com
+      MÉDIO e PIOR em colunas separadas (é a distância entre os dois que a
+      aula de função hash existe para explicar), «quando usar» em uma frase, e
+      «a pega» — o preço, o erro clássico, ou a razão de a estrutura seguinte
+      existir. A pega da ABB manda inserir 1 2 3 4 5 e olhar a altura, e o
+      link do §8.4 faz exatamente isso
+- [x] As complexidades não passam pelo i18n (`O(log n)` é igual nos dois
+      idiomas) e os rótulos das operações vêm do próprio catálogo, então uma
+      pilha diz «empilhar» e uma fila diz «enfileirar» sem a tabela saber
 - [x] Estado compartilhável por URL, com o idioma junto — a barra de endereços
       é o link: cada aba grava o estado dela ali a cada mudança, e não existe
       botão "gerar link" (existe um "copiar", para quem não pensaria em olhar
