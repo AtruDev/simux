@@ -19,6 +19,8 @@ export type ChaveUI =
   | "app.titulo"
   | "app.descricao"
   | "app.trocarIdioma"
+  | "app.copiarLink"
+  | "app.linkCopiado"
   | "app.carregando"
   | "app.erro"
   | "app.truncado"

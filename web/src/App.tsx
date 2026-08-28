@@ -21,10 +21,16 @@ import { definirIdioma, idiomaAtual, t, type Chave, type Idioma } from "./i18n";
 import { AbaEstruturas } from "./ui/AbaEstruturas";
 import { AbaComoFunciona } from "./ui/AbaComoFunciona";
 import { AbaOrdenacao } from "./ui/AbaOrdenacao";
+import {
+  abaDaUrl,
+  gravarMoldura,
+  limparDaAba,
+  linkAtual,
+  regravar,
+  type AbaId,
+} from "./ui/Url";
 
-type Aba = "estruturas" | "ordenacao" | "como";
-
-const ABAS: Array<{ id: Aba; nome: Chave }> = [
+const ABAS: Array<{ id: AbaId; nome: Chave }> = [
   { id: "estruturas", nome: "aba.estruturas" },
   { id: "ordenacao", nome: "aba.ordenacao" },
   /* A terceira não é uma aba de simulação: é a explicação do que as outras
@@ -35,9 +41,19 @@ const ABAS: Array<{ id: Aba; nome: Chave }> = [
 
 export function App() {
   const [idioma, setIdioma] = useState<Idioma>(idiomaAtual());
-  const [aba, setAba] = useState<Aba>("estruturas");
+  /* A aba vem do link quando há um. É a única parte da moldura que o link
+   * carrega além do idioma, que o i18n já lia sozinho desde a Fase 0. */
+  const [aba, setAba] = useState<AbaId>(() => abaDaUrl() ?? "estruturas");
   const [pronto, setPronto] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
+
+  /* A moldura na barra de endereços. Cada aba grava os parâmetros dela; aqui
+   * fica só o que é comum às três. */
+  useEffect(() => {
+    gravarMoldura(aba);
+    if (aba === "como") limparDaAba();
+  }, [aba]);
 
   /* O módulo carrega uma vez, aqui. Cada aba montar o seu próprio carregamento
    * daria dois `criarSimux` — o bridge é idempotente, mas a aba começaria a
@@ -56,6 +72,19 @@ export function App() {
     const novo: Idioma = idioma === "pt" ? "en" : "pt";
     definirIdioma(novo);
     setIdioma(novo);
+    /* O idioma vai junto no link: quem compartilha uma cena em português não
+     * quer que ela abra em inglês do outro lado. */
+    regravar();
+  }
+
+  /* Copiar o endereço, e não montá-lo: a barra já tem o link certo, porque
+   * cada aba grava o estado dela ali a cada mudança. O botão existe só para
+   * quem não pensaria em olhar para cima. */
+  function copiarLink() {
+    void window.navigator.clipboard.writeText(linkAtual()).then(() => {
+      setCopiado(true);
+      window.setTimeout(() => setCopiado(false), 1600);
+    });
   }
 
   return (
@@ -78,9 +107,14 @@ export function App() {
           ))}
         </nav>
 
-        <button type="button" onClick={alternarIdioma} className="secundario">
-          {t("app.trocarIdioma")}
-        </button>
+        <div className="cabecalho-acoes">
+          <button type="button" onClick={copiarLink} className="secundario">
+            {copiado ? t("app.linkCopiado") : t("app.copiarLink")}
+          </button>
+          <button type="button" onClick={alternarIdioma} className="secundario">
+            {t("app.trocarIdioma")}
+          </button>
+        </div>
       </header>
 
       {erro !== null && (

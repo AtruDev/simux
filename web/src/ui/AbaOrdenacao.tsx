@@ -42,6 +42,7 @@ import { GraficoEmpirico } from "./GraficoEmpirico";
 import { PainelCodigo } from "./PainelCodigo";
 import { PainelLog, PainelMetricas } from "./PainelLateral";
 import { Transporte } from "./Transporte";
+import { gravarOrdenacao, ordenacaoDaUrl } from "./Url";
 
 /* O plano pede 5 a 200 no modo animado. O piso não é enfeite: com menos de
  * cinco elementos o quicksort não chega a particionar duas vezes. */
@@ -57,17 +58,21 @@ export function AbaOrdenacao() {
   const player = useMemo(() => new Player(), []);
   const foto = useSyncExternalStore(player.assinar, player.ler);
 
+  /* O que veio no link, lido uma vez — depois disto a URL é consequência do
+   * estado, e não fonte dele. */
+  const [inicial] = useState(ordenacaoDaUrl);
+
   const [erro, setErro] = useState<string | null>(null);
-  const [alg, setAlg] = useState<number>(ALGORITMOS[0]!.alg);
-  const [dist, setDist] = useState<number>(Dist.DIST_ALEATORIO);
-  const [n, setN] = useState(24);
-  const [semente, setSemente] = useState(1);
-  const [corrida, setCorrida] = useState(false);
+  const [alg, setAlg] = useState<number>(inicial.alg ?? ALGORITMOS[0]!.alg);
+  const [dist, setDist] = useState<number>(inicial.dist ?? Dist.DIST_ALEATORIO);
+  const [n, setN] = useState(inicial.n ?? 24);
+  const [semente, setSemente] = useState(inicial.semente ?? 1);
+  const [corrida, setCorrida] = useState(inicial.corrida ?? false);
   const [manual, setManual] = useState("5, 3, 8, 1, 9, 2");
   /* Quantos registros cabem na memória, na intercalação externa. É o único
    * algoritmo da aba com parâmetro, e é o parâmetro que decide quantas
    * varreduras do disco a ordenação vai custar. */
-  const [memoria, setMemoria] = useState(8);
+  const [memoria, setMemoria] = useState(inicial.memoria ?? 8);
 
   const algoritmo = algoritmoDe(alg);
   const distribuicao = distribuicaoDe(dist);
@@ -167,6 +172,13 @@ export function AbaOrdenacao() {
      * mudaria a cada tecla digitada. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player, corrida, n, alg, dist, semente, memoria]);
+
+  /* A cena inteira na barra de endereços: com a semente junto, o link abre
+   * exatamente o mesmo vetor em qualquer máquina — é para isso que o gerador
+   * pseudoaleatório é próprio e semeado, lá no C. */
+  useEffect(() => {
+    gravarOrdenacao({ alg, n, dist, semente, memoria, corrida });
+  }, [alg, n, dist, semente, memoria, corrida]);
 
   /* ---- laço de animação ----------------------------------------------- */
 

@@ -1005,3 +1005,11 @@ button.icone.principal {
 .como-rodape a:hover {
   text-decoration: underline;
 }
+
+/* Os dois botões do canto do cabeçalho: copiar o link e trocar o idioma.
+ * Juntos numa caixa só para o grid do cabeçalho continuar com três colunas. */
+.cabecalho-acoes {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}

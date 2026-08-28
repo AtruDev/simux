@@ -6,6 +6,8 @@ const en: Dicionario = {
     "A visual simulator for data structures. The core is C compiled to " +
     "WebAssembly; the page animates what it executed.",
   "app.trocarIdioma": "Português",
+  "app.copiarLink": "copy link",
+  "app.linkCopiado": "copied",
   "app.carregando": "loading the core…",
   "app.erro": "error",
   "app.truncado": "trace truncated — events were dropped",

@@ -33,6 +33,26 @@ replays it at whatever speed you like, with play, pause, step and scrub.
 Each event carries the source file and the `__LINE__` that produced it, so the
 code panel highlights real executing code rather than invented pseudocode.
 
+## Shareable links
+
+The address bar always holds the current scene, so any screen can be sent to
+someone else as-is:
+
+```
+?aba=estruturas&lang=pt&e=avl&ops=i1,i2,i3,i4,i5
+?aba=ordenacao&lang=en&alg=quick&n=40&dist=poucos_distintos&sem=7&corrida=1
+```
+
+The link carries the *inputs*, never the drawing: the second one says "run
+quicksort over 40 elements drawn from few distinct values with seed 7", and
+the core rebuilds the exact same array on the other machine. That is why the
+pseudo-random generator lives in C and takes a seed — `Math.random` has none,
+and a shared link would open a different picture every time.
+
+The values are slugs (`e=avl`, `dist=poucos_distintos`) rather than enum
+numbers on purpose. `e=12` would be shorter and would silently break every
+shared link the day a structure is inserted in the middle of `ids.h`.
+
 ## Architecture decisions
 
 Five decisions shape everything else. They are worth stating because each one

@@ -37,8 +37,9 @@ import {
 } from "./Estruturas";
 import { PainelCodigo } from "./PainelCodigo";
 import { PainelScript } from "./PainelScript";
+import { estruturasDaUrl, gravarEstruturas } from "./Url";
 import { PainelLog, PainelMetricas } from "./PainelLateral";
-import type { Passo } from "./Script";
+import { interpretar, type Passo } from "./Script";
 import { Transporte } from "./Transporte";
 
 /* Os três percursos, na ordem da aula. Uma tabela e não três botões escritos
@@ -53,12 +54,32 @@ export function AbaEstruturas() {
   const player = useMemo(() => new Player(), []);
   const foto = useSyncExternalStore(player.assinar, player.ler);
 
+  /* O que veio no link, lido uma vez. Depois disto a URL é consequência do
+   * estado, e não fonte dele: reler a cada render faria a aba brigar consigo
+   * mesma a cada tecla digitada. */
+  const [inicial] = useState(estruturasDaUrl);
+
   const [erro, setErro] = useState<string | null>(null);
   const [valor, setValor] = useState("42");
-  const [tipo, setTipo] = useState<number>(ESTRUTURAS[0]!.tipo);
-  const [capacidade, setCapacidade] = useState(8);
-  const [comparar, setComparar] = useState(false);
+  const [tipo, setTipo] = useState<number>(
+    inicial.estrutura ?? ESTRUTURAS[0]!.tipo,
+  );
+  const [capacidade, setCapacidade] = useState(inicial.capacidade ?? 8);
+  const [comparar, setComparar] = useState(inicial.comparar ?? false);
   const [posicao, setPosicao] = useState("0");
+  const [script, setScript] = useState(inicial.ops ?? "");
+  /* A cena que veio no link, enquanto ela ainda vale.
+   *
+   * Ela é reconstruída junto com a sessão, e não uma vez na montagem, e a
+   * razão é o StrictMode: em desenvolvimento o React monta, desmonta e monta
+   * de novo, e um efeito de "rode uma vez" com trava de ref roda na primeira
+   * montagem e é a SEGUNDA sessão que fica na tela — vazia. Reconstruir junto
+   * é idempotente, que é a propriedade que faz o modo estrito não mudar o
+   * resultado.
+   *
+   * Some no primeiro toque em qualquer controle: dali em diante a cena é de
+   * quem está mexendo, e não de quem mandou o link. */
+  const [cenaDoLink, setCenaDoLink] = useState(inicial.ops);
 
   const estrutura = estruturaDe(tipo);
 
@@ -93,6 +114,23 @@ export function AbaEstruturas() {
     });
   }, [trilhas, capacidade]);
 
+  const executar = useCallback(
+    (op: Op, a: number, b: number): { operacao: Operacao; erro: number } => {
+      const operacao: Operacao = [];
+      let erroDaPrimeira = Status.OK;
+
+      trilhas.forEach((_, slot) => {
+        selecionarSlot(slot);
+        const saida = chamar(op, a, b);
+        operacao.push(saida.eventos);
+        if (slot === 0) erroDaPrimeira = saida.erro;
+      });
+
+      return { operacao, erro: erroDaPrimeira };
+    },
+    [trilhas],
+  );
+
   /* Abrir a sessão na montagem, e de novo a cada troca de estrutura,
    * capacidade ou modo: o C não guarda histórico, e a linha do tempo do Player
    * também não faria sentido atravessando duas estruturas diferentes.
@@ -101,12 +139,30 @@ export function AbaEstruturas() {
    * `iniciar()` ter resolvido. */
   useEffect(() => {
     try {
-      player.carregarTrilhas([abrirSessoes()]);
+      const operacoes: Operacao[] = [abrirSessoes()];
+
+      if (cenaDoLink !== undefined) {
+        const { passos, erros } = interpretar(cenaDoLink);
+        if (erros.length === 0) {
+          for (const passo of passos) {
+            operacoes.push(executar(passo.op, passo.valor, passo.posicao).operacao);
+          }
+        }
+      }
+
+      player.carregarTrilhas(operacoes);
       setErro(null);
     } catch (e) {
       setErro(String(e));
     }
-  }, [player, abrirSessoes]);
+  }, [player, abrirSessoes, cenaDoLink, executar]);
+
+  /* O estado da aba vai para a barra de endereços a cada mudança, e é isso
+   * que faz o link ser compartilhável sem existir um botão "gerar link": o
+   * endereço já é o link. */
+  useEffect(() => {
+    gravarEstruturas({ estrutura: tipo, capacidade, comparar, ops: script });
+  }, [tipo, capacidade, comparar, script]);
 
   /* ---- laço de animação ----------------------------------------------- */
 
@@ -160,22 +216,6 @@ export function AbaEstruturas() {
    * é o da trilha 0; quando as duas implementações são do mesmo TAD elas
    * recusam pelo mesmo motivo, e quando divergem é a de vetor que enche
    * primeiro, o que o painel dela já mostra. */
-  const executar = useCallback(
-    (op: Op, a: number, b: number): { operacao: Operacao; erro: number } => {
-      const operacao: Operacao = [];
-      let erroDaPrimeira = Status.OK;
-
-      trilhas.forEach((_, slot) => {
-        selecionarSlot(slot);
-        const saida = chamar(op, a, b);
-        operacao.push(saida.eventos);
-        if (slot === 0) erroDaPrimeira = saida.erro;
-      });
-
-      return { operacao, erro: erroDaPrimeira };
-    },
-    [trilhas],
-  );
 
   const rodar = useCallback(
     (op: Op, a = 0, b = 0) => {
@@ -276,7 +316,10 @@ export function AbaEstruturas() {
                   type="radio"
                   name="estrutura"
                   checked={tipo === e.tipo}
-                  onChange={() => setTipo(e.tipo)}
+                  onChange={() => {
+                    setCenaDoLink(undefined);
+                    setTipo(e.tipo);
+                  }}
                 />
                 <span>{t(e.nome)}</span>
               </label>
@@ -287,7 +330,10 @@ export function AbaEstruturas() {
             <input
               type="checkbox"
               checked={comparar}
-              onChange={(ev) => setComparar(ev.target.checked)}
+              onChange={(ev) => {
+                setCenaDoLink(undefined);
+                setComparar(ev.target.checked);
+              }}
             />
             <span>{t("estrutura.comparar")}</span>
           </label>
@@ -338,7 +384,10 @@ export function AbaEstruturas() {
                 value={capacidade}
                 onChange={(ev) => {
                   const n = Number(ev.target.value);
-                  if (n >= 1 && n <= 32) setCapacidade(n);
+                  if (n >= 1 && n <= 32) {
+                    setCenaDoLink(undefined);
+                    setCapacidade(n);
+                  }
                 }}
               />
             </div>
@@ -510,7 +559,13 @@ export function AbaEstruturas() {
           )}
               </section>
 
-        <PainelScript desativado={false} aoRodar={rodarScript} />
+        <PainelScript
+          desativado={false}
+          texto={script}
+          aoMudarTexto={setScript}
+          aoRodar={rodarScript}
+          aberto={inicial.ops !== undefined}
+        />
 
         {trilhas.map((faixa, k) => (
           <PainelMetricas

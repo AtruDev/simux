@@ -2,7 +2,11 @@
  *
  * Fica fechado por padrão: quem chegou para ver uma pilha animar não deveria
  * encontrar uma caixa de texto vazia na frente. Quem veio reproduzir a lista
- * da matéria abre uma vez e usa o resto da sessão. */
+ * da matéria abre uma vez e usa o resto da sessão.
+ *
+ * O texto é controlado de fora desde que o link compartilhável existe: ele é
+ * parte do estado da aba, e é a aba que o põe na barra de endereços e o recebe
+ * de volta quando alguém abre o link. */
 
 import { useState } from "react";
 
@@ -11,11 +15,20 @@ import { interpretar, type Erro, type Passo } from "./Script";
 
 interface Props {
   desativado: boolean;
+  texto: string;
+  aoMudarTexto: (texto: string) => void;
   aoRodar: (passos: Passo[]) => void;
+  /** Abre a caixa já expandida — é o caso de quem chegou por um link com ops. */
+  aberto?: boolean;
 }
 
-export function PainelScript({ desativado, aoRodar }: Props) {
-  const [texto, setTexto] = useState("");
+export function PainelScript({
+  desativado,
+  texto,
+  aoMudarTexto,
+  aoRodar,
+  aberto,
+}: Props) {
   const [erros, setErros] = useState<Erro[]>([]);
 
   function rodar() {
@@ -32,7 +45,7 @@ export function PainelScript({ desativado, aoRodar }: Props) {
   }
 
   return (
-    <details className="painel painel-script">
+    <details className="painel painel-script" open={aberto}>
       <summary>
         <h2>{t("painel.script")}</h2>
       </summary>
@@ -43,7 +56,7 @@ export function PainelScript({ desativado, aoRodar }: Props) {
         spellCheck={false}
         value={texto}
         placeholder={t("script.exemplo")}
-        onChange={(e) => setTexto(e.target.value)}
+        onChange={(e) => aoMudarTexto(e.target.value)}
         onKeyDown={(e) => {
           /* Ctrl+Enter roda; Enter sozinho continua quebrando linha, que é o
            * que se espera de uma caixa de várias linhas. */

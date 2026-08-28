@@ -892,7 +892,15 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [ ] Dark mode, responsivo, `prefers-reduced-motion`
 - [ ] Revisão final do inglês (o esqueleto já existe desde a Fase 0)
 - [ ] Textos explicativos por estrutura (complexidades, quando usar), nos dois idiomas
-- [ ] Estado compartilhável por URL, com o idioma junto
+- [x] Estado compartilhável por URL, com o idioma junto — a barra de endereços
+      é o link: cada aba grava o estado dela ali a cada mudança, e não existe
+      botão "gerar link" (existe um "copiar", para quem não pensaria em olhar
+      para cima). Os valores são SLUG e não número: `e=12` quebraria todo link
+      compartilhado no dia em que alguém acrescentasse uma estrutura no meio
+      do ids.h, e quebraria em silêncio
+- [x] O link carrega as ENTRADAS, nunca o desenho — `ops=i1,i2,i3` e a semente
+      —, e quem reconstrói a tela é o núcleo rodando de novo. É a regra da
+      §1.5 outra vez, agora entre duas máquinas em vez de dois instantes
 - [ ] Exportar GIF/PNG da animação
 - [ ] README com GIFs — as decisões de arquitetura e o build já estão lá;
       falta a imagem em movimento, que é o item nº 1 da §13

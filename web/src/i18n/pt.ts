@@ -8,6 +8,8 @@ const pt: Dicionario = {
     "Simulador visual de estruturas de dados. O núcleo é C compilado para " +
     "WebAssembly; a página anima o que ele executou.",
   "app.trocarIdioma": "English",
+  "app.copiarLink": "copiar link",
+  "app.linkCopiado": "copiado",
   "app.carregando": "carregando o núcleo…",
   "app.erro": "erro",
   "app.truncado": "trace truncado — eventos foram perdidos",
