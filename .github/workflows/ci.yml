@@ -155,3 +155,41 @@ jobs:
       - name: Checar tipos e empacotar
         working-directory: web
         run: pnpm build
+
+      # O mesmo dist que acabou de ser checado é o que vai ao ar. Construir de
+      # novo no job de deploy daria a chance de publicar algo que não passou
+      # pelos testes acima.
+      - name: Guardar o site
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  # ---------------------------------------------------------------------------
+  # Deploy no GitHub Pages, só a partir da main e só depois de tudo passar.
+  #
+  # `needs` inclui os três jobs de verificação de propósito: um site no ar com
+  # o núcleo quebrado é pior que um site desatualizado, e o wasm publicado é
+  # exatamente o que rodou os testes.
+  #
+  # Precisa de Settings > Pages > Source = GitHub Actions no repositório; sem
+  # isso o job falha com "Pages site not found", e não há como ligar pelo
+  # workflow.
+  # ---------------------------------------------------------------------------
+  pages:
+    name: publicar no GitHub Pages
+    needs: [nativo-linux, frontend, wasm]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

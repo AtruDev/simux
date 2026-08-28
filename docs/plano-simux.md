@@ -894,8 +894,17 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [ ] Textos explicativos por estrutura (complexidades, quando usar), nos dois idiomas
 - [ ] Estado compartilhável por URL, com o idioma junto
 - [ ] Exportar GIF/PNG da animação
-- [ ] README com GIFs, decisões de arquitetura e instruções de build
-- [ ] Deploy no GitHub Pages, link no topo do README
+- [ ] README com GIFs — as decisões de arquitetura e o build já estão lá;
+      falta a imagem em movimento, que é o item nº 1 da §13
+- [x] Deploy no GitHub Pages — o mesmo `dist` que passou nos testes é o que
+      vai ao ar, e o job só roda na main e só depois dos três de verificação.
+      `base: "./"` no Vite, e não `/simux/`: com caminho relativo o mesmo
+      bundle serve a raiz de um domínio, um subdiretório e um domínio próprio,
+      que é a decisão que a §14.1 deixou em aberto. **Falta ligar
+      Settings > Pages > Source = GitHub Actions**, que só o dono do
+      repositório faz — sem isso o job falha com "Pages site not found"
+- [x] Link do demo no topo do README, e a seção de decisões de arquitetura que
+      a §13 põe em segundo lugar de retorno sobre esforço
 - [ ] Página "como funciona" explicando o trace e o WASM ← *isto vale mais que qualquer estrutura extra*
 
 **Total:** ~10 a 13 semanas em ritmo de estudante com outras matérias. As fases 0–3 já entregam um projeto respeitável e publicável; 4–6 são o que o transformam em peça de portfólio.
