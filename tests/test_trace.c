@@ -2,6 +2,8 @@
 
 #define TR_SRC SRC_API
 
+#include <stddef.h>
+
 #include "ds/ids.h"
 #include "ds/trace.h"
 

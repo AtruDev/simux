@@ -1,5 +1,7 @@
 /* tests/test_fila.c — as duas filas, com atenção ao que só a circular tem. */
 
+#include <stddef.h>
+
 #include "ds/erros.h"
 #include "ds/fila.h"
 #include "ds/ids.h"

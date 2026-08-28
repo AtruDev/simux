@@ -11,6 +11,8 @@
  * monta essa situação de propósito, porque um fuzz aleatório pode levar
  * milhares de operações para tropeçar nela. */
 
+#include <stddef.h>
+
 #include "ds/hash.h"
 #include "ds/aleatorio.h"
 #include "ds/erros.h"

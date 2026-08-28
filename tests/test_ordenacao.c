@@ -14,6 +14,8 @@
  * as mesmas contagens. Se emitir evento mudasse o resultado, a aba inteira
  * estaria mostrando um algoritmo que não é o que o modo empírico mede. */
 
+#include <stddef.h>
+
 #include "ds/erros.h"
 #include "ds/ids.h"
 #include "ds/ordenacao.h"

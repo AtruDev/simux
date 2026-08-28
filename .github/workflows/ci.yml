@@ -84,7 +84,14 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11
+          # Versão exata, e não "11".
+          #
+          # O `web/.npmrc` aprova o script de instalação do esbuild, e um pnpm
+          # 11 mais novo que o do lockfile deixou de ler essa chave do .npmrc —
+          # o install passava a sair com ERR_PNPM_IGNORED_BUILDS e status 1,
+          # sem nada de errado no projeto. Fixar a versão amarra o CI ao mesmo
+          # pnpm que gerou o lockfile, que é o que um lockfile promete.
+          version: 11.24.0
 
       - uses: actions/setup-node@v4
         with:
@@ -140,7 +147,14 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 11
+          # Versão exata, e não "11".
+          #
+          # O `web/.npmrc` aprova o script de instalação do esbuild, e um pnpm
+          # 11 mais novo que o do lockfile deixou de ler essa chave do .npmrc —
+          # o install passava a sair com ERR_PNPM_IGNORED_BUILDS e status 1,
+          # sem nada de errado no projeto. Fixar a versão amarra o CI ao mesmo
+          # pnpm que gerou o lockfile, que é o que um lockfile promete.
+          version: 11.24.0
 
       - uses: actions/setup-node@v4
         with:

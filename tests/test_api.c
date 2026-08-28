@@ -4,6 +4,8 @@
  * se testa é o despacho e o isolamento entre os slots — que uma operação num
  * slot não mexa no outro, e que fechar um não estrague os ids do vizinho. */
 
+#include <stddef.h>
+
 #include "ds/api.h"
 #include "ds/erros.h"
 #include "ds/ids.h"

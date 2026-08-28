@@ -5,6 +5,8 @@
  * têm. O que é específico de uma implementação — o `ant` da dupla, o ciclo da
  * circular — fica nos casos de invariante no fim do arquivo. */
 
+#include <stddef.h>
+
 #include "ds/erros.h"
 #include "ds/ids.h"
 #include "ds/lista.h"

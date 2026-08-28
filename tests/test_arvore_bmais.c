@@ -18,6 +18,8 @@
  * A última suíte é o "pronto quando" da fase: a mesma leitura em ordem, na
  * árvore B e na B+, medida em páginas. */
 
+#include <stddef.h>
+
 #include "ds/arvore_b.h"
 #include "ds/arvore_bmais.h"
 #include "ds/aleatorio.h"

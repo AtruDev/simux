@@ -11,6 +11,7 @@
  * justamente o que quebra. Depois disso o fuzz entra, contra um multiconjunto
  * como modelo de referência. */
 
+#include <stddef.h>
 #include <math.h>
 
 #include "ds/arvore.h"

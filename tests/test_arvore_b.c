@@ -15,6 +15,7 @@
  * existir: a mesma busca que a ABB resolve em vinte acessos, ela resolve em
  * três. */
 
+#include <stddef.h>
 #include <math.h>
 
 #include "ds/arvore.h"

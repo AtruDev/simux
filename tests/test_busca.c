@@ -10,6 +10,8 @@
  * sempre o primeiro e a binária acha um qualquer. Exigir a mesma posição
  * transformaria uma verdade sobre os algoritmos em falha de teste. */
 
+#include <stddef.h>
+
 #include "ds/busca.h"
 #include "ds/aleatorio.h"
 #include "ds/erros.h"

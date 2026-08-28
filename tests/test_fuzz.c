@@ -10,6 +10,8 @@
  *
  * A semente é fixa: uma falha aqui tem que ser reexecutável. */
 
+#include <stddef.h>
+
 #include "ds/aleatorio.h"
 #include "ds/erros.h"
 #include "ds/tipos.h"
