@@ -1,0 +1,15 @@
+# Onde as opções do pnpm moram a partir da versão 10, e a chave que ele
+# realmente lê: `allowBuilds`.
+#
+# Este arquivo foi escrito pelo próprio `pnpm approve-builds esbuild` — o
+# esbuild traz um binário nativo e precisa do script de instalação para
+# prepará-lo, e o pnpm 11 exige aprovação explícita.
+#
+# O `.npmrc` ao lado tentava a mesma coisa com `only-built-dependencies[]`, e
+# não é lido: o pnpm tirou as opções próprias dele de lá. Localmente ninguém
+# percebeu, porque a aprovação já estava gravada no node_modules desta máquina
+# desde a primeira instalação — o CI começa limpo, e é lá que a diferença
+# aparece.
+
+allowBuilds:
+  esbuild: true
