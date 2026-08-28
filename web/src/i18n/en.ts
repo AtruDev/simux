@@ -47,7 +47,7 @@ const en: Dicionario = {
   "log.aresta": "points to",
   "log.ponteiro": "top becomes",
   "log.visita": "looking at node",
-  "log.saiVisita": "releases node",
+  "log.saiVisita": "done with node",
   "log.contador": "counter",
   "estrutura.pilhaVet": "Array stack",
   "estrutura.filaEnc": "Linked queue",
@@ -157,7 +157,7 @@ const en: Dicionario = {
   "ord.semente": "seed",
   "ord.distribuicao": "distribution",
   "ord.gerar": "generate array",
-  "ord.novaSemente": "roll a seed",
+  "ord.novaSemente": "roll a new seed",
   "ord.ordenar": "sort",
   "ord.corrida": "race mode",
   "ord.valores": "values",
@@ -237,7 +237,8 @@ const en: Dicionario = {
     "case 3: two children — the in-order successor moves up",
   STR_PROCURA_SUCESSOR:
     "the successor is the smallest of the right subtree: right once, then left all the way",
-  STR_SUBSTITUI: "the successor's value takes the place, and the successor is what goes",
+  STR_SUBSTITUI:
+    "the successor's value takes over, and the successor is the node that actually goes",
   STR_PERCURSO: "traversing",
 
   "log.raiz": "root is now",
@@ -247,7 +248,7 @@ const en: Dicionario = {
   "estrutura.avl": "AVL tree",
   "metrica.rotacoes": "rotations",
 
-  STR_DESBALANCEOU: "the balance factor overflowed: |BF| > 1",
+  STR_DESBALANCEOU: "the balance factor left the range: |BF| > 1",
   STR_ROT_DIR: "left-left case: a single right rotation fixes it",
   STR_ROT_ESQ: "right-right case: a single left rotation fixes it",
   STR_ROT_ESQ_DIR:
@@ -274,7 +275,8 @@ const en: Dicionario = {
   STR_COLISAO: "collision: the bucket already holds another key",
   STR_SONDANDO: "taken by another key: probe the next one",
   STR_TUMULO: "tombstone — a removed cell the probe has to cross",
-  STR_TABELA_CHEIA: "the table is full: the probe wrapped around without a slot",
+  STR_TABELA_CHEIA:
+    "the table is full: the probe wrapped around without finding a free cell",
 
   "estrutura.arvoreB": "B-tree",
   "metrica.grau": "degree t",
@@ -289,7 +291,7 @@ const en: Dicionario = {
   STR_SOBE_CHAVE: "the middle key moves up to the parent",
   STR_EMPRESTA_ESQ: "the left sibling has a key to spare: borrow it",
   STR_EMPRESTA_DIR: "the right sibling has a key to spare: borrow it",
-  STR_FUNDE: "no sibling has room to spare: the two pages become one",
+  STR_FUNDE: "neither sibling has a key to spare: the two pages become one",
   STR_DESCE_CHAVE: "the parent key moves down into the merged page",
 
   "estrutura.arvoreBMais": "B+ tree",
@@ -455,8 +457,9 @@ const en: Dicionario = {
     "forwards and lies backwards.",
 
   "sobre.listaCircular.quando":
-    "When there is no end: turn rotation, a playback buffer, a round of a " +
-    "game. Getting from the last to the first needs no special case.",
+    "When there is no end: round-robin scheduling, a playback buffer, a " +
+    "round of a game. Getting from the last to the first needs no special " +
+    "case.",
   "sobre.listaCircular.pega":
     "Traversing without a stop condition is an infinite loop. The end is " +
     "no longer NULL, it is \"I am back where I started\" — and forgetting " +
@@ -509,7 +512,7 @@ const en: Dicionario = {
     "inside the array, and what is left is the cost of finding the next " +
     "free cell.",
   "sobre.hashLinear.pega":
-    "Neighbouring keys form clusters, and every probe that lands in a " +
+    "Neighboring keys form clusters, and every probe that lands in a " +
     "cluster has to cross the whole thing. That is primary clustering, and " +
     "it gets worse fast as the load factor climbs.",
 

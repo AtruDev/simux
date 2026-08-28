@@ -319,6 +319,19 @@ function detectar(): Idioma {
 
 let idioma: Idioma = detectar();
 
+/* O `lang` do documento, que o index.html não tem como acertar sozinho.
+ *
+ * Ele nasce "pt-BR" no HTML, e para quem abre em inglês isso é uma mentira
+ * que ninguém vê e que atrapalha quem mais precisa: um leitor de tela lê a
+ * página inteira com voz portuguesa, e o navegador oferece traduzir uma
+ * página que já está no idioma da pessoa. Aplicado na carga, e não só na
+ * troca, porque a maioria nunca troca. */
+function aplicarLang(): void {
+  document.documentElement.lang = idioma === "pt" ? "pt-BR" : "en";
+}
+
+aplicarLang();
+
 export function idiomaAtual(): Idioma {
   return idioma;
 }
@@ -326,7 +339,7 @@ export function idiomaAtual(): Idioma {
 export function definirIdioma(novo: Idioma): void {
   idioma = novo;
   window.localStorage.setItem(ARMAZENAMENTO, novo);
-  document.documentElement.lang = novo === "pt" ? "pt-BR" : "en";
+  aplicarLang();
 }
 
 export function t(chave: Chave): string {

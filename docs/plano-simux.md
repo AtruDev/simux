@@ -891,7 +891,15 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 ### Fase 6 — Polimento e portfólio · ~1–2 semanas
 
 - [ ] Dark mode, responsivo, `prefers-reduced-motion`
-- [ ] Revisão final do inglês (o esqueleto já existe desde a Fase 0)
+- [x] Revisão final do inglês — as 334 chaves lidas em par com o português,
+      procurando desvio de sentido e não só erro de digitação. Sete frases
+      corrigidas; a pior era `STR_FUNDE`, que dizia "no sibling has room to
+      spare" quando a fusão acontece justamente porque nenhum irmão tem CHAVE
+      sobrando — o inglês dizia o contrário do C
+- [x] E um defeito que a revisão do inglês pegou fora do dicionário: o `lang`
+      do documento nascia "pt-BR" e só era corrigido na TROCA de idioma. Quem
+      abria em inglês e não trocava — quase todo mundo — tinha a página lida
+      por leitor de tela com voz portuguesa
 - [x] Textos explicativos por estrutura, nos dois idiomas — três coisas por
       estrutura, e nenhuma delas é a definição: a tabela de complexidade com
       MÉDIO e PIOR em colunas separadas (é a distância entre os dois que a

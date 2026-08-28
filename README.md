@@ -34,7 +34,7 @@ line of C that is executing, in their own file.
 [Open this scene →](https://atrudev.github.io/simux/?aba=estruturas&lang=en&e=avl&cmp=1&ops=i1,i2,i3,i4)
 
 **Seven sorting algorithms racing over the same array.** Same seed, same
-initial vector, one timeline. The colours are states — comparing, just
+initial vector, one timeline. The colors are states — comparing, just
 written, in final position, pivot — and the identity of each algorithm is the
 thin rule in its header, never the fill of a bar.
 
