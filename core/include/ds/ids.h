@@ -85,6 +85,7 @@ typedef enum {
     SRC_HASH_ABE,
     SRC_ARVORE_B,
     SRC_ARVORE_B_MAIS,
+    SRC_EXTERNA,
     SRC_COUNT
 } ds_src;
 
@@ -162,6 +163,9 @@ typedef enum {
      * de o separador poder nomear uma chave que já foi removida. */
     STR_COPIA_CHAVE,
     STR_VARRENDO,       /* a varredura sequencial, folha a folha, sem subir   */
+    /* Intercalação externa: a fase que transforma o arquivo numa sequência de
+     * trechos ordenados, um por bloco de memória. */
+    STR_GERANDO_RUNS,
     STR_COUNT
 } ds_str;
 
@@ -208,6 +212,10 @@ typedef enum {
     CNT_SONDAGENS,
     CNT_DISCO_LE,
     CNT_DISCO_ESCREVE,
+    /* Varreduras completas do arquivo, na intercalação externa. É a métrica
+     * dela: cada passada lê e escreve o arquivo inteiro, e dobrar a memória
+     * tira uma passada — não uma fração do tempo, uma varredura de disco. */
+    CNT_PASSADAS,
     CNT_COUNT
 } ds_cnt;
 
@@ -288,6 +296,11 @@ typedef enum {
     ALG_SHELL,
     ALG_QUICK,
     ALG_MERGE,
+    /* O sétimo é de outra família: o vetor está no DISCO e a memória cabe k
+     * registros. Entra na mesma tabela porque a interface é a mesma — um
+     * vetor entra desordenado e sai ordenado —, e é o contraste com os seis de
+     * cima que o explica. */
+    ALG_EXTERNA,
     ALG_COUNT
 } ds_alg;
 

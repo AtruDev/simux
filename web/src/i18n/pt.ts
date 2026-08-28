@@ -125,6 +125,13 @@ const pt: Dicionario = {
   "alg.shell": "Shellsort",
   "alg.quick": "Quicksort",
   "alg.merge": "Mergesort",
+  "alg.externa": "Intercalação externa",
+  "ordem.externa": "1 + ⌈log₂(n/k)⌉ passadas",
+  "ord.memoria": "memória k",
+  "ord.memoriaPorque":
+    "Quantos registros cabem na RAM. O resto do vetor está \"no disco\": " +
+    "cada passada lê e escreve o arquivo inteiro, e dobrar k tira uma passada.",
+  "metrica.passadas": "passadas",
 
   "ordem.quadratica": "O(n²)",
   "ordem.linearitmica": "O(n log n)",
@@ -296,6 +303,8 @@ const pt: Dicionario = {
 
   STR_COPIA_CHAVE:
     "a chave do meio é COPIADA para o pai — e continua na folha, porque é lá que o dado mora",
+  STR_GERANDO_RUNS:
+    "gerando os blocos ordenados: um bloco por vez, ordenado dentro da memória",
   STR_VARRENDO:
     "varrendo pela corrente de folhas: uma página por folha, e nenhum nó interno",
 

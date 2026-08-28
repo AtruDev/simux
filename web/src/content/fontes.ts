@@ -21,6 +21,7 @@ import fonteListaDupla from "../../../core/ds/lista_dupla.c?raw";
 import fonteListaSimples from "../../../core/ds/lista_simples.c?raw";
 import fontePilhaEnc from "../../../core/ds/pilha_enc.c?raw";
 import fonteInsercao from "../../../core/sort/insercao.c?raw";
+import fonteExterna from "../../../core/sort/externa.c?raw";
 import fonteMerge from "../../../core/sort/merge.c?raw";
 import fontePilhaVet from "../../../core/ds/pilha_vet.c?raw";
 import fonteQuick from "../../../core/sort/quick.c?raw";
@@ -60,6 +61,10 @@ const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_SHELL]: { arquivo: "core/sort/shell.c", texto: fonteShell },
   [Src.SRC_QUICK]: { arquivo: "core/sort/quick.c", texto: fonteQuick },
   [Src.SRC_MERGE]: { arquivo: "core/sort/merge.c", texto: fonteMerge },
+  [Src.SRC_EXTERNA]: {
+    arquivo: "core/sort/externa.c",
+    texto: fonteExterna,
+  },
   [Src.SRC_CENA]: { arquivo: "core/sort/cena.c", texto: fonteCena },
   [Src.SRC_ABB]: { arquivo: "core/arvore/abb.c", texto: fonteAbb },
   [Src.SRC_AVL]: { arquivo: "core/arvore/avl.c", texto: fonteAvl },

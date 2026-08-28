@@ -876,7 +876,14 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [x] `CAMPO_FOLHA`: o nó anuncia se é folha, e numa folha o slot 0 deixa de
       ser filho e passa a ser o elo para a folha seguinte — que é o ponteiro
       que sobra numa página de verdade. Nenhum evento novo, como sempre
-- [ ] Intercalação externa na aba de ordenação
+- [x] Intercalação externa na aba de ordenação — entrou como o sétimo
+      algoritmo da mesma tabela, sem caso especial: a assinatura é a mesma, e
+      o que muda é o que se conta. A memória `k` é o único parâmetro, e é ele
+      que decide quantas varreduras do disco a ordenação custa. Com n = 64:
+      k = 2 dá 6 passadas e 384 páginas; k = 8 dá 4 e 64; k = 64 dá 1 e 2
+- [x] Fica fora do modo empírico, e de propósito: aquele gráfico plota
+      COMPARAÇÕES contra n, e a métrica desta é passada — que nem varia com a
+      distribuição que o gráfico varia. A curva cairia em cima da do mergesort
 - [x] Contador de acessos a disco em destaque
 - **Pronto quando:** buscar o mesmo conjunto em ABB e em árvore B mostra a diferença de acessos a disco em números.
 

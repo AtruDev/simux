@@ -281,7 +281,13 @@ static int gerar(int32_t n, int32_t dist, unsigned int semente)
     return OK;
 }
 
-static int ordenar(int32_t alg)
+/* `parametro` é o segundo inteiro de OP_ORDENAR, e hoje só um algoritmo tem
+ * um: a intercalação externa, cuja memória é o que decide quantas passadas
+ * pelo disco ela vai custar. É o mesmo arranjo da capacidade da sessão, que
+ * vale como `m` na tabela hash e como grau na árvore B — um número por
+ * algoritmo, e não um caminho de despacho por algoritmo. Zero quer dizer
+ * "deixe como está". */
+static int ordenar(int32_t alg, int32_t parametro)
 {
     OrdenaFn fn = ordenacao_de(alg);
     int      rc;
@@ -292,6 +298,10 @@ static int ordenar(int32_t alg)
     }
     if (ATIVA.n <= 0) {
         return ERR_VAZIA;
+    }
+
+    if (alg == ALG_EXTERNA && parametro > 0) {
+        externa_memoria(parametro);
     }
 
     medida_zerar();
@@ -336,7 +346,7 @@ API int32_t ds_call(int32_t op, int32_t a, int32_t b, int32_t c)
     if (ATIVA.tipo == TIPO_ORDENACAO) {
         switch (op) {
         case OP_GERAR:  return concluir(gerar(a, b, (unsigned int) c));
-        case OP_ORDENAR: return concluir(ordenar(a));
+        case OP_ORDENAR: return concluir(ordenar(a, b));
         default:        return concluir(ERR_OP_DESCONHECIDA);
         }
     }

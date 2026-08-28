@@ -25,7 +25,7 @@ import {
   sessaoNova,
   slots,
 } from "../core/bridge";
-import { Dist, Op, Status, Tipo, STR_CHAVES } from "../core/ops";
+import { Alg, Dist, Op, Status, Tipo, STR_CHAVES } from "../core/ops";
 import { ERR_CHAVES } from "../core/ops";
 import { Player, type Operacao } from "../core/player";
 import { t, type Chave } from "../i18n";
@@ -64,6 +64,10 @@ export function AbaOrdenacao() {
   const [semente, setSemente] = useState(1);
   const [corrida, setCorrida] = useState(false);
   const [manual, setManual] = useState("5, 3, 8, 1, 9, 2");
+  /* Quantos registros cabem na memória, na intercalação externa. É o único
+   * algoritmo da aba com parâmetro, e é o parâmetro que decide quantas
+   * varreduras do disco a ordenação vai custar. */
+  const [memoria, setMemoria] = useState(8);
 
   const algoritmo = algoritmoDe(alg);
   const distribuicao = distribuicaoDe(dist);
@@ -127,7 +131,7 @@ export function AbaOrdenacao() {
         cena.push([...criacao, ...geracao.eventos]);
 
         if (ordenar) {
-          const saida = chamar(Op.OP_ORDENAR, a.alg);
+          const saida = chamar(Op.OP_ORDENAR, a.alg, memoria);
           ordenacao.push(saida.eventos);
           if (k === 0) codigo = saida.erro;
         } else {
@@ -148,7 +152,7 @@ export function AbaOrdenacao() {
       }
       setErro(codigo === Status.OK ? null : textoDoErro(codigo));
     },
-    [player, corrida, n, alg, dist, semente, enviarManual],
+    [player, corrida, n, alg, dist, semente, memoria, enviarManual],
   );
 
   /* Trocar qualquer coisa da cena refaz o vetor, sem ordenar. */
@@ -162,7 +166,7 @@ export function AbaOrdenacao() {
      * manual, não — ele só vale quando o botão é apertado, senão o vetor
      * mudaria a cada tecla digitada. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [player, corrida, n, alg, dist, semente]);
+  }, [player, corrida, n, alg, dist, semente, memoria]);
 
   /* ---- laço de animação ----------------------------------------------- */
 
@@ -280,6 +284,32 @@ export function AbaOrdenacao() {
               }}
             />
           </div>
+
+          {/* Só aparece para quem tem o que fazer com ele. Na corrida ele
+              aparece sempre, porque a intercalação externa está em cena junto
+              com os outros seis. */}
+          {(corrida || alg === Alg.ALG_EXTERNA) && (
+            <>
+              <div className="campo campo-capacidade">
+                <label htmlFor="ord-memoria">{t("ord.memoria")}</label>
+                <input
+                  id="ord-memoria"
+                  className="mono"
+                  type="number"
+                  min={2}
+                  max={N_MAX}
+                  value={memoria}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v >= 2 && v <= N_MAX) setMemoria(v);
+                  }}
+                />
+              </div>
+              {/* O número que a aba existe para mostrar, dito antes de o aluno
+                  precisar deduzi-lo do contador. */}
+              <p className="dica">{t("ord.memoriaPorque")}</p>
+            </>
+          )}
 
           <div className="campo campo-capacidade">
             <label htmlFor="ord-dist">{t("ord.distribuicao")}</label>

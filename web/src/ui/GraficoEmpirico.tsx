@@ -86,6 +86,8 @@ export function GraficoEmpirico({ dist, semente }: Props) {
     const acumulado: Serie[] = [];
 
     for (const a of ALGORITMOS) {
+      if (a.semBench) continue;
+
       const pontos: Ponto[] = [];
 
       for (const n of TAMANHOS) {

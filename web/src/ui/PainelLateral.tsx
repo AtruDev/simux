@@ -191,6 +191,25 @@ export function PainelMetricas({
       String(contador(modelo, Cnt.CNT_ALOCACOES)),
     ]);
     linhas.push([t("ord.tamanho"), String(modelo.vetor?.capacidade ?? 0)]);
+
+    /* As três linhas de disco só aparecem em quem paga disco, pela mesma
+     * razão das rotações na ABB: um zero permanente não informa nada. Na
+     * intercalação externa elas são o painel inteiro — comparação é o que se
+     * conta quando o vetor está na RAM, e ali ele não está. */
+    if (contador(modelo, Cnt.CNT_PASSADAS) > 0) {
+      linhas.push([
+        t("metrica.passadas"),
+        String(contador(modelo, Cnt.CNT_PASSADAS)),
+      ]);
+      linhas.push([
+        t("metrica.discoLe"),
+        String(contador(modelo, Cnt.CNT_DISCO_LE)),
+      ]);
+      linhas.push([
+        t("metrica.discoEscreve"),
+        String(contador(modelo, Cnt.CNT_DISCO_ESCREVE)),
+      ]);
+    }
   } else if (mundo === "lista") {
     linhas.push([
       t("metrica.comparacoes"),

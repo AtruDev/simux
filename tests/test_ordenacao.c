@@ -25,7 +25,7 @@
 enum { N = 64 };
 
 static const char *NOME_ALG[ALG_COUNT] = {
-    "bolha", "selecao", "insercao", "shell", "quick", "merge",
+    "bolha", "selecao", "insercao", "shell", "quick", "merge", "externa",
 };
 
 /* Roda um algoritmo sobre uma distribuição e verifica a dupla. */
@@ -293,6 +293,137 @@ static void suite_quick_pior_caso(void)
 
 /* A tabela é o que a fronteira usa para despachar; um id fora da faixa não
  * pode virar ponteiro. */
+/* ---- intercalação externa ------------------------------------------------
+ *
+ * As suítes acima já provam que ela ordena, porque ela entra nos mesmos laços
+ * que os outros seis. O que é só dela é o CUSTO, e é ele que esta suíte fixa:
+ * quantas varreduras do arquivo, e quantas páginas por varredura.
+ *
+ * Os números são exatos, e não aproximados, de propósito. "Menos páginas com
+ * mais memória" passaria com uma contagem errada por um fator de k; o que
+ * pega isso é a igualdade.                                                   */
+
+/* ⌈a/b⌉ com inteiros. */
+static int teto(int a, int b)
+{
+    return (a + b - 1) / b;
+}
+
+/* Quantas passadas o arquivo sofre: a de geração dos runs, mais uma por
+ * dobra do tamanho do run até ele cobrir o arquivo. */
+static int passadas_esperadas(int n, int k)
+{
+    int quantas = 1;
+    int tamanho;
+
+    for (tamanho = k; tamanho < n; tamanho *= 2) {
+        quantas++;
+    }
+    return quantas;
+}
+
+static void externa_roda(int n, int k, elem_t *saida)
+{
+    ASSERT_EQ(cena_gerar(saida, n, DIST_ALEATORIO, 99u, NULL), OK);
+    externa_memoria(k);
+    ASSERT_EQ(externa_ordenar(saida, n), OK);
+    ASSERT_TRUE(cena_ordenado(saida, n));
+}
+
+static void suite_externa(void)
+{
+    elem_t v[N];
+    int    k;
+
+    CASO("a memória é o único parâmetro, e ela tem piso");
+    externa_memoria(0);
+    ASSERT_EQ(externa_memoria_atual(), 2);
+    externa_memoria(-5);
+    ASSERT_EQ(externa_memoria_atual(), 2);
+    externa_memoria(8);
+    ASSERT_EQ(externa_memoria_atual(), 8);
+
+    CASO("cada passada lê e escreve o arquivo inteiro, uma página por bloco");
+    for (k = 2; k <= 16; k *= 2) {
+        int paginas = teto(N, k);
+        int passadas = passadas_esperadas(N, k);
+
+        externa_roda(N, k, v);
+
+        ASSERT_EQ(externa_passadas(), passadas);
+        /* É a igualdade que prova que a página não foi contada por registro:
+         * uma leitura por bloco, e o bloco inteiro atravessa a passada. */
+        ASSERT_EQ(externa_leituras(), (long) paginas * passadas);
+        ASSERT_EQ(externa_escritas(), (long) paginas * passadas);
+    }
+
+    CASO("dobrar a memória tira uma passada inteira do disco");
+    {
+        long paginas_com_4;
+        long paginas_com_8;
+
+        externa_roda(N, 4, v);
+        ASSERT_EQ(externa_passadas(), passadas_esperadas(N, 4));
+        paginas_com_4 = externa_leituras() + externa_escritas();
+
+        externa_roda(N, 8, v);
+        ASSERT_EQ(externa_passadas(), passadas_esperadas(N, 4) - 1);
+        paginas_com_8 = externa_leituras() + externa_escritas();
+
+        /* Menos passadas E menos páginas por passada: é por isso que memória
+         * vale tanto aqui — o ganho é multiplicativo, não linear. */
+        ASSERT_TRUE(paginas_com_8 < paginas_com_4);
+    }
+
+    CASO("memória maior que o arquivo: uma passada, e nenhuma intercalação");
+    externa_roda(N, N + 10, v);
+    ASSERT_EQ(externa_passadas(), 1);
+    /* Um bloco só: o arquivo inteiro é lido, ordenado na memória e devolvido. */
+    ASSERT_EQ(externa_leituras(), 1);
+    ASSERT_EQ(externa_escritas(), 1);
+
+    CASO("o vetor de um elemento não custa passada nenhuma");
+    {
+        elem_t um[1] = { 42 };
+
+        externa_memoria(4);
+        ASSERT_EQ(externa_ordenar(um, 1), OK);
+        ASSERT_EQ(externa_passadas(), 0);
+        ASSERT_EQ(externa_leituras(), 0);
+    }
+
+    CASO("os acessos a disco chegam ao trace, que é de onde o painel os lê");
+    {
+        int leituras = 0;
+        int escritas = 0;
+        int passadas = 0;
+
+        trace_reset();
+        trace_set_enabled(1);
+        externa_roda(32, 4, v);
+        {
+            const ev_t *evs = trace_ptr();
+            int32_t     total = trace_len();
+            int32_t     i;
+
+            for (i = 0; i < total; i++) {
+                if (evs[i].kind == EV_DISK_READ) leituras++;
+                if (evs[i].kind == EV_DISK_WRITE) escritas++;
+                if (evs[i].kind == EV_COUNT && evs[i].a == CNT_PASSADAS) {
+                    passadas += evs[i].b;
+                }
+            }
+        }
+        ASSERT_EQ(leituras, (int) externa_leituras());
+        ASSERT_EQ(escritas, (int) externa_escritas());
+        ASSERT_EQ(passadas, externa_passadas());
+    }
+
+    /* Deixa a memória no padrão: o estado é de módulo, e a suíte seguinte não
+     * tem por que herdar o k desta. */
+    externa_memoria(8);
+}
+
 static void suite_tabela(void)
 {
     int alg;
@@ -313,4 +444,5 @@ void suite_ordenacao(void)
     suite_todos_ordenam();
     suite_metricas();
     suite_quick_pior_caso();
+    suite_externa();
 }

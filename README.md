@@ -13,9 +13,11 @@ Structures course.
 > probing strategies; B-tree and B+ tree on a simulated disk, counting every
 > page read. Any family can be put side by side, running the same sequence of
 > operations at once — including the B tree against the B+ tree, where reading
-> everything in order costs 413 pages against 166. Sorting: six algorithms, a
+> everything in order costs 413 pages against 166. Sorting: seven algorithms, a
 > race mode, and an empirical mode that measures real comparison counts against
-> the theoretical curves.
+> the theoretical curves. The seventh is external merge sort, where the array
+> lives "on disk" and only `k` records fit in memory: with n = 64, k = 2 costs
+> six passes over the file and k = 64 costs one.
 
 ## How it works
 

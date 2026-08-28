@@ -138,6 +138,7 @@ add_library(core STATIC
     core/sort/shell.c
     core/sort/quick.c
     core/sort/merge.c
+    core/sort/externa.c
     core/util/aleatorio.c)
 
 target_include_directories(core PUBLIC core/include)

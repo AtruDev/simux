@@ -22,6 +22,7 @@ static const OrdenaFn TABELA[] = {
     shell_ordenar,
     quick_ordenar,
     merge_ordenar,
+    externa_ordenar,
 };
 
 /* Se alguém acrescentar um ALG_ e esquecer a linha na tabela, o build para

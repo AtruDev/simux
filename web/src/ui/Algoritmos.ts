@@ -34,6 +34,15 @@ export interface Algoritmo {
   tetoBench: number;
   /* Complexidade média, para a legenda. Texto do i18n, não string aqui. */
   ordem: Chave;
+  /* Fica fora do modo empírico.
+   *
+   * Só a intercalação externa, e não por preguiça: aquele gráfico plota
+   * COMPARAÇÕES contra n, e comparação não é a métrica dela — a dela é
+   * passada, que não muda com a distribuição que o gráfico varia. A curva de
+   * comparações dela cairia praticamente em cima da do mergesort, porque por
+   * dentro é o mesmo algoritmo, e diria menos que nada. O número que ela tem
+   * a contar aparece no painel de métricas, ao vivo. */
+  semBench?: boolean;
 }
 
 export const ALGORITMOS: Algoritmo[] = [
@@ -93,6 +102,20 @@ export const ALGORITMOS: Algoritmo[] = [
     traco: "tracejado",
     tetoBench: 32768,
     ordem: "ordem.linearitmica",
+  },
+  /* O sétimo é de outra família, e é por isso que ele fecha a lista em vez de
+   * se misturar: o vetor dele está no DISCO. Ele compartilha o matiz do
+   * mergesort porque é o mesmo algoritmo por dentro — o que muda é o que se
+   * conta, que aqui é passada, e não comparação. */
+  {
+    alg: Alg.ALG_EXTERNA,
+    nome: "alg.externa",
+    src: Src.SRC_EXTERNA,
+    token: "--alg-1",
+    traco: "pontilhado",
+    tetoBench: 32768,
+    ordem: "ordem.externa",
+    semBench: true,
   },
 ];
 

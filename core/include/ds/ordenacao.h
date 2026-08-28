@@ -27,6 +27,25 @@ int shell_ordenar(elem_t *v, int n);
 int quick_ordenar(elem_t *v, int n);
 int merge_ordenar(elem_t *v, int n);
 
+/* A intercalação externa não ordena na memória: o vetor está "no disco", e o
+ * que cabe na RAM são `k` registros. A assinatura é a mesma dos outros seis —
+ * é o que a deixa entrar na tabela sem caso especial —, e o k vem por fora,
+ * como a semente da cena vem. */
+int externa_ordenar(elem_t *v, int n);
+
+/* Quantos registros cabem na memória. Abaixo de 2 vira 2; acima de n, o
+ * arquivo inteiro cabe na RAM e não sobra intercalação — que é um caso que
+ * vale ver. É o `t` da árvore B desta aba: o único parâmetro, e o que muda o
+ * número de passadas. */
+void externa_memoria(int k);
+int  externa_memoria_atual(void);
+
+/* Do último externa_ordenar. Servem aos testes e ao painel; o frontend lê os
+ * mesmos números pelo trace, como sempre. */
+long externa_leituras(void);
+long externa_escritas(void);
+int  externa_passadas(void);
+
 /* Despacho por ALG_* de ids.h. Devolve NULL para id fora da faixa — é o que
  * api.c testa para responder ERR_ARG_INVALIDO. */
 typedef int (*OrdenaFn)(elem_t *v, int n);

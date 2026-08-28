@@ -122,6 +122,13 @@ const en: Dicionario = {
   "alg.shell": "Shellsort",
   "alg.quick": "Quicksort",
   "alg.merge": "Mergesort",
+  "alg.externa": "External merge sort",
+  "ordem.externa": "1 + ⌈log₂(n/k)⌉ passes",
+  "ord.memoria": "memory k",
+  "ord.memoriaPorque":
+    "How many records fit in RAM. The rest of the array lives \"on disk\": " +
+    "every pass reads and writes the whole file, and doubling k removes one pass.",
+  "metrica.passadas": "passes",
 
   "ordem.quadratica": "O(n²)",
   "ordem.linearitmica": "O(n log n)",
@@ -293,6 +300,8 @@ const en: Dicionario = {
 
   STR_COPIA_CHAVE:
     "the middle key is COPIED up — it stays in the leaf, which is where the data lives",
+  STR_GERANDO_RUNS:
+    "building the sorted runs: one block at a time, sorted inside memory",
   STR_VARRENDO:
     "scanning along the leaf chain: one page per leaf, and no internal node touched",
 
