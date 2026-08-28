@@ -23,8 +23,9 @@ Structures course.
 > costs one. The third tab explains the trace and the WASM boundary, with a
 > live event table the core generates on the spot.
 >
-> It is a desktop tool: the layout wants about 980px, and below that the
-> source and log panels fall off the side.
+> It is a desktop tool: the layout wants about 980px. Below that the frame
+> scrolls sideways rather than hiding the panels — enough that a link opened
+> on a phone is usable, not enough to call it responsive.
 
 ## Three things it does
 

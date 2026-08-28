@@ -1101,3 +1101,53 @@ button.icone.principal {
   color: var(--fg);
   font-weight: 600;
 }
+
+/* ---- telas mais estreitas que a grade ------------------------------------ *
+ *
+ * As três colunas somam 61rem. Abaixo disso o painel de código e o log não
+ * ficavam pequenos — ficavam INALCANÇÁVEIS, porque `.app` esconde o que
+ * transborda para manter a barra de transporte sempre na tela. Num telefone
+ * dava para ver a lista e um pedaço do canvas, e mais nada.
+ *
+ * Isto não é um layout responsivo, e não pretende ser: o simulador é uma
+ * ferramenta de mesa, e três colunas empilhadas num telefone não fariam
+ * ninguém entender uma rotação de AVL melhor. É a diferença entre conteúdo
+ * escondido e conteúdo que custa um arrasto — e é o suficiente para a primeira
+ * impressão de quem abre o link do README no celular deixar de ser "quebrou".
+ *
+ * Medido antes de escrever: numa moldura de 420px o conteúdo mede 978px, e o
+ * `scrollLeft` ficava travado em zero. Eram 558px inalcançáveis.             */
+@media (max-width: 61rem) {
+  /* A rolagem vai na moldura, e não na grade.
+   *
+   * Na grade, só as colunas rolavam — o cabeçalho continuava preso à largura
+   * da janela e cortava as abas pela direita, que é a navegação inteira do
+   * site. Na moldura, tudo o que transborda fica a um arrasto de distância.
+   *
+   * O `overflow-y` é explícito de propósito: declarar um eixo só faz o outro
+   * virar `auto` sozinho, e apareceria uma segunda barra de rolagem por cima
+   * da que cada coluna já tem. */
+  .app {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  /* O cabeçalho quebra em linhas em vez de empurrar as abas para fora.
+   *
+   * Ele é uma grade de três colunas para quatro filhos, e nesta largura o
+   * quarto sumia. Em flex com quebra, cada peça desce para a linha seguinte
+   * quando não cabe — e a navegação continua clicável, que é o mínimo. */
+  .cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0.6rem;
+  }
+
+  /* A descrição sai: nesta largura ela é enfeite, e custava mais de 200px de
+   * altura empilhando uma palavra por linha. O que ela diz está no README e
+   * na aba "como funciona". */
+  .descricao {
+    display: none;
+  }
+}

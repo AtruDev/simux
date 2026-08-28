@@ -898,12 +898,18 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       um tema claro publicado é um tema que pode estar mentindo para quem
       mais depende da cor. Para um simulador que se usa em sala escura, o
       retorno não paga o risco
-- [ ] **Responsivo: conhecido e não resolvido.** A grade pede ~980px, e
-      abaixo disso as colunas da direita — código e log — ficam fora de
-      alcance, porque `.app` corta o que transborda em vez de rolar. Num
-      telefone dá para ver a lista e parte do canvas, e mais nada. A aba é
-      uma ferramenta de mesa, mas o link do README é clicado no telefone:
-      o mínimo honesto seria deixar rolar na horizontal em vez de cortar
+- [x] **Abaixo de 61rem a moldura ROLA em vez de esconder.** Não é layout
+      responsivo, e não pretende ser: o simulador é ferramenta de mesa, e três
+      colunas empilhadas num telefone não fariam ninguém entender uma rotação
+      de AVL melhor. É a diferença entre conteúdo escondido e conteúdo que
+      custa um arrasto — e é o que o link do README precisa, porque link se
+      abre no celular. Medido antes: numa moldura de 420px o conteúdo mede
+      978px e o `scrollLeft` ficava travado em zero, com 558px inalcançáveis
+- [x] A rolagem foi para `.app`, e não para `.grade` — e isso só apareceu
+      olhando a tela. Na grade só as colunas rolavam; o cabeçalho continuava
+      preso à largura da janela e cortava as ABAS pela direita, que é a
+      navegação inteira do site. Ele agora quebra em linhas, e a descrição
+      some nessa largura: era enfeite custando 200px de altura
 - [x] Revisão final do inglês — as 334 chaves lidas em par com o português,
       procurando desvio de sentido e não só erro de digitação. Sete frases
       corrigidas; a pior era `STR_FUNDE`, que dizia "no sibling has room to
