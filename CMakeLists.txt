@@ -216,5 +216,15 @@ if(NOT EMSCRIPTEN)
     target_include_directories(testes PRIVATE tests core/ds core/sort core/busca core/arvore core/hash core/disco)
     target_link_libraries(testes PRIVATE core)
 
+    # A matemática mora numa biblioteca à parte fora do Windows.
+    #
+    # `log()` entrou com o teste da cota de altura da árvore B, e no MinGW ela
+    # faz parte do runtime — o build local nunca precisou de flag nenhuma. Na
+    # glibc ela é libm, e o link quebra com "DSO missing from command line",
+    # que não diz em lugar nenhum que a resposta é -lm.
+    if(UNIX)
+        target_link_libraries(testes PRIVATE m)
+    endif()
+
     add_test(NAME nucleo COMMAND testes)
 endif()
