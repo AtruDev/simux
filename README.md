@@ -9,18 +9,22 @@ operation step by step, highlighting the exact line of C that is executing.
 Built as a portfolio piece and as a study aid for an undergraduate Data
 Structures course.
 
-> **Status:** phases 0–5 done, phase 6 (polish) in progress — two tabs and
-> seventeen structures. Stacks, queues and lists in both a linked and an array
-> implementation; sequential and binary search; BST and AVL; chained hashing
-> and open addressing with three probing strategies; B-tree and B+ tree on a
-> simulated disk, counting every page read. Any family can be put side by side,
-> running the same sequence of operations at once — including the B tree
-> against the B+ tree, where reading everything in order costs 413 pages
-> against 166. Sorting: seven algorithms, a race mode, and an empirical mode
-> that measures real comparison counts against the theoretical curves. The
-> seventh is external merge sort, where the array lives "on disk" and only `k`
-> records fit in memory: with n = 64, k = 2 costs six passes over the file and
-> k = 64 costs one.
+> **Status:** all six phases done — three tabs and seventeen structures.
+> Stacks, queues and lists in both a linked and an array implementation;
+> sequential and binary search; BST and AVL; chained hashing and open
+> addressing with three probing strategies; B-tree and B+ tree on a simulated
+> disk, counting every page read. Any family can be put side by side, running
+> the same sequence of operations at once — including the B tree against the
+> B+ tree, where reading everything in order costs 413 pages against 166.
+> Sorting: seven algorithms, a race mode, and an empirical mode that measures
+> real comparison counts against the theoretical curves. The seventh is
+> external merge sort, where the array lives "on disk" and only `k` records
+> fit in memory: with n = 64, k = 2 costs six passes over the file and k = 64
+> costs one. The third tab explains the trace and the WASM boundary, with a
+> live event table the core generates on the spot.
+>
+> It is a desktop tool: the layout wants about 980px, and below that the
+> source and log panels fall off the side.
 
 ## Three things it does
 

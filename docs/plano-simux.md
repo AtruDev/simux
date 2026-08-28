@@ -849,7 +849,8 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [x] Busca sequencial e binária — reusaram o `ArrayView` de fato, como o plano
       previa: elas entraram como **duas implementações do mesmo TAD**, e o modo
       comparar da Fase 2 as põe lado a lado sem uma linha de interface nova
-- [ ] ABB: inserir, buscar, remover (os três casos), percursos
+- [x] ABB: inserir, buscar, remover (os três casos), percursos — a caixinha
+      ficou para trás por uns meses; está feito desde o commit da ABB
 - [x] Layout Reingold–Tilford, com um desvio deliberado: nó de filho único
       fica meio passo para o lado, senão a árvore degenerada desenharia uma
       linha vertical e esconderia a degeneração que a aba existe para mostrar
@@ -890,7 +891,19 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 
 ### Fase 6 — Polimento e portfólio · ~1–2 semanas
 
-- [ ] Dark mode, responsivo, `prefers-reduced-motion`
+- [x] `prefers-reduced-motion` respeitado — desde a Fase 1, nas três views
+- [x] **Tema claro fica de fora, e é decisão, não pendência.** A paleta
+      escura foi validada para protanopia e deuteranopia; um segundo tema é
+      uma segunda validação inteira, e ela não é opcional — sem revalidar,
+      um tema claro publicado é um tema que pode estar mentindo para quem
+      mais depende da cor. Para um simulador que se usa em sala escura, o
+      retorno não paga o risco
+- [ ] **Responsivo: conhecido e não resolvido.** A grade pede ~980px, e
+      abaixo disso as colunas da direita — código e log — ficam fora de
+      alcance, porque `.app` corta o que transborda em vez de rolar. Num
+      telefone dá para ver a lista e parte do canvas, e mais nada. A aba é
+      uma ferramenta de mesa, mas o link do README é clicado no telefone:
+      o mínimo honesto seria deixar rolar na horizontal em vez de cortar
 - [x] Revisão final do inglês — as 334 chaves lidas em par com o português,
       procurando desvio de sentido e não só erro de digitação. Sete frases
       corrigidas; a pior era `STR_FUNDE`, que dizia "no sibling has room to
@@ -919,7 +932,13 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
 - [x] O link carrega as ENTRADAS, nunca o desenho — `ops=i1,i2,i3` e a semente
       —, e quem reconstrói a tela é o núcleo rodando de novo. É a regra da
       §1.5 outra vez, agora entre duas máquinas em vez de dois instantes
-- [ ] Exportar GIF/PNG da animação
+- [x] **Exportar GIF/PNG fica de fora, e é decisão.** O caso de uso é
+      «quero mostrar isto para alguém», e o link compartilhável resolve
+      melhor: ele abre a cena de verdade, com transporte e código do lado,
+      em vez de um arquivo parado. Os três GIFs do README foram gravados
+      por fora, uma vez, e é essa a frequência real da necessidade — um
+      exportador de GIF em canvas é muito código para um botão que se usa
+      uma vez na vida do projeto
 - [x] README com GIFs — três, no topo, cada um com o link que abre a MESMA
       cena no demo. Gravados quadro a quadro pelo botão de passo, o que dá
       uma animação que avança um evento por quadro em vez de um vídeo
@@ -943,6 +962,11 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       mão envelheceria na primeira mudança de `pilha_enc.c`; este não
 - [x] Os números do projeto na mesma página, tirados dos enums gerados do
       ids.h: 21 tipos de evento, 54 mensagens, 17 estruturas, 7 algoritmos
+
+**Fase 6 fechada** com duas decisões de NÃO fazer — tema claro e exportador
+de GIF — e uma pendência declarada: a largura mínima de ~980px. Fechar uma
+fase com um item aberto e escrito é melhor que fechá-la com um item aberto
+e esquecido.
 
 **Total:** ~10 a 13 semanas em ritmo de estudante com outras matérias. As fases 0–3 já entregam um projeto respeitável e publicável; 4–6 são o que o transformam em peça de portfólio.
 
@@ -985,7 +1009,10 @@ Em ordem de retorno sobre esforço:
 - [x] **Tipo dos dados: só `int`.** Nada de `void*` com comparador. Ganhos concretos: `ds_call(op, a, b, c)` continua sendo quatro inteiros, o buffer de eventos continua sendo `Int32Array`, e nenhuma estrutura precisa de ponteiro de função para comparar. Se um dia quiser genérico, o caminho é `typedef int elem_t;` num header e trocar num lugar só — deixe esse `typedef` desde o começo, custa uma linha.
 - [x] **Interface em pt/en**, com o núcleo agnóstico de idioma. Detalhes na §7.6 — e é decisão de Fase 0, não de Fase 6.
 - [x] **Sem modo quiz.** Fora do escopo, em qualquer fase.
-- [ ] **Nome e URL** — ver abaixo.
+- [x] **Nome e URL.** `simux`, e `atrudev.github.io/simux` pelo GitHub
+      Pages — de graça, com HTTPS, e sem prender nada: um domínio próprio
+      pluga depois com um `CNAME`, e renomear o repositório mantém os
+      links antigos redirecionando.
 
 ### 14.1 Nome e URL
 
