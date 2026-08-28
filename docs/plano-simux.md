@@ -833,7 +833,8 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       implementações; o `Player` já aceitava as seis trilhas
 - [x] `ds_bench` + gráfico empírico, em log-log
 - [x] Testes: ordenado **e** permutação, para toda distribuição
-- [ ] O GIF do modo corrida no README
+- [x] O GIF do modo corrida no README — junto com o da ABB contra a AVL e o
+      da árvore B contra a B+, cada um com o link que abre a cena de verdade
 - **Pronto quando:** o GIF do modo corrida está no README.
 
 > O `ArrayView` não foi reusado como o plano previa, e a razão apareceu na
@@ -911,8 +912,11 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       —, e quem reconstrói a tela é o núcleo rodando de novo. É a regra da
       §1.5 outra vez, agora entre duas máquinas em vez de dois instantes
 - [ ] Exportar GIF/PNG da animação
-- [ ] README com GIFs — as decisões de arquitetura e o build já estão lá;
-      falta a imagem em movimento, que é o item nº 1 da §13
+- [x] README com GIFs — três, no topo, cada um com o link que abre a MESMA
+      cena no demo. Gravados quadro a quadro pelo botão de passo, o que dá
+      uma animação que avança um evento por quadro em vez de um vídeo
+      acelerado; 12 MB de saída viraram 700 KB no gifsicle, com escala 0,62 e
+      64 cores
 - [x] Deploy no GitHub Pages — o mesmo `dist` que passou nos testes é o que
       vai ao ar, e o job só roda na main e só depois dos três de verificação.
       `base: "./"` no Vite, e não `/simux/`: com caminho relativo o mesmo

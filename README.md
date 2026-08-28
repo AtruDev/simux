@@ -22,6 +22,35 @@ Structures course.
 > records fit in memory: with n = 64, k = 2 costs six passes over the file and
 > k = 64 costs one.
 
+## Three things it does
+
+**The same operations, two implementations, side by side.** A binary search
+tree and an AVL tree receiving 1, 2, 3, 4 in that order. The BST degenerates
+into a list; the AVL rotates and stays flat. Both source panels highlight the
+line of C that is executing, in their own file.
+
+![BST and AVL side by side](docs/img/abb-avl.gif)
+
+[Open this scene →](https://atrudev.github.io/simux/?aba=estruturas&lang=en&e=avl&cmp=1&ops=i1,i2,i3,i4)
+
+**Seven sorting algorithms racing over the same array.** Same seed, same
+initial vector, one timeline. The colours are states — comparing, just
+written, in final position, pivot — and the identity of each algorithm is the
+thin rule in its header, never the fill of a bar.
+
+![Sorting race](docs/img/corrida.gif)
+
+[Open this scene →](https://atrudev.github.io/simux/?aba=ordenacao&lang=en&alg=quick&n=32&dist=aleatorio&sem=3&corrida=1)
+
+**A B-tree against a B+ tree, counting disk pages.** Every node is a page, and
+every page read is counted. Reading everything in order costs the B-tree 413
+pages against the B+ tree's 166, because the B+ leaves are chained and the
+scan never goes back up.
+
+![B-tree and B+ tree](docs/img/varredura.gif)
+
+[Open this scene →](https://atrudev.github.io/simux/?aba=estruturas&lang=en&e=arvore_b_mais&cmp=1&cap=3&ops=i10,i20,i30,i40,i50,i60,i70,i80,i90,i100,i110,i120)
+
 ## How it works
 
 The C core never draws anything. It runs the operation and emits a *trace* of
