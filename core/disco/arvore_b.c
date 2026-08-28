@@ -60,6 +60,7 @@ static void publicar(const NoB *n)
     int i;
 
     TR(EV_NODE_SET, .a = id_de(n), .b = CAMPO_N, .c = n->n);
+    TR(EV_NODE_SET, .a = id_de(n), .b = CAMPO_FOLHA, .c = n->folha);
     for (i = 0; i < n->n; i++) {
         TR(EV_NODE_SET, .a = id_de(n), .b = CAMPO_CHAVE + i, .c = n->chaves[i]);
     }
@@ -655,6 +656,58 @@ int arvore_b_remover(ArvoreB *a, elem_t chave)
     return OK;
 }
 
+/* ---- a varredura em ordem -----------------------------------------------
+ *
+ * Existe para ter contra o que ser medida. Sozinha ela não ensina nada — é o
+ * percurso em ordem de sempre —, mas ao lado da varredura da árvore B+ ela é
+ * a metade que falta do argumento: aqui a leitura em ordem SOBE E DESCE, e
+ * cada volta ao pai relê a página do pai. Não há cache, de propósito (§ do
+ * paginador), então a subida custa exatamente o mesmo que a descida.
+ *
+ * Na B+ a mesma leitura é uma linha reta pelas folhas, e nenhum nó interno é
+ * tocado. Rode as duas sobre o mesmo conjunto e compare o contador: é o
+ * número que explica por que quase todo índice de banco de dados é B+.     */
+
+static void percorrer(ArvoreB *a, NoB *n)
+{
+    int i;
+
+    if (n == NULL) {
+        return;
+    }
+
+    LER_PAGINA(&a->pag, n->pagina);
+    TR(EV_VISIT, .a = id_de(n));
+
+    for (i = 0; i <= n->n; i++) {
+        if (!n->folha) {
+            TR(EV_UNVISIT, .a = id_de(n));
+            percorrer(a, n->filhos[i]);
+
+            /* Voltar ao pai é reler a página do pai — menos depois do último
+             * filho, quando não há mais nada a fazer aqui em cima. */
+            if (i < n->n) {
+                LER_PAGINA(&a->pag, n->pagina);
+                TR(EV_VISIT, .a = id_de(n));
+            }
+        }
+    }
+
+    TR(EV_UNVISIT, .a = id_de(n));
+}
+
+int arvore_b_varrer(const ArvoreB *a)
+{
+    if (a->raiz == NULL) {
+        TR(EV_MSG, .a = STR_LISTA_VAZIA);
+        return ERR_VAZIA;
+    }
+
+    TR(EV_MSG, .a = STR_PERCURSO);
+    percorrer((ArvoreB *) a, a->raiz);
+    return OK;
+}
+
 /* ---- o resto ------------------------------------------------------------ */
 
 static void liberar(ArvoreB *a, NoB *n)
@@ -901,6 +954,17 @@ static int vt_remover_valor(void *s, elem_t valor)
     return arvore_b_remover(s, valor);
 }
 
+/* Só a varredura em ordem, como na árvore B+: pré e pós-ordem existem para
+ * mostrar recursão mudando de sentido, e essa lição é da ABB. Aqui o que
+ * interessa é o custo em páginas de ler tudo em ordem. */
+static int vt_percurso(const void *s, int ordem)
+{
+    if (ordem != PERC_EM_ORDEM) {
+        return ERR_ARG_INVALIDO;
+    }
+    return arvore_b_varrer(s);
+}
+
 const TAD_Linear ARVORE_B = {
     .criar = vt_criar,
     .destruir = vt_destruir,
@@ -910,4 +974,5 @@ const TAD_Linear ARVORE_B = {
     .capacidade = vt_capacidade,
     .buscar = vt_buscar,
     .remover_valor = vt_remover_valor,
+    .percurso = vt_percurso,
 };

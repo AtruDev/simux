@@ -122,6 +122,17 @@ export abstract class Tela {
     ctx.fill();
   }
 
+  protected setaCima(x: number, y: number, cor: string) {
+    const ctx = this.ctx;
+    ctx.fillStyle = cor;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 2);
+    ctx.lineTo(x - 5, y + 6);
+    ctx.lineTo(x + 5, y + 6);
+    ctx.closePath();
+    ctx.fill();
+  }
+
   protected setaDireita(x: number, y: number, cor: string) {
     const ctx = this.ctx;
     ctx.fillStyle = cor;

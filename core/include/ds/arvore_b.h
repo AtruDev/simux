@@ -48,6 +48,14 @@ int      arvore_b_remover(ArvoreB *a, elem_t chave);
  * número de páginas lidas menos um — é a medida que importa aqui. */
 int      arvore_b_buscar(const ArvoreB *a, elem_t chave, int *nivel);
 
+/* Lê a árvore inteira em ordem, contando o que isso custa em páginas.
+ *
+ * Só existe para ser comparada com arvore_bmais_varrer. Aqui a leitura sobe e
+ * desce, e cada volta ao pai relê a página do pai; na árvore B+ ela é uma
+ * linha reta pelas folhas encadeadas. É o contraste que separa as duas
+ * estruturas, e ele só aparece em número. */
+int      arvore_b_varrer(const ArvoreB *a);
+
 void     arvore_b_limpar(ArvoreB *a);
 
 int      arvore_b_tamanho(const ArvoreB *a);

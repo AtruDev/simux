@@ -432,12 +432,26 @@ static void suite_vtable_b(void)
     ASSERT_TRUE(ARVORE_B.buscar != NULL);
     ASSERT_TRUE(ARVORE_B.remover_valor != NULL);
     /* Sem "o primeiro" nem "o menor" pela mesma razão do hash: a operação sem
-     * argumento não tem sentido definido aqui. E sem percurso: quem quiser a
-     * ordem usa a busca. */
+     * argumento não tem sentido definido aqui. */
     ASSERT_TRUE(ARVORE_B.remover == NULL);
     ASSERT_TRUE(ARVORE_B.consultar == NULL);
-    ASSERT_TRUE(ARVORE_B.percurso == NULL);
     ASSERT_TRUE(ARVORE_B.inserir_em == NULL);
+
+    /* Percorrer, sim, e só em ordem — mas não pela mesma razão da ABB. Lá o
+     * percurso é a recursão mudando de sentido; aqui ele existe para ser
+     * COMPARADO com a varredura da árvore B+, e o que se compara é o preço em
+     * páginas. Sozinho ele não ensinaria nada. */
+    ASSERT_TRUE(ARVORE_B.percurso != NULL);
+    {
+        void *a = ARVORE_B.criar(3);
+
+        ASSERT_TRUE(a != NULL);
+        ASSERT_EQ(ARVORE_B.percurso(a, PERC_EM_ORDEM), ERR_VAZIA);
+        ASSERT_EQ(ARVORE_B.inserir(a, 5), OK);
+        ASSERT_EQ(ARVORE_B.percurso(a, PERC_EM_ORDEM), OK);
+        ASSERT_EQ(ARVORE_B.percurso(a, PERC_PRE_ORDEM), ERR_ARG_INVALIDO);
+        ARVORE_B.destruir(a);
+    }
 }
 
 void suite_arvore_b(void)

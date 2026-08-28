@@ -450,15 +450,4 @@ export class ListaView extends Tela {
     ctx.fillText("cursor", pose.x, y + 2);
     ctx.globalAlpha = 1;
   }
-
-  private setaCima(x: number, y: number, cor: string) {
-    const ctx = this.ctx;
-    ctx.fillStyle = cor;
-    ctx.beginPath();
-    ctx.moveTo(x, y - 2);
-    ctx.lineTo(x - 5, y + 6);
-    ctx.lineTo(x + 5, y + 6);
-    ctx.closePath();
-    ctx.fill();
-  }
 }

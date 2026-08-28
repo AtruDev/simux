@@ -284,6 +284,21 @@ const pt: Dicionario = {
   STR_FUNDE: "nenhum irmão tem folga: as duas páginas viram uma",
   STR_DESCE_CHAVE: "a chave do pai desce para o meio da página nova",
 
+  "estrutura.arvoreBMais": "Árvore B+",
+
+  /* Rótulos desenhados no canvas. Passam pelo i18n como qualquer outro
+   * texto voltado ao usuário — o canvas é a parte mais fácil de esquecer. */
+  "rotulo.raiz": "raiz",
+  "rotulo.raizNula": "raiz = NULL",
+  "rotulo.inicio": "início",
+  "op.varrer": "varrer em ordem",
+  "metrica.folhas": "folhas",
+
+  STR_COPIA_CHAVE:
+    "a chave do meio é COPIADA para o pai — e continua na folha, porque é lá que o dado mora",
+  STR_VARRENDO:
+    "varrendo pela corrente de folhas: uma página por folha, e nenhum nó interno",
+
   /* códigos de status devolvidos pelo core */
   OK: "sem erro",
   ERR_SEM_MEMORIA: "sem memória",

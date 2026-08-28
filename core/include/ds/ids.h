@@ -84,6 +84,7 @@ typedef enum {
     SRC_HASH_ENC,
     SRC_HASH_ABE,
     SRC_ARVORE_B,
+    SRC_ARVORE_B_MAIS,
     SRC_COUNT
 } ds_src;
 
@@ -156,6 +157,11 @@ typedef enum {
     STR_EMPRESTA_DIR,
     STR_FUNDE,          /* os dois irmãos e a chave do pai viram um nó só    */
     STR_DESCE_CHAVE,
+    /* Árvore B+. A chave do meio é COPIADA para o pai e CONTINUA na folha —
+     * é a diferença de uma palavra que separa as duas estruturas, e é a razão
+     * de o separador poder nomear uma chave que já foi removida. */
+    STR_COPIA_CHAVE,
+    STR_VARRENDO,       /* a varredura sequencial, folha a folha, sem subir   */
     STR_COUNT
 } ds_str;
 
@@ -264,6 +270,7 @@ typedef enum {
     TIPO_HASH_QUAD,
     TIPO_HASH_DUPLO,
     TIPO_ARVORE_B,
+    TIPO_ARVORE_B_MAIS,
     TIPO_COUNT
 } ds_tipo;
 
@@ -321,6 +328,15 @@ typedef enum {
     /* A página de disco em que o nó mora. É o número que os eventos
      * EV_DISK_READ e EV_DISK_WRITE carregam. */
     CAMPO_PAGINA,
+    /* 1 quando o nó é folha.
+     *
+     * Existe porque, numa árvore B+, o que um nó é muda o que os ponteiros
+     * dele querem dizer: numa folha não há filho nenhum, e o ponteiro que
+     * sobra aponta para a FOLHA SEGUINTE — é assim que a estrutura é
+     * implementada em disco, e é assim que ela é anunciada aqui. O elo entre
+     * folhas vai no slot 0 de EV_EDGE_SET, e é o campo abaixo que diz ao
+     * frontend que aquele slot é um elo e não um filho. */
+    CAMPO_FOLHA,
     /* BASE, e não um campo: a chave `i` do nó vai em CAMPO_CHAVE + i.
      *
      * Um nó de árvore B guarda até 2t-1 chaves, e o vocabulário tem um evento

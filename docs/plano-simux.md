@@ -869,7 +869,13 @@ A ordem importa: o `ArrayView` nasce aqui, na pilha com vetor, e não na Fase 3.
       propósito: um buffer pool deixaria a raiz sempre em memória e os números
       ficariam mais realistas e menos ensináveis
 - [x] Árvore B: inserir com split, remover com merge/redistribuição
-- [ ] Árvore B+: folhas encadeadas, varredura sequencial
+- [x] Árvore B+: folhas encadeadas, varredura sequencial — e a varredura só
+      ensina se houver contra o que comparar, então a árvore B ganhou a dela
+      junto: a mesma leitura em ordem, subindo e descendo, relendo o pai a
+      cada volta. Com t = 3 e 500 chaves, 413 páginas contra 166
+- [x] `CAMPO_FOLHA`: o nó anuncia se é folha, e numa folha o slot 0 deixa de
+      ser filho e passa a ser o elo para a folha seguinte — que é o ponteiro
+      que sobra numa página de verdade. Nenhum evento novo, como sempre
 - [ ] Intercalação externa na aba de ordenação
 - [x] Contador de acessos a disco em destaque
 - **Pronto quando:** buscar o mesmo conjunto em ABB e em árvore B mostra a diferença de acessos a disco em números.

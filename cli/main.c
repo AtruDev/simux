@@ -55,6 +55,7 @@ static const struct Nomeado TIPOS[] = {
     { "hash_quad",   TIPO_HASH_QUAD   },
     { "hash_duplo",  TIPO_HASH_DUPLO  },
     { "arvore_b",    TIPO_ARVORE_B    },
+    { "arvore_b_mais", TIPO_ARVORE_B_MAIS },
 };
 
 static int32_t tipo_por_nome(const char *nome)

@@ -14,6 +14,7 @@ import {
   alturaDaArvore,
   alvoDe,
   contador,
+  filhosDe,
   modeloNovo,
   type Modelo,
 } from "../src/model/modelo";
@@ -567,6 +568,76 @@ CASO("a rotação religa as arestas, e a altura cai junto");
   igual(m.nos.get(2)?.arestas.get(0) ?? -1, 3, "10 à esquerda");
   igual(m.nos.get(2)?.arestas.get(1) ?? -1, 1, "30 à direita");
   igual(m.nos.get(1)?.arestas.get(0) ?? -1, 0, "e o 30 soltou o filho");
+}
+
+CASO("um nó de árvore B remonta pelas chaves, e CAMPO_N encolhe junto");
+{
+  /* CAMPO_CHAVE é uma BASE: a chave i vem em CAMPO_CHAVE + i. E CAMPO_N
+     encolhendo é o que faz uma divisão largar as chaves que saíram, em vez de
+     deixá-las penduradas no desenho. */
+  const m = reproduzir([
+    ev(EvKind.EV_NODE_NEW, 1, 0),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_N, 3),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_CHAVE + 0, 10),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_CHAVE + 1, 20),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_CHAVE + 2, 30),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_PAGINA, 7),
+    /* a divisão: o nó fica com uma chave só */
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_N, 1),
+  ]);
+
+  igual(m.nos.get(1)?.chaves.join(","), "10", "sobrou a chave da esquerda");
+  igual(m.nos.get(1)?.pagina ?? -1, 7, "e a página veio no campo dela");
+}
+
+CASO("a folha da B+ não tem filho: o slot 0 dela é a folha seguinte");
+{
+  /* É a distinção que o layout depende: sem ela, `filhosDe` devolveria o elo
+     como se fosse um filho, e Reingold–Tilford desceria um nível a cada folha
+     — a árvore inteira sairia torta, e a corrente sumiria dentro dela. */
+  const m = reproduzir([
+    ev(EvKind.EV_NODE_NEW, 1, 0),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_FOLHA, 0),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_N, 1),
+    ev(EvKind.EV_NODE_SET, 1, Campo.CAMPO_CHAVE + 0, 20),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_RAIZ, 1),
+
+    ev(EvKind.EV_NODE_NEW, 2, 0),
+    ev(EvKind.EV_NODE_SET, 2, Campo.CAMPO_FOLHA, 1),
+    ev(EvKind.EV_NODE_SET, 2, Campo.CAMPO_N, 1),
+    ev(EvKind.EV_NODE_SET, 2, Campo.CAMPO_CHAVE + 0, 10),
+
+    ev(EvKind.EV_NODE_NEW, 3, 0),
+    ev(EvKind.EV_NODE_SET, 3, Campo.CAMPO_FOLHA, 1),
+    ev(EvKind.EV_NODE_SET, 3, Campo.CAMPO_N, 1),
+    ev(EvKind.EV_NODE_SET, 3, Campo.CAMPO_CHAVE + 0, 20),
+
+    ev(EvKind.EV_EDGE_SET, 1, 0, 2),
+    ev(EvKind.EV_EDGE_SET, 1, 1, 3),
+    /* o elo entre as folhas, no slot que numa página sobra */
+    ev(EvKind.EV_EDGE_SET, 2, 0, 3),
+    ev(EvKind.EV_EDGE_SET, 3, 0, 0),
+    ev(EvKind.EV_PTR_SET, Ptr.PTR_INICIO, 2),
+  ]);
+
+  igual(m.nos.get(2)?.folha ?? null, true, "a folha se anunciou como folha");
+  igual(m.nos.get(1)?.folha ?? null, false, "e a raiz interna, como interna");
+  igual(filhosDe(m, 1).join(","), "2,3", "a raiz tem os dois filhos");
+  igual(filhosDe(m, 2).length, 0, "e a folha não tem nenhum");
+  igual(m.nos.get(2)?.arestas.get(0) ?? -1, 3, "o elo continua no modelo");
+  igual(alturaDaArvore(m, 1), 2, "a altura conta níveis, não elos");
+  igual(alvoDe(m, Ptr.PTR_INICIO), 2, "e início aponta para a primeira folha");
+}
+
+CASO("quem não diz se é folha continua sem dizer — ABB e AVL não mudam");
+{
+  const m = reproduzir([
+    ...noArvore(1, 50),
+    ...noArvore(2, 30),
+    ev(EvKind.EV_EDGE_SET, 1, 0, 2),
+  ]);
+  igual(m.nos.get(1)?.folha ?? "sem", "sem", "nulo, e não falso");
+  igual(filhosDe(m, 1).join(","), "2,0", "e os dois slots da árvore binária");
 }
 
 if (falhas.length > 0) {

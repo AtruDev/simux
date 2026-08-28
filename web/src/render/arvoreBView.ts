@@ -128,12 +128,16 @@ export class ArvoreBView extends ArvoreView {
   }
 
   /* A célula segue o raio que a classe base calculou por quadro: com a árvore
-   * larga ou alta, ele encolhe, e as páginas encolhem junto. */
-  private celula(): number {
+   * larga ou alta, ele encolhe, e as páginas encolhem junto.
+   *
+   * Protegidas porque a árvore B+ desenha a corrente de folhas por fora da
+   * página e precisa saber onde ela termina. Duas contas de largura seriam
+   * duas verdades, e a seta nasceria dentro da caixa. */
+  protected celula(): number {
     return Math.max(14, Math.min(LARGURA_CHAVE, this.raio * 1.7));
   }
 
-  private altura(): number {
+  protected altura(): number {
     return Math.max(ALTURA_MIN, Math.min(ALTURA_MAX, this.celula() * 0.85));
   }
 }

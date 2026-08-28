@@ -21,6 +21,7 @@
  * aparecer ao lado para desentortar. */
 
 import { Ptr } from "../core/ops";
+import { t } from "../i18n";
 import { alvoDe, filhosDe, type Modelo } from "../model/modelo";
 import { Tela } from "./tela";
 
@@ -330,12 +331,12 @@ export class ArvoreView extends Tela {
 
     if (!pose) {
       ctx.fillStyle = p.fg3;
-      ctx.fillText("raiz = NULL", this.larguraCss / 2, MARGEM_TOPO);
+      ctx.fillText(t("rotulo.raizNula"), this.larguraCss / 2, MARGEM_TOPO);
       return;
     }
 
     ctx.fillStyle = p.acento;
-    ctx.fillText("raiz", pose.x, pose.y - this.raio - 16);
+    ctx.fillText(t("rotulo.raiz"), pose.x, pose.y - this.raio - 16);
 
     ctx.strokeStyle = p.acento;
     ctx.lineWidth = 1.5;

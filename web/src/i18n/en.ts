@@ -283,6 +283,19 @@ const en: Dicionario = {
   STR_FUNDE: "no sibling has room to spare: the two pages become one",
   STR_DESCE_CHAVE: "the parent key moves down into the merged page",
 
+  "estrutura.arvoreBMais": "B+ tree",
+
+  "rotulo.raiz": "root",
+  "rotulo.raizNula": "root = NULL",
+  "rotulo.inicio": "head",
+  "op.varrer": "scan in order",
+  "metrica.folhas": "leaves",
+
+  STR_COPIA_CHAVE:
+    "the middle key is COPIED up — it stays in the leaf, which is where the data lives",
+  STR_VARRENDO:
+    "scanning along the leaf chain: one page per leaf, and no internal node touched",
+
   OK: "no error",
   ERR_SEM_MEMORIA: "out of memory",
   ERR_VAZIA: "structure is empty",

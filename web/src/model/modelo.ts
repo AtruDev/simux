@@ -26,6 +26,13 @@ export interface NoModelo {
   chaves: number[];
   /** A página de disco em que o nó mora, ou null em quem vive na memória. */
   pagina: number | null;
+  /** Verdadeiro quando o nó é folha de árvore B+, null em quem não diz.
+   *
+   * Não é enfeite: numa folha de B+ não existe filho, e o ponteiro que sobra
+   * aponta para a FOLHA SEGUINTE. Sem saber que o nó é folha, o slot 0 dela
+   * seria lido como um filho — o layout desceria um nível a cada elo e a
+   * árvore inteira sairia torta. */
+  folha: boolean | null;
 }
 
 /* O mundo "vetor": ordenação, busca e as implementações com arranjo.
@@ -125,6 +132,11 @@ export function contador(m: Modelo, cnt: number): number {
 export function filhosDe(m: Modelo, id: number): number[] {
   const no = m.nos.get(id);
   if (!no) return [];
+
+  /* Folha de árvore B+ não tem filho nenhum: o slot 0 dela é o elo para a
+   * folha seguinte, e quem desenha esse elo é o renderizador da B+. Devolvê-lo
+   * aqui faria o layout tratar a corrente como aresta de árvore. */
+  if (no.folha) return [];
 
   const quantos = no.chaves.length > 0 ? no.chaves.length + 1 : 2;
   const saida: number[] = [];

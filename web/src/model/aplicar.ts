@@ -18,6 +18,7 @@ function garantirNo(m: Modelo, id: number) {
       fb: null,
       chaves: [],
       pagina: null,
+      folha: null,
     };
     m.nos.set(id, no);
     m.ordem.push(id);
@@ -70,6 +71,9 @@ export function aplicar(m: Modelo, ev: Ev): void {
       if (ev.b === Campo.CAMPO_VALOR) no.valor = ev.c;
       else if (ev.b === Campo.CAMPO_FB) no.fb = ev.c;
       else if (ev.b === Campo.CAMPO_PAGINA) no.pagina = ev.c;
+      /* Numa árvore B+, ser folha muda o significado dos ponteiros do nó: o
+       * slot 0 de uma folha é a folha seguinte, e não o primeiro filho. */
+      else if (ev.b === Campo.CAMPO_FOLHA) no.folha = ev.c !== 0;
       else if (ev.b === Campo.CAMPO_N) {
         /* Quantas chaves o nó tem AGORA. Encolher aqui é o que faz uma divisão
          * ou uma fusão largarem as chaves que saíram, em vez de deixá-las

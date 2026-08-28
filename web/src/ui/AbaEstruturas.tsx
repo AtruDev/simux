@@ -23,6 +23,7 @@ import { Player, type Operacao } from "../core/player";
 import { ERR_CHAVES } from "../core/ops";
 import { t, type Chave } from "../i18n";
 import { ArvoreBView } from "../render/arvoreBView";
+import { ArvoreBMaisView } from "../render/arvoreBMaisView";
 import { ArvoreView } from "../render/arvoreView";
 import { GrafoView } from "../render/grafoView";
 import { HashView } from "../render/hashView";
@@ -136,6 +137,7 @@ export function AbaEstruturas() {
       if (t_.mundo === "lista") return new ListaView(canvas, t_.tipo);
       if (t_.mundo === "arvore") return new ArvoreView(canvas);
       if (t_.mundo === "arvoreB") return new ArvoreBView(canvas);
+      if (t_.mundo === "arvoreBMais") return new ArvoreBMaisView(canvas);
       return new GrafoView(canvas, t_.tipo);
     });
 
@@ -313,7 +315,8 @@ export function AbaEstruturas() {
               x.mundo === "vetor" ||
               x.mundo === "hashEnc" ||
               x.mundo === "hashAbe" ||
-              x.mundo === "arvoreB",
+              x.mundo === "arvoreB" ||
+              x.mundo === "arvoreBMais",
           ) && (
             <div className="campo campo-capacidade">
               <label htmlFor="cap">
@@ -454,6 +457,20 @@ export function AbaEstruturas() {
                       {t(chave)}
                     </button>
                   ))}
+
+                {/* As de disco percorrem por um botão só, e só em ordem. É a
+                    operação que separa a árvore B da B+: a mesma leitura, e o
+                    contador de leituras de disco contando histórias
+                    diferentes. */}
+                {estrutura.varredura && (
+                  <button
+                    type="button"
+                    className="secundario"
+                    onClick={() => rodar(Op.OP_PERCURSO, Percurso.PERC_EM_ORDEM)}
+                  >
+                    {t("op.varrer")}
+                  </button>
+                )}
               </>
             )}
 

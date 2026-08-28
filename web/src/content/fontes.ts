@@ -7,6 +7,7 @@
 import fonteAbb from "../../../core/arvore/abb.c?raw";
 import fonteApi from "../../../core/api/api.c?raw";
 import fonteArvoreB from "../../../core/disco/arvore_b.c?raw";
+import fonteArvoreBMais from "../../../core/disco/arvore_bmais.c?raw";
 import fonteAvl from "../../../core/arvore/avl.c?raw";
 import fonteHashAbe from "../../../core/hash/hash_abe.c?raw";
 import fonteHashEnc from "../../../core/hash/hash_enc.c?raw";
@@ -65,6 +66,10 @@ const bruto: Partial<Record<number, { arquivo: string; texto: string }>> = {
   [Src.SRC_ARVORE_B]: {
     arquivo: "core/disco/arvore_b.c",
     texto: fonteArvoreB,
+  },
+  [Src.SRC_ARVORE_B_MAIS]: {
+    arquivo: "core/disco/arvore_bmais.c",
+    texto: fonteArvoreBMais,
   },
   [Src.SRC_HASH_ENC]: {
     arquivo: "core/hash/hash_enc.c",

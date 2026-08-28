@@ -95,4 +95,9 @@ extern const TAD_Linear HASH_DUPLO;
  * único parâmetro que uma árvore B tem, e é ele que muda a forma inteira. */
 extern const TAD_Linear ARVORE_B;
 
+/* A árvore B+ é a mesma família, e é isso que faz o modo comparar valer aqui:
+ * a mesma sequência nas duas, e a varredura no fim mostrando em números por
+ * que quase todo índice de banco de dados é B+. */
+extern const TAD_Linear ARVORE_B_MAIS;
+
 #endif /* DS_LINEAR_H */

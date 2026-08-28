@@ -7,12 +7,15 @@ operation step by step, highlighting the exact line of C that is executing.
 Built as a portfolio piece and as a study aid for an undergraduate Data
 Structures course.
 
-> **Status:** Phase 4 done — two tabs, fifteen structures. Stacks, queues and
-> lists in both a linked and an array implementation; sequential and binary
-> search; BST and AVL; chained hashing and open addressing with three probing
-> strategies. Any family can be put side by side, running the same sequence of
-> operations at once. Sorting: six algorithms, a race mode, and an empirical
-> mode that measures real comparison counts against the theoretical curves.
+> **Status:** Phase 5 in progress — two tabs, seventeen structures. Stacks,
+> queues and lists in both a linked and an array implementation; sequential and
+> binary search; BST and AVL; chained hashing and open addressing with three
+> probing strategies; B-tree and B+ tree on a simulated disk, counting every
+> page read. Any family can be put side by side, running the same sequence of
+> operations at once — including the B tree against the B+ tree, where reading
+> everything in order costs 413 pages against 166. Sorting: six algorithms, a
+> race mode, and an empirical mode that measures real comparison counts against
+> the theoretical curves.
 
 ## How it works
 

@@ -46,7 +46,7 @@ export function PainelMetricas({
   /* A lista mede o que a caminhada custa: é o número que fica diferente entre
    * a simples e a dupla na mesma operação, e o argumento inteiro de existir
    * mais de uma implementação. */
-  if (mundo === "arvoreB") {
+  if (mundo === "arvoreB" || mundo === "arvoreBMais") {
     /* Acessos a disco primeiro, e é o painel inteiro desta estrutura: um
      * acesso custa uns dez milhões de vezes mais que uma comparação, e é por
      * isso que a árvore B é larga e baixa. Ao lado deles, a altura — que é
@@ -66,6 +66,19 @@ export function PainelMetricas({
       String(contador(modelo, Cnt.CNT_DISCO_ESCREVE)),
     ]);
     linhas.push([t("metrica.paginas"), String(paginas)]);
+
+    /* Só a B+ conta folhas, e o número tem um uso exato: é o preço, em
+     * páginas, de uma varredura completa. Ao lado do contador de leituras
+     * depois de varrer, ele diz se a corrente foi seguida inteira. */
+    if (mundo === "arvoreBMais") {
+      let folhas = 0;
+
+      for (const no of modelo.nos.values()) {
+        if (no.folha) folhas++;
+      }
+      linhas.push([t("metrica.folhas"), String(folhas)]);
+    }
+
     linhas.push([
       t("metrica.comparacoes"),
       String(contador(modelo, Cnt.CNT_COMPARACOES)),

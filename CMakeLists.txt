@@ -126,6 +126,7 @@ add_library(core STATIC
     core/busca/vetor_ord.c
     core/disco/paginador.c
     core/disco/arvore_b.c
+    core/disco/arvore_bmais.c
     core/hash/hash_enc.c
     core/hash/hash_abe.c
     core/sort/medida.c
@@ -209,6 +210,7 @@ if(NOT EMSCRIPTEN)
         tests/test_arvore.c
         tests/test_hash.c
         tests/test_arvore_b.c
+        tests/test_arvore_bmais.c
         tests/test_api.c)
     target_include_directories(testes PRIVATE tests core/ds core/sort core/busca core/arvore core/hash core/disco)
     target_link_libraries(testes PRIVATE core)

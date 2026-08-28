@@ -26,7 +26,8 @@ export type Mundo =
   | "arvore"
   | "hashEnc"
   | "hashAbe"
-  | "arvoreB";
+  | "arvoreB"
+  | "arvoreBMais";
 
 export interface Estrutura {
   tipo: number;
@@ -56,6 +57,11 @@ export interface Estrutura {
   /* Remove por valor, mas SEM percurso: a tabela hash não tem ordem para
    * percorrer. */
   porValor?: boolean;
+  /* Percorre, mas só EM ORDEM: a varredura das estruturas de disco. Pré e
+   * pós-ordem existem numa árvore em que os nós internos guardam dado; numa
+   * árvore B eles guardam páginas, e o que interessa da leitura em ordem é o
+   * preço dela em acessos. Um botão, e não os três. */
+  varredura?: boolean;
   /* Não tem operação sem argumento. Numa tabela hash não existe "o primeiro"
    * nem "o menor" — a ordem dos elementos é acidente da função hash, e os dois
    * ponteiros ficam nulos no vtable. A interface esconde os botões em vez de
@@ -239,11 +245,12 @@ export const ESTRUTURAS: Estrutura[] = [
     porValor: true,
     semExtremos: true,
   },
-  /* A árvore B é a única estrutura do projeto que mora em disco, e por isso
-   * fica na família dela: comparar as três sondagens de hash faz sentido,
+  /* As duas estruturas de disco, na mesma família — e agora a família tem
+   * para que existir. Com a árvore B sozinha, comparar não fazia sentido:
    * comparar uma árvore B com uma tabela hash é comparar respostas a perguntas
-   * diferentes. O contraste que vale — contra a ABB — se faz trocando de
-   * estrutura e olhando os números, que é o que a fase pede. */
+   * diferentes. A B+ é a MESMA pergunta respondida com outra troca, e o modo
+   * comparar põe as duas lado a lado: a mesma sequência, e no fim a varredura,
+   * que é onde os contadores de disco se separam. */
   {
     tipo: Tipo.TIPO_ARVORE_B,
     nome: "estrutura.arvoreB",
@@ -254,6 +261,20 @@ export const ESTRUTURAS: Estrutura[] = [
     rotuloConsultar: "op.buscar",
     buscavel: true,
     porValor: true,
+    varredura: true,
+    semExtremos: true,
+  },
+  {
+    tipo: Tipo.TIPO_ARVORE_B_MAIS,
+    nome: "estrutura.arvoreBMais",
+    mundo: "arvoreBMais",
+    familia: "disco",
+    rotuloInserir: "op.inserir",
+    rotuloRemover: "op.removerValor",
+    rotuloConsultar: "op.buscar",
+    buscavel: true,
+    porValor: true,
+    varredura: true,
     semExtremos: true,
   },
 ];
